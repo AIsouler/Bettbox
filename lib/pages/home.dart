@@ -378,9 +378,11 @@ class HomeBackScope extends ConsumerWidget {
             globalState.appController.toPage(PageLabel.dashboard);
             return;
           }
-          final canPop = Navigator.canPop(context);
-          if (canPop) {
-            Navigator.pop(context);
+          // Use navigator key for reliable route checking (avoids stale
+          // context after display mode changes on Xiaomi HyperOS).
+          final navigatorState = globalState.navigatorKey.currentState;
+          if (navigatorState != null && navigatorState.canPop()) {
+            navigatorState.pop();
           } else {
             await globalState.appController.handleBackOrExit();
           }
