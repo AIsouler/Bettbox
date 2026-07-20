@@ -59,7 +59,6 @@ class GlobalState {
   bool _needsTaskRestart = false;
   Timer? _backgroundCleanupTimer;
   final Lock _scriptEvaluateLock = Lock();
-
   bool isInit = false;
 
   bool get isStart => startTime != null && startTime!.isBeforeNow;
@@ -921,7 +920,10 @@ class DashboardRefreshManager {
 
   Future<bool> _isActive() async {
     final lifecycleState = WidgetsBinding.instance.lifecycleState;
-    if (lifecycleState != null && lifecycleState != AppLifecycleState.resumed) {
+    final isPinned = system.isDesktop && globalState.config.windowProps.isPinned;
+    if (!isPinned &&
+        lifecycleState != null &&
+        lifecycleState != AppLifecycleState.resumed) {
       return false;
     }
     if (system.isDesktop) {
