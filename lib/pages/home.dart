@@ -374,6 +374,10 @@ class HomeBackScope extends ConsumerWidget {
         canPop: false,
         onPopInvokedWithResult: (didPop, _) async {
           if (didPop || backBlock) return;
+          // Ignore back events right after the app resumes — Xiaomi HyperOS
+          // may dispatch a phantom back event during the resume transition
+          // (e.g. when the user returns via the system gesture navigation).
+          if (globalState.hasResumedRecently()) return;
           if (!isCurrentRootPage) {
             globalState.appController.toPage(PageLabel.dashboard);
             return;
