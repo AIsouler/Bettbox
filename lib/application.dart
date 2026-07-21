@@ -80,6 +80,10 @@ class ApplicationState extends ConsumerState<Application>
     if (system.isAndroid) {
       app.initShortcuts();
     }
+    // Extend the resume guard so that the first back press after a cold
+    // start is also protected (the lifecycle "resumed" event fires before
+    // init completes; this moves the guard window to the end of init).
+    globalState.markResumed();
   }
 
   @override

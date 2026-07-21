@@ -60,6 +60,7 @@ class GlobalState {
   Timer? _backgroundCleanupTimer;
   final Lock _scriptEvaluateLock = Lock();
   DateTime? _lastResumeTime;
+  DateTime? _lastBackPressTime;
 
   /// Marks the moment the app returned to the foreground.
   void markResumed() {
@@ -75,6 +76,25 @@ class GlobalState {
     final lastResume = _lastResumeTime;
     if (lastResume == null) return false;
     return DateTime.now().difference(lastResume) < duration;
+  }
+
+  /// Implements a "double-back to exit" pattern.  Returns `true` only when
+  /// two back presses occur within 2 seconds.
+  bool get shouldExitOnBack {
+    final now = DateTime.now();
+    final last = _lastBackPressTime;
+    if (last != null && now.difference(last) < const Duration(seconds: 2)) {
+      _lastBackPressTime = null;
+      return true;
+    }
+    _lastBackPressTime = now;
+    return false;
+  }
+
+  /// Resets the double-back counter (call when navigating away from the
+  /// exit point, e.g. moving to a different tab).
+  void resetBackPressTracking() {
+    _lastBackPressTime = null;
   }
 
   bool isInit = false;

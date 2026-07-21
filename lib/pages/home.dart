@@ -387,7 +387,21 @@ class HomeBackScope extends ConsumerWidget {
           final navigatorState = globalState.navigatorKey.currentState;
           if (navigatorState != null && navigatorState.canPop()) {
             navigatorState.pop();
-          } else {
+            globalState.resetBackPressTracking();
+            return;
+          }
+          // No pushed routes remaining.  If we are not already on the
+          // dashboard tab, step back to it first instead of sending the
+          // whole app to the background — this avoids a jarring “return
+          // to desktop” when the route stack was lost (e.g. after a
+          // cold start on HyperOS).
+          if (currentPage != PageLabel.dashboard) {
+            globalState.appController.toPage(PageLabel.dashboard);
+            globalState.resetBackPressTracking();
+            return;
+          }
+          // Double-back to exit on the dashboard tab.
+          if (globalState.shouldExitOnBack) {
             await globalState.appController.handleBackOrExit();
           }
         },
