@@ -374,36 +374,25 @@ class HomeBackScope extends ConsumerWidget {
         canPop: false,
         onPopInvokedWithResult: (didPop, _) async {
           if (didPop || backBlock) return;
-          // Ignore back events right after the app resumes — Xiaomi HyperOS
-          // may dispatch a phantom back event during the resume transition
-          // (e.g. when the user returns via the system gesture navigation).
-          if (globalState.hasResumedRecently()) return;
           if (!isCurrentRootPage) {
             globalState.appController.toPage(PageLabel.dashboard);
             return;
           }
-          // Use navigator key for reliable route checking (avoids stale
-          // context after display mode changes on Xiaomi HyperOS).
+          // Use the global navigator key rather than the local build
+          // context — the latter may become stale after display-mode
+          // changes on Xiaomi HyperOS (e.g. enabling "Show refresh rate").
           final navigatorState = globalState.navigatorKey.currentState;
           if (navigatorState != null && navigatorState.canPop()) {
             navigatorState.pop();
-            globalState.resetBackPressTracking();
             return;
           }
-          // No pushed routes remaining.  If we are not already on the
-          // dashboard tab, step back to it first instead of sending the
-          // whole app to the background — this avoids a jarring “return
-          // to desktop” when the route stack was lost (e.g. after a
-          // cold start on HyperOS).
-          if (currentPage != PageLabel.dashboard) {
-            globalState.appController.toPage(PageLabel.dashboard);
-            globalState.resetBackPressTracking();
-            return;
-          }
-          // Double-back to exit on the dashboard tab.
-          if (globalState.shouldExitOnBack) {
-            await globalState.appController.handleBackOrExit();
-          }
+          // If no route has ever been pushed this session we are in a
+          // fresh (cold-start) session.  Do not send the app to the
+          // background on the first back press — the user may have
+          // returned from a killed process and still expects to be on
+          // a secondary page.
+          if (!globalState.hasEverPushedRoute) return;
+          await globalState.appController.handleBackOrExit();
         },
         child: child,
       );
