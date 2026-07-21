@@ -59,22 +59,17 @@ class GlobalState {
   bool _needsTaskRestart = false;
   Timer? _backgroundCleanupTimer;
   final Lock _scriptEvaluateLock = Lock();
-  DateTime? _lastResumeTime;
+  bool _hasEverPushedRoute = false;
 
-  /// Marks the moment the app returned to the foreground.
-  void markResumed() {
-    _lastResumeTime = DateTime.now();
-  }
+  /// Whether any route has been pushed onto the Navigator during this
+  /// session.  Used to distinguish a fresh (cold-start) session — where
+  /// back should not immediately send the app to the background — from a
+  /// session with real navigation history.
+  bool get hasEverPushedRoute => _hasEverPushedRoute;
 
-  /// Returns true if the app resumed less than [duration] ago.
-  /// Used to ignore phantom back events dispatched by Xiaomi HyperOS
-  /// during the resume transition.
-  bool hasResumedRecently({
-    Duration duration = const Duration(milliseconds: 300),
-  }) {
-    final lastResume = _lastResumeTime;
-    if (lastResume == null) return false;
-    return DateTime.now().difference(lastResume) < duration;
+  /// Marks that the user has navigated beyond the home page.
+  void markRoutePushed() {
+    _hasEverPushedRoute = true;
   }
 
   bool isInit = false;

@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 
 class BaseNavigator {
   static Future<T?> push<T>(BuildContext context, Widget child) async {
+    globalState.markRoutePushed();
     if (globalState.appState.viewMode != ViewMode.mobile) {
       return await Navigator.of(
         context,

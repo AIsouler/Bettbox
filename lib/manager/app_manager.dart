@@ -162,7 +162,6 @@ class _AppStateManagerState extends ConsumerState<AppStateManager>
       globalState.appController.savePreferences();
       await globalState.handleBackground();
     } else if (state == AppLifecycleState.resumed) {
-      globalState.markResumed();
       globalState.handleForeground();
       render?.resume();
       await globalState.resumeForegroundUpdates();
