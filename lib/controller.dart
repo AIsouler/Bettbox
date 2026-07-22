@@ -1266,7 +1266,6 @@ class AppController {
   }
 
   void toPage(PageLabel pageLabel) {
-    globalState.markRoutePushed();
     final context = globalState.navigatorKey.currentState?.context;
     if (context != null && context.mounted) {
       Navigator.of(
