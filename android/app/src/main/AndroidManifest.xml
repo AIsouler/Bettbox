@@ -32,7 +32,8 @@
         android:enableOnBackInvokedCallback="true">
         <activity
             android:name="com.appshub.bettbox.MainActivity"
-            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+            android:alwaysRetainTaskState="true"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode|colorMode"
             android:exported="true"
             android:hardwareAccelerated="true"
             android:launchMode="singleTop"
