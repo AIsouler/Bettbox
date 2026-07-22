@@ -29,7 +29,7 @@
         android:icon="@mipmap/ic_launcher"
         android:label="Bettbox"
         android:banner="@drawable/tv_banner"
-        android:enableOnBackInvokedCallback="true">
+        android:enableOnBackInvokedCallback="false">
         <activity
             android:name="com.appshub.bettbox.MainActivity"
             android:alwaysRetainTaskState="true"

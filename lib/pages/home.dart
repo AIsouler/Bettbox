@@ -386,12 +386,6 @@ class HomeBackScope extends ConsumerWidget {
             navigatorState.pop();
             return;
           }
-          // If no route has ever been pushed this session we are in a
-          // fresh (cold-start) session.  Do not send the app to the
-          // background on the first back press — the user may have
-          // returned from a killed process and still expects to be on
-          // a secondary page.
-          if (!globalState.hasEverPushedRoute) return;
           await globalState.appController.handleBackOrExit();
         },
         child: child,
