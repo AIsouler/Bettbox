@@ -92,7 +92,7 @@ abstract class AppSettingProps with _$AppSettingProps {
     @Default(true) bool openLogs,
     @Default(true) bool closeConnections,
     @Default(defaultTestUrl) String testUrl,
-    @Default(true) bool isAnimateToPage,
+    @Default(true) bool showStartSwitch,
     @Default(true) bool enableNavBarHapticFeedback,
     @Default(true) bool autoCheckUpdate,
     @Default(false) bool showLabel,
@@ -151,6 +151,7 @@ abstract class WindowProps with _$WindowProps {
     @Default(620) double height,
     double? top,
     double? left,
+    @Default(false) bool isPinned,
   }) = _WindowProps;
 
   factory WindowProps.fromJson(Map<String, Object?>? json) =>
@@ -246,7 +247,6 @@ abstract class ThemeProps with _$ThemeProps {
     @Default(ThemeMode.system) ThemeMode themeMode,
     @Default(DynamicSchemeVariant.content) DynamicSchemeVariant schemeVariant,
     @Default(false) bool pureBlack,
-    @Default(false) bool classicTheme,
     @Default(TextScale()) TextScale textScale,
     @Default(false) bool useLightIcon,
     @Default(false) bool useHarmonyFont,
