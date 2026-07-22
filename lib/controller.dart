@@ -389,6 +389,12 @@ class AppController {
       return;
     }
 
+    if (networkSpeedNotification &&
+        !shouldUpdateDashboard &&
+        !globalState.appState.isScreenOn) {
+      return;
+    }
+
     final traffic = await clashCore.getTraffic();
 
     if (shouldUpdateDashboard) {

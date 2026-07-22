@@ -198,7 +198,12 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
                 .showCommonDialog<ConnectionsSortType>(
                   child: OptionsDialog<ConnectionsSortType>(
                     title: appLocalizations.connectionsSort,
-                    options: ConnectionsSortType.values,
+                    options: ConnectionsSortType.values
+                        .where(
+                          (sortType) =>
+                              sortType != ConnectionsSortType.creationTime,
+                        )
+                        .toList(),
                     value: currentSortType,
                     textBuilder: (sortType) {
                       return switch (sortType) {

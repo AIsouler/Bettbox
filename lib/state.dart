@@ -203,9 +203,9 @@ class GlobalState {
     }
     render?.pause();
 
-    final networkSpeedNotification = appController.ref
-        .read(vpnSettingProvider)
-        .networkSpeedNotification;
+    final networkSpeedNotification =
+        system.isAndroid &&
+        appController.ref.read(vpnSettingProvider).networkSpeedNotification;
     if (!networkSpeedNotification) {
       stopUpdateTasks();
     }
