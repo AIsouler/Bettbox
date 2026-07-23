@@ -1,11 +1,13 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"core/state"
 	"encoding/json"
 	"fmt"
 	"net"
+	"os"
 	"runtime"
 	"runtime/debug"
 	"sort"
@@ -26,6 +28,7 @@ import (
 	"github.com/metacubex/mihomo/hub/executor"
 	"github.com/metacubex/mihomo/listener"
 	"github.com/metacubex/mihomo/log"
+	rulesProvider "github.com/metacubex/mihomo/rules/provider"
 	"github.com/metacubex/mihomo/tunnel"
 	"github.com/metacubex/mihomo/tunnel/statistic"
 	"sync"
@@ -422,6 +425,43 @@ func handleSideLoadExternalProvider(providerName string, data []byte, fn func(va
 			return
 		}
 		fn("")
+	}()
+}
+
+func handleParseExternalProviderContent(providerName string, fn func(value string)) {
+	go func() {
+		runLock.Lock()
+		p, exist := getExternalProvidersRaw()[providerName]
+		runLock.Unlock()
+
+		if !exist {
+			fn("external provider does not exist")
+			return
+		}
+
+		ep, err := toExternalProvider(p)
+		if err != nil || ep.Path == "" {
+			fn("provider path is empty")
+			return
+		}
+
+		buf, err := os.ReadFile(ep.Path)
+		if err != nil {
+			fn(fmt.Sprintf("read file error: %v", err))
+			return
+		}
+
+		// RuleProvider 的缓存文件可能是 zstd 压缩的 MRS 二进制格式（无扩展名），
+		// 直接尝试解码；失败则视为普通文本
+		if rp, ok := p.(cp.RuleProvider); ok {
+			var out bytes.Buffer
+			if err := rulesProvider.ConvertToMrs(buf, rp.Behavior(), cp.MrsRule, &out); err == nil {
+				fn(out.String())
+				return
+			}
+		}
+
+		fn(string(buf))
 	}()
 }
 

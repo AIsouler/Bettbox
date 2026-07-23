@@ -190,8 +190,6 @@ class _ProxyGroupsListState extends ConsumerState<_ProxyGroupsList> {
 
     return CommonScrollBar(
       controller: _scrollController,
-      thumbVisibility: true,
-      trackVisibility: true,
       child: ListView.builder(
         controller: _scrollController,
         padding: EdgeInsets.all(16).copyWith(

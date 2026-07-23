@@ -221,7 +221,7 @@ class CommonScaffoldState extends State<CommonScaffold> {
           onPressed: () {
             _updateSearchState((state) => state?.copyWith(query: ''));
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              Future.delayed(const Duration(milliseconds: 500), () {
+              Future.delayed(const Duration(milliseconds: 150), () {
                 if (!mounted || !_isSearch) return;
                 _searchFocusNode.requestFocus();
               });

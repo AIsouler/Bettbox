@@ -534,6 +534,7 @@ class SectionContainer extends StatelessWidget {
   final List<Widget>? actions;
   final bool separated;
   final bool plain;
+  final bool isFirst;
 
   const SectionContainer({
     super.key,
@@ -542,10 +543,15 @@ class SectionContainer extends StatelessWidget {
     this.actions,
     this.separated = true,
     this.plain = false,
+    this.isFirst = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final headerPadding = isFirst
+        ? const EdgeInsets.only(left: 16, right: 8, top: 4, bottom: 8)
+        : null;
+
     if (plain) {
       final genItems = separated
           ? items.separated(const Divider(height: 0))
@@ -555,7 +561,7 @@ class SectionContainer extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (items.isNotEmpty && title != null)
-            ListHeader(title: title!, actions: actions),
+            ListHeader(title: title!, actions: actions, padding: headerPadding),
           ...genItems,
         ],
       );
@@ -568,7 +574,8 @@ class SectionContainer extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (title != null) ListHeader(title: title!, actions: actions),
+        if (title != null)
+          ListHeader(title: title!, actions: actions, padding: headerPadding),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
           child: CommonCard(
@@ -728,10 +735,38 @@ Widget generateListView(List<Widget> items) {
           final item = cleanItems[index];
 
           if (item is SectionContainer) {
+            if (index == 0 && !item.isFirst) {
+              return SectionContainer(
+                title: item.title,
+                items: item.items,
+                actions: item.actions,
+                separated: item.separated,
+                plain: item.plain,
+                isFirst: true,
+              );
+            }
             return item;
           }
 
-          if (item is ListHeader || item is InfoHeader) {
+          if (item is ListHeader) {
+            if (index == 0 && item.padding == null) {
+              return ListHeader(
+                title: item.title,
+                subTitle: item.subTitle,
+                padding: const EdgeInsets.only(
+                  left: 16,
+                  right: 8,
+                  top: 4,
+                  bottom: 8,
+                ),
+                actions: item.actions,
+                space: item.space,
+              );
+            }
+            return item;
+          }
+
+          if (item is InfoHeader) {
             return item;
           }
 

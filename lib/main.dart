@@ -8,6 +8,7 @@ import 'package:bett_box/plugins/service.dart' as vpn_service;
 import 'package:bett_box/plugins/tile.dart';
 import 'package:bett_box/plugins/vpn.dart';
 import 'package:bett_box/state.dart';
+import 'package:code_forge/code_forge.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -77,6 +78,12 @@ Future<void> _sendControlCommand(String command) async {
 }
 
 Future<void> _runApp() async {
+  try {
+    await RustLib.init();
+  } catch (e) {
+    commonPrint.log('Failed to initialize code_forge RustLib: $e');
+  }
+
   if (system.isAndroid) {
     try {
       await FlutterDisplayMode.setHighRefreshRate();

@@ -6,6 +6,7 @@ import 'package:bett_box/common/common.dart';
 import 'package:bett_box/models/common.dart';
 import 'package:bett_box/models/core.dart';
 import 'package:bett_box/models/profile.dart';
+import 'package:bett_box/pages/editor.dart';
 import 'package:bett_box/providers/app.dart';
 import 'package:bett_box/state.dart';
 import 'package:bett_box/widgets/widgets.dart';
@@ -28,7 +29,9 @@ class _ProvidersViewState extends ConsumerState<ProvidersView> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      globalState.appController.updateProviders();
+      if (ref.read(providersProvider).isEmpty) {
+        globalState.appController.updateProviders();
+      }
     });
   }
 
@@ -79,10 +82,10 @@ class _ProvidersViewState extends ConsumerState<ProvidersView> {
     final providers = ref.watch(providersProvider);
     final proxyProviders = providers
         .where((item) => item.type == 'Proxy')
-        .map((item) => ProviderItem(provider: item));
+        .map((item) => ProviderItem(key: ValueKey(item.name), provider: item));
     final ruleProviders = providers
         .where((item) => item.type == 'Rule')
-        .map((item) => ProviderItem(provider: item));
+        .map((item) => ProviderItem(key: ValueKey(item.name), provider: item));
     final proxySection = generateSection(
       title: appLocalizations.proxyProviders,
       items: proxyProviders,
@@ -111,18 +114,20 @@ class _ProvidersViewState extends ConsumerState<ProvidersView> {
         ),
       ],
     );
-    return AdaptiveSheetScaffold(
-      actions: [
-        IconButton(
-          onPressed: () {
-            _updateProviders();
-          },
-          icon: const Icon(Icons.sync),
-        ),
-      ],
-      type: widget.type,
-      body: generateListView([...proxySection, ...ruleSection]),
-      title: appLocalizations.providers,
+    return RepaintBoundary(
+      child: AdaptiveSheetScaffold(
+        actions: [
+          IconButton(
+            onPressed: () {
+              _updateProviders();
+            },
+            icon: const Icon(Icons.sync),
+          ),
+        ],
+        type: widget.type,
+        body: generateListView([...proxySection, ...ruleSection]),
+        title: appLocalizations.providers,
+      ),
     );
   }
 }
@@ -175,17 +180,61 @@ class ProviderItem extends StatelessWidget {
     }
   }
 
+  Future<void> _handleViewProviderContent(BuildContext context) async {
+    await globalState.appController.safeRun(
+      () async {
+        final path = provider.path;
+        String content = '';
+        if (path != null && path.isNotEmpty && !path.endsWith('.mrs')) {
+          final file = File(path);
+          if (await file.exists()) {
+            try {
+              content = await file.readAsString();
+            } catch (_) {}
+          }
+        }
+        if (content.isEmpty) {
+          content = await clashCore.parseExternalProviderContent(provider.name);
+        }
+        if (!context.mounted) return;
+        BaseNavigator.push(
+          context,
+          EditorPage(
+            title: '${appLocalizations.view} - ${provider.name}',
+            content: content,
+            readOnly: true,
+            simple: provider.type == 'Rule',
+          ),
+        );
+      },
+      needLoading: true,
+      title: appLocalizations.tip,
+    );
+  }
+
   String _buildProviderDesc() {
-    final baseInfo = provider.updateAt.lastUpdateTimeDesc;
-    final trafficInfo = _buildTrafficInfoText(provider.subscriptionInfo);
-    final infoText = trafficInfo == null
-        ? baseInfo
-        : '$trafficInfo  ·  $baseInfo';
-    final count = provider.count;
-    return switch (count == 0) {
-      true => infoText,
-      false => '$infoText  ·  $count${appLocalizations.entries}',
-    };
+    final updateTimeText = provider.updateAt.lastUpdateTimeDesc;
+    final subInfo = provider.subscriptionInfo;
+    if (subInfo != null) {
+      final trafficText = _buildTrafficInfoText(subInfo);
+      final expireText = _getExpireText(subInfo);
+      if (trafficText != null) {
+        return '$trafficText · $expireText - $updateTimeText';
+      } else {
+        return '$expireText - $updateTimeText';
+      }
+    } else {
+      return updateTimeText;
+    }
+  }
+
+  String _getExpireText(SubscriptionInfo subscriptionInfo) {
+    if (subscriptionInfo.expire == 0) {
+      return appLocalizations.infiniteTime;
+    }
+    return DateTime.fromMillisecondsSinceEpoch(
+      subscriptionInfo.expire * 1000,
+    ).show;
   }
 
   String? _buildTrafficInfoText(SubscriptionInfo? subscriptionInfo) {
@@ -229,6 +278,11 @@ class ProviderItem extends StatelessWidget {
                 avatar: const Icon(Icons.upload),
                 label: appLocalizations.upload,
                 onPressed: _handleSideLoadProvider,
+              ),
+              CommonChip(
+                avatar: const Icon(Icons.visibility),
+                label: appLocalizations.view,
+                onPressed: () => _handleViewProviderContent(context),
               ),
               if (provider.vehicleType == 'HTTP')
                 provider.isUpdating

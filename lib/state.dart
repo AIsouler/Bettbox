@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:animations/animations.dart';
 import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:dynamic_color/dynamic_color.dart';
@@ -400,16 +399,88 @@ class GlobalState {
     if (state == null) return null;
     final context = state.context;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return await showModal<T>(
+    return await showGeneralDialog<T>(
       context: context,
-      configuration: FadeScaleTransitionConfiguration(
-        barrierColor: isDark
-            ? const Color(0xCC000000)
-            : const Color(0x99000000),
-        barrierDismissible: dismissible,
-      ),
-      builder: (_) => child,
+      barrierColor: isDark ? const Color(0xCC000000) : const Color(0x99000000),
+      barrierDismissible: dismissible,
+      barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+      transitionDuration: const Duration(milliseconds: 250),
+      pageBuilder: (context, animation, secondaryAnimation) => child,
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        final curved = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutCubic,
+        );
+        return RepaintBoundary(
+          child: FadeTransition(
+            opacity: curved,
+            child: ScaleTransition(
+              scale: curved.drive(Tween<double>(begin: 0.94, end: 1.0)),
+              child: child,
+            ),
+          ),
+        );
+      },
     );
+  }
+
+  bool _dialogWarmedUp = false;
+
+  void warmupCommonDialog() {
+    if (_dialogWarmedUp) return;
+    _dialogWarmedUp = true;
+
+    final state = navigatorKey.currentState;
+    if (state == null) return;
+    final overlayState = state.overlay;
+    if (overlayState == null) return;
+
+    late OverlayEntry entry;
+    entry = OverlayEntry(
+      builder: (context) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          entry.remove();
+          entry.dispose();
+        });
+        return Offstage(
+          offstage: true,
+          child: RepaintBoundary(
+            child: Material(
+              type: MaterialType.transparency,
+              child: FadeTransition(
+                opacity: const AlwaysStoppedAnimation(1.0),
+                child: ScaleTransition(
+                  scale: const AlwaysStoppedAnimation(1.0),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surface,
+                      borderRadius: BorderRadius.circular(28),
+                      boxShadow: const [
+                        BoxShadow(
+                          blurRadius: 10,
+                          color: Colors.black12,
+                        ),
+                      ],
+                    ),
+                    child: const Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.check_circle_outline),
+                        SizedBox(height: 8),
+                        Text('warmup'),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+
+    overlayState.insert(entry);
   }
 
   void showNotifier(
@@ -900,7 +971,8 @@ class DashboardRefreshManager {
 
   Future<bool> _isActive() async {
     final lifecycleState = WidgetsBinding.instance.lifecycleState;
-    final isPinned = system.isDesktop && globalState.config.windowProps.isPinned;
+    final isPinned =
+        system.isDesktop && globalState.config.windowProps.isPinned;
     if (!isPinned &&
         lifecycleState != null &&
         lifecycleState != AppLifecycleState.resumed) {
