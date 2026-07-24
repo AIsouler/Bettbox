@@ -42,6 +42,7 @@ class SyntaxHighlighter {
   final Map<String, TextStyle> editorTheme;
   final TextStyle? baseTextStyle;
   final String? languageId;
+  final String Function(int)? getLineText;
   final Map<int, HighlightedLine> _grammarCache = {}, _mergedCache = {};
   final Map<int, List<SemanticWordSpan>> _lineSemanticSpans = {};
   final Map<String, TextSpan?> _lineSpanCache = {};
@@ -54,6 +55,7 @@ class SyntaxHighlighter {
   static const int _cacheKeepMargin = 500;
   static const int _maxLineCacheEntries = 6000;
   static const int _maxSpanCacheEntries = 8000;
+  static const int _blockCommentLookbackLimit = 200;
   int get documentVersion => _documentVersion;
   Future<void>? _preHighlightInFlight;
   int _preHighlightInFlightVersion = -1, _version = 0, _documentVersion = 0;
@@ -65,6 +67,7 @@ class SyntaxHighlighter {
     this.baseTextStyle,
     this.languageId,
     this.extraLanguages = const [],
+    this.getLineText,
   }) {
     _langId = language.hashCode.toString();
     _resolvedTheme = _buildResolvedTheme(editorTheme);
@@ -277,6 +280,17 @@ class SyntaxHighlighter {
         mergedCache.version == _version &&
         mergedCache.text == lineText) {
       return mergedCache.span;
+    }
+
+    if (_isInsideBlockComment(lineIndex)) {
+      final commentStyle = _resolvedTheme['comment'] ?? baseTextStyle;
+      final commentSpan = TextSpan(text: lineText, style: commentStyle);
+      _mergedCache[lineIndex] = HighlightedLine(
+        lineText,
+        commentSpan,
+        _version,
+      );
+      return commentSpan;
     }
 
     final grammarCache = _grammarCache[lineIndex];
@@ -565,6 +579,44 @@ class SyntaxHighlighter {
     }
 
     return null;
+  }
+
+  bool _isInsideBlockComment(int lineIndex) {
+    final getLineText = this.getLineText;
+    if (getLineText == null) return false;
+
+    final startLine = (lineIndex - _blockCommentLookbackLimit).clamp(
+      0,
+      lineIndex,
+    );
+
+    for (int i = lineIndex; i >= startLine; i--) {
+      final text = getLineText(i);
+      if (text.isEmpty) continue;
+
+      int pos = 0;
+      while (true) {
+        final openIdx = text.indexOf('/*', pos);
+        final closeIdx = text.indexOf('*/', pos);
+
+        if (openIdx < 0 && closeIdx < 0) break;
+
+        if (openIdx >= 0 && (closeIdx < 0 || openIdx < closeIdx)) {
+          final afterOpen = text.indexOf('*/', openIdx + 2);
+          if (afterOpen >= 0) {
+            pos = afterOpen + 2;
+            continue;
+          }
+          return i != lineIndex;
+        }
+
+        if (closeIdx >= 0 && (openIdx < 0 || closeIdx < openIdx)) {
+          return i == lineIndex;
+        }
+      }
+    }
+
+    return false;
   }
 
   TextSpan? _highlightLine(String lineText) {
