@@ -606,6 +606,7 @@ class AppController {
 
   Future<void> _applyProfile() async {
     _invalidateCoreReads();
+    _ref.read(delayDataSourceProvider.notifier).value = {};
     await clashCore.requestGc();
     final configured = await _setupCoreConfig();
     if (!configured) return;
@@ -632,7 +633,6 @@ class AppController {
 
   Future<void> handleChangeProfile({bool hardRestart = false}) {
     return _coreLifecycleLock.synchronized(() async {
-      _ref.read(delayDataSourceProvider.notifier).value = {};
       if (hardRestart) {
         _ref.read(isRestartingCoreProvider.notifier).state = true;
         try {
@@ -644,12 +644,16 @@ class AppController {
         if (system.isAndroid) {
           clashCore.closeConnections();
           await clashCore.flushFakeIP();
+          await clashCore.flushDnsCache();
         }
         final prevProfileId = _ref.read(currentProfileIdProvider);
         try {
           await _applyProfile();
         } catch (err) {
           _ref.read(currentProfileIdProvider.notifier).value = prevProfileId;
+          try {
+            await _applyProfile();
+          } catch (_) {}
           globalState.showNotifier(err.toString());
         }
       }
@@ -1383,28 +1387,54 @@ class AppController {
   }
 
   Future<void> addProfileFormFile() async {
-    final platformFile = await safeRun(picker.pickerFile);
-    final bytes = platformFile?.bytes;
-    if (bytes == null) {
+    final platformFiles = await safeRun(
+      () => picker.pickerFiles(
+        allowMultiple: true,
+        allowedExtensions: ['yaml', 'yml'],
+      ),
+    );
+    if (platformFiles == null || platformFiles.isEmpty) {
       return;
     }
     if (!context.mounted) return;
 
+    final validFiles = platformFiles.where((file) {
+      final name = file.name.toLowerCase();
+      return name.endsWith('.yaml') || name.endsWith('.yml');
+    }).toList();
+
+    if (validFiles.isEmpty) {
+      return;
+    }
+
     _ref.read(loadingProvider.notifier).value = true;
+    int successCount = 0;
     try {
-      await Future.delayed(const Duration(milliseconds: 500));
-      final profile = await Profile.normal(
-        label: platformFile?.name,
-      ).saveFile(bytes);
-      globalState.navigatorKey.currentState?.popUntil((route) => route.isFirst);
-      toProfiles();
-      await addProfile(profile);
-    } on Object catch (e) {
-      await globalState.showMessage(
-        title: appLocalizations.add,
-        message: TextSpan(text: _formatErrorMessage(e)),
-        cancelable: false,
-      );
+      for (final platformFile in validFiles) {
+        final bytes = platformFile.bytes;
+        if (bytes == null || bytes.isEmpty) continue;
+
+        try {
+          final profile = await Profile.normal(
+            label: platformFile.name,
+          ).saveFile(bytes);
+          await addProfile(profile);
+          successCount++;
+        } on Object catch (e) {
+          if (!context.mounted) break;
+          await globalState.showMessage(
+            title: '${platformFile.name} (${appLocalizations.add})',
+            message: TextSpan(text: _formatErrorMessage(e)),
+            cancelable: false,
+          );
+        }
+      }
+
+      if (successCount > 0) {
+        globalState.navigatorKey.currentState
+            ?.popUntil((route) => route.isFirst);
+        toProfiles();
+      }
     } finally {
       _ref.read(loadingProvider.notifier).value = false;
     }
@@ -2147,19 +2177,14 @@ class AppController {
       }
 
       // 2. App settings
-      final currentAppSetting = _ref.read(appSettingProvider);
       final backupAppSetting = config.appSetting;
 
-      // Merge dashboardWidgets: preserve platform-specific widgets
-      final currentWidgets = currentAppSetting.dashboardWidgets;
-      final backupWidgets = backupAppSetting.dashboardWidgets;
-      final mergedWidgets = _mergeDashboardWidgets(
-        currentWidgets,
-        backupWidgets,
-      );
-
       _ref.read(appSettingProvider.notifier).value = backupAppSetting.copyWith(
-        dashboardWidgets: mergedWidgets,
+        mobileDashboardWidgets: backupAppSetting.mobileDashboardWidgets,
+        desktopDashboardWidgets: backupAppSetting.desktopDashboardWidgets,
+        dashboardWidgets: system.isAndroid
+            ? backupAppSetting.mobileDashboardWidgets
+            : backupAppSetting.desktopDashboardWidgets,
       );
 
       // 3. Restore current profile ID
@@ -2220,64 +2245,7 @@ class AppController {
     _ensureCurrentProfile(profiles);
   }
 
-  /// Merge widgets
-  List<DashboardWidget> _mergeDashboardWidgets(
-    List<DashboardWidget> currentWidgets,
-    List<DashboardWidget> backupWidgets,
-  ) {
-    // Platform widgets
-    final Set<DashboardWidget> androidOnlyWidgets = {
-      // Android-specific widgets (if any)
-    };
 
-    final Set<DashboardWidget> desktopOnlyWidgets = {
-      DashboardWidget.tunButton, // TUN button (desktop-specific)
-      DashboardWidget
-          .systemProxyButton, // System proxy button (more common on desktop)
-    };
-
-    // Determine platform-specific widgets
-    final platformSpecificWidgets = system.isAndroid
-        ? androidOnlyWidgets
-        : desktopOnlyWidgets;
-
-    // Build position map for platform-specific widgets
-    final platformWidgetPositions = <DashboardWidget, int>{};
-    for (var i = 0; i < currentWidgets.length; i++) {
-      final widget = currentWidgets[i];
-      if (platformSpecificWidgets.contains(widget)) {
-        platformWidgetPositions[widget] = i;
-      }
-    }
-
-    // Get non-platform-specific widgets from backup
-    final backupCommonWidgets = backupWidgets
-        .where((widget) => !platformSpecificWidgets.contains(widget))
-        .toList();
-
-    // Merge strategy: insert platform-specific widgets at original positions
-    final mergedWidgets = <DashboardWidget>[...backupCommonWidgets];
-
-    // Insert platform-specific widgets by position (smallest first)
-    final sortedEntries = platformWidgetPositions.entries.toList()
-      ..sort((a, b) => a.value.compareTo(b.value));
-
-    for (final entry in sortedEntries) {
-      final widget = entry.key;
-      final originalPosition = entry.value;
-
-      // Insert position cannot exceed list length
-      final insertPosition = originalPosition.clamp(0, mergedWidgets.length);
-      mergedWidgets.insert(insertPosition, widget);
-    }
-
-    // Use default widgets if merged is empty
-    return mergedWidgets.isNotEmpty
-        ? mergedWidgets
-        : (system.isAndroid
-              ? defaultAndroidDashboardWidgets
-              : defaultDashboardWidgets);
-  }
 
   Future<T?> safeRun<T>(
     FutureOr<T> Function() futureFunction, {

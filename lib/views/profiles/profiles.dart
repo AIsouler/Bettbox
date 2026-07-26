@@ -389,9 +389,14 @@ class ProfileItem extends StatelessWidget {
     final res = await globalState.appController.safeRun<bool>(
       () async {
         final file = await profile.getFile();
+        final rawName = (profile.label ?? profile.id).trim();
+        final fileName = (rawName.endsWith('.yaml') || rawName.endsWith('.yml'))
+            ? rawName
+            : '$rawName.yaml';
         final value = await picker.saveFile(
-          profile.label ?? profile.id,
+          fileName,
           await file.readAsBytes(),
+          allowedExtensions: ['yaml', 'yml'],
         );
         if (value == null) return false;
         return true;

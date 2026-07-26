@@ -77,6 +77,32 @@ List<DashboardWidget> dashboardWidgetsSafeFormJson(
   }
 }
 
+List<DashboardWidget> mobileDashboardWidgetsSafeFromJson(
+  List<dynamic>? dashboardWidgets,
+) {
+  try {
+    return dashboardWidgets
+            ?.map((e) => $enumDecode(_$DashboardWidgetEnumMap, e))
+            .toList() ??
+        defaultAndroidDashboardWidgets;
+  } catch (_) {
+    return defaultAndroidDashboardWidgets;
+  }
+}
+
+List<DashboardWidget> desktopDashboardWidgetsSafeFromJson(
+  List<dynamic>? dashboardWidgets,
+) {
+  try {
+    return dashboardWidgets
+            ?.map((e) => $enumDecode(_$DashboardWidgetEnumMap, e))
+            .toList() ??
+        defaultDashboardWidgets;
+  } catch (_) {
+    return defaultDashboardWidgets;
+  }
+}
+
 @freezed
 abstract class AppSettingProps with _$AppSettingProps {
   const factory AppSettingProps({
@@ -84,6 +110,12 @@ abstract class AppSettingProps with _$AppSettingProps {
     @Default(defaultDashboardWidgets)
     @JsonKey(fromJson: dashboardWidgetsSafeFormJson)
     List<DashboardWidget> dashboardWidgets,
+    @Default(defaultAndroidDashboardWidgets)
+    @JsonKey(fromJson: mobileDashboardWidgetsSafeFromJson)
+    List<DashboardWidget> mobileDashboardWidgets,
+    @Default(defaultDashboardWidgets)
+    @JsonKey(fromJson: desktopDashboardWidgetsSafeFromJson)
+    List<DashboardWidget> desktopDashboardWidgets,
     @Default(true) bool onlyStatisticsProxy,
     @Default(false) bool autoLaunch,
     @Default(false) bool silentLaunch,
@@ -113,8 +145,19 @@ abstract class AppSettingProps with _$AppSettingProps {
         ? defaultAppSettingProps
         : AppSettingProps.fromJson(json);
 
-    if (json == null && system.isAndroid) {
-      props = props.copyWith(dashboardWidgets: defaultAndroidDashboardWidgets);
+    if (json != null) {
+      final oldWidgets = json['dashboardWidgets'];
+      if (oldWidgets is List) {
+        final parsedOld = dashboardWidgetsSafeFormJson(oldWidgets);
+        if (json['mobileDashboardWidgets'] == null) {
+          props = props.copyWith(mobileDashboardWidgets: parsedOld);
+        }
+        if (json['desktopDashboardWidgets'] == null) {
+          props = props.copyWith(desktopDashboardWidgets: parsedOld);
+        }
+      }
+    } else if (system.isAndroid) {
+      props = props.copyWith(mobileDashboardWidgets: defaultAndroidDashboardWidgets);
     }
 
     return props.copyWith(minimizeOnExit: true, openLogs: true);

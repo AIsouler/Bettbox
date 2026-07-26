@@ -12,6 +12,16 @@ _AppSettingProps _$AppSettingPropsFromJson(Map<String, dynamic> json) =>
       dashboardWidgets: json['dashboardWidgets'] == null
           ? defaultDashboardWidgets
           : dashboardWidgetsSafeFormJson(json['dashboardWidgets'] as List?),
+      mobileDashboardWidgets: json['mobileDashboardWidgets'] == null
+          ? defaultAndroidDashboardWidgets
+          : mobileDashboardWidgetsSafeFromJson(
+              json['mobileDashboardWidgets'] as List?,
+            ),
+      desktopDashboardWidgets: json['desktopDashboardWidgets'] == null
+          ? defaultDashboardWidgets
+          : desktopDashboardWidgetsSafeFromJson(
+              json['desktopDashboardWidgets'] as List?,
+            ),
       onlyStatisticsProxy: json['onlyStatisticsProxy'] as bool? ?? true,
       autoLaunch: json['autoLaunch'] as bool? ?? false,
       silentLaunch: json['silentLaunch'] as bool? ?? false,
@@ -43,6 +53,12 @@ Map<String, dynamic> _$AppSettingPropsToJson(_AppSettingProps instance) =>
     <String, dynamic>{
       'locale': instance.locale,
       'dashboardWidgets': instance.dashboardWidgets
+          .map((e) => _$DashboardWidgetEnumMap[e]!)
+          .toList(),
+      'mobileDashboardWidgets': instance.mobileDashboardWidgets
+          .map((e) => _$DashboardWidgetEnumMap[e]!)
+          .toList(),
+      'desktopDashboardWidgets': instance.desktopDashboardWidgets
           .map((e) => _$DashboardWidgetEnumMap[e]!)
           .toList(),
       'onlyStatisticsProxy': instance.onlyStatisticsProxy,
