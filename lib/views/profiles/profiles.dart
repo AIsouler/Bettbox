@@ -62,6 +62,7 @@ class _ProfilesViewState extends ConsumerState<ProfilesView> {
         message: TextSpan(
           children: [for (final message in messages) TextSpan(text: message)],
         ),
+        cancelable: false,
       );
     }
   }
@@ -265,6 +266,7 @@ class ProfileItem extends StatelessWidget {
         message: TextSpan(
           text: '${profile.label ?? profile.id}: ${e.formatError}',
         ),
+        cancelable: false,
       );
     }
   }

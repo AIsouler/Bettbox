@@ -1017,6 +1017,7 @@ class AppController {
       globalState.showMessage(
         title: appLocalizations.checkUpdate,
         message: TextSpan(text: appLocalizations.checkUpdateError),
+        cancelable: false,
       );
     }
   }
@@ -1374,6 +1375,7 @@ class AppController {
       await globalState.showMessage(
         title: appLocalizations.add,
         message: TextSpan(text: _formatErrorMessage(e)),
+        cancelable: false,
       );
     } finally {
       _ref.read(loadingProvider.notifier).value = false;
@@ -1401,6 +1403,7 @@ class AppController {
       await globalState.showMessage(
         title: appLocalizations.add,
         message: TextSpan(text: _formatErrorMessage(e)),
+        cancelable: false,
       );
     } finally {
       _ref.read(loadingProvider.notifier).value = false;
@@ -2073,6 +2076,7 @@ class AppController {
     globalState.showMessage(
       title: appLocalizations.recoverySuccess,
       message: TextSpan(text: message),
+      cancelable: false,
     );
   }
 
@@ -2300,6 +2304,7 @@ class AppController {
           await globalState.showMessage(
             title: title ?? appLocalizations.tip,
             message: TextSpan(text: errorMessage),
+            cancelable: false,
           );
         } catch (_) {
           globalState.showNotifier(errorMessage);

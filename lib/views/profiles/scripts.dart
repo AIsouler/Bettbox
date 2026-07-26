@@ -191,6 +191,7 @@ class _ScriptsViewState extends ConsumerState<ScriptsView> {
           message: TextSpan(
             text: appLocalizations.existsTip(appLocalizations.name),
           ),
+          cancelable: false,
         );
         return;
       }
@@ -299,6 +300,7 @@ class _ScriptsViewState extends ConsumerState<ScriptsView> {
     } catch (e) {
       globalState.showMessage(
         message: TextSpan(text: '${appLocalizations.importFailed}: $e'),
+        cancelable: false,
       );
     }
   }

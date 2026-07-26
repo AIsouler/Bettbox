@@ -73,6 +73,7 @@ class _ProvidersViewState extends ConsumerState<ProvidersView> {
               TextSpan(text: message, style: titleMedium),
           ],
         ),
+        cancelable: false,
       );
     }
   }
