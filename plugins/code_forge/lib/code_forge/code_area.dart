@@ -606,8 +606,6 @@ class _CodeForgeState extends State<CodeForge> with TickerProviderStateMixin {
 
     _controller.requestImeReset = _resetImeConnection;
 
-    Future.microtask(CustomIcons.loadAllCustomFonts);
-
     if (_filePath == null && _controller.lspConfig != null) {
       throw ArgumentError(
         "The `filePath` parameter cannot be null inorder to use `LspConfig`."
@@ -1156,6 +1154,32 @@ class _CodeForgeState extends State<CodeForge> with TickerProviderStateMixin {
     _controller.pressEndKey(isShiftPressed: withShift);
   }
 
+  void _triggerSearchWithSelection({bool isReplace = false}) {
+    if (_controller.selection.start != _controller.selection.end) {
+      final start = _controller.selection.start.clamp(0, _controller.length);
+      final end = _controller.selection.end.clamp(0, _controller.length);
+      if (start < end) {
+        final selectedText = _controller.text.substring(start, end);
+        if (selectedText.isNotEmpty && !selectedText.contains('\n')) {
+          _findController.findInputController.text = selectedText;
+          _findController.find(selectedText);
+        }
+      }
+    }
+    if (!_readOnly) {
+      _findController.isReplaceMode = isReplace;
+    } else {
+      _findController.isReplaceMode = false;
+    }
+    _findController.isActive = true;
+    _contextMenuOffsetNotifier.value = const Offset(-1, -1);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _findController.findInputFocusNode.requestFocus();
+      }
+    });
+  }
+
   Widget _buildContextMenu() {
     return ValueListenableBuilder<Offset>(
       valueListenable: _contextMenuOffsetNotifier,
@@ -1289,6 +1313,30 @@ class _CodeForgeState extends State<CodeForge> with TickerProviderStateMixin {
               TextSelectionToolbarTextButton(
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 onPressed: () {
+                  _triggerSearchWithSelection();
+                },
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.search,
+                      size: 16,
+                      color: _editorTheme['root']?.color,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      MaterialLocalizations.of(context).searchFieldLabel,
+                      style: TextStyle(
+                        color: _editorTheme['root']?.color,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              TextSelectionToolbarTextButton(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                onPressed: () {
                   _controller.selectAll();
                 },
                 child: Row(
@@ -1344,6 +1392,11 @@ class _CodeForgeState extends State<CodeForge> with TickerProviderStateMixin {
                         'Ctrl+V',
                         () => _controller.paste(),
                       ),
+                    _buildDesktopContextMenuItem(
+                      MaterialLocalizations.of(context).searchFieldLabel,
+                      'Ctrl+F',
+                      () => _triggerSearchWithSelection(),
+                    ),
                     _buildDesktopContextMenuItem(
                       MaterialLocalizations.of(context).selectAllButtonLabel,
                       'Ctrl+A',
@@ -1726,6 +1779,37 @@ class _CodeForgeState extends State<CodeForge> with TickerProviderStateMixin {
 
                                                 final shrtCt =
                                                     widget.keyboardShotcuts;
+
+                                                if (shrtCt.showFindBar.accepts(
+                                                  event,
+                                                  HardwareKeyboard.instance,
+                                                )) {
+                                                  final isAlt = HardwareKeyboard
+                                                      .instance
+                                                      .isAltPressed;
+                                                  _triggerSearchWithSelection(
+                                                    isReplace: isAlt,
+                                                  );
+                                                  return KeyEventResult.handled;
+                                                }
+
+                                                if (shrtCt.showFindAndReplaceBar
+                                                    .accepts(
+                                                      event,
+                                                      HardwareKeyboard.instance,
+                                                    )) {
+                                                  if (!HardwareKeyboard
+                                                      .instance
+                                                      .isMetaPressed) {
+                                                    _triggerSearchWithSelection(
+                                                      isReplace: true,
+                                                    );
+
+                                                    return KeyEventResult
+                                                        .handled;
+                                                  }
+                                                }
+
                                                 if (shrtCt.duplicate.accepts(
                                                   event,
                                                   HardwareKeyboard.instance,
@@ -4486,6 +4570,7 @@ class _CodeFieldRenderer extends RenderBox implements MouseTrackerAnnotation {
   bool _draggingStartHandle = false, _draggingEndHandle = false;
   bool _showBubble = false, _draggingCHandle = false, _readOnly;
   bool _openedLspActionFromBulbTap = false;
+  bool _isGutterPointer = false;
   bool _isDeferringLayout = false, _hasCachedHeight = false;
   bool _isCachedHeightExact = false;
   bool _caretSyncAfterLayoutScheduled = false;
@@ -11403,6 +11488,21 @@ class _CodeFieldRenderer extends RenderBox implements MouseTrackerAnnotation {
     return false;
   }
 
+  void _clearCursorAndSelection() {
+    controller.selection = const TextSelection.collapsed(offset: -1);
+    controller.clearMultiCursors();
+    _selectionActive = selectionActiveNotifier.value = false;
+    _draggingStartHandle = false;
+    _draggingEndHandle = false;
+    _draggingCHandle = false;
+    _longPressSelected = false;
+    _selectionTimer?.cancel();
+    if (focusNode.hasFocus) {
+      focusNode.unfocus();
+    }
+    markNeedsPaint();
+  }
+
   @override
   bool hitTestSelf(Offset position) => true;
 
@@ -11470,20 +11570,26 @@ class _CodeFieldRenderer extends RenderBox implements MouseTrackerAnnotation {
     }
 
     if (event is PointerDownEvent && event.buttons == kPrimaryButton) {
+      final extraPadding = isMobile ? 12.0 : 0.0;
+      final effectiveGutterWidth = _gutterWidth + extraPadding;
       final gutterClickArea = isRTL
-          ? localPosition.dx > size.width - _gutterWidth
-          : localPosition.dx < _gutterWidth;
+          ? localPosition.dx > size.width - effectiveGutterWidth
+          : localPosition.dx < effectiveGutterWidth;
 
-      if (enableFolding && enableGutter && gutterClickArea) {
-        if (clickY < 0) return;
-        final clickedLine = _findVisibleLineByYPosition(clickY);
-
-        final foldRange = _getFoldRangeAtLine(clickedLine);
-        if (foldRange != null && foldRange.endIndex > foldRange.startIndex) {
-          _toggleFold(foldRange);
+      if (enableGutter && gutterClickArea) {
+        _isGutterPointer = true;
+        _selectionTimer?.cancel();
+        if (clickY >= 0 && enableFolding) {
+          final clickedLine = _findVisibleLineByYPosition(clickY);
+          final foldRange = _getFoldRangeAtLine(clickedLine);
+          if (foldRange != null && foldRange.endIndex > foldRange.startIndex) {
+            _toggleFold(foldRange);
+          }
         }
+        _clearCursorAndSelection();
         return;
       }
+      _isGutterPointer = false;
 
       if (controller.connection == null ||
           !controller.connection!.attached ||
@@ -11661,6 +11767,7 @@ class _CodeFieldRenderer extends RenderBox implements MouseTrackerAnnotation {
     }
 
     if (event is PointerMoveEvent && _dragStartOffset != null) {
+      if (_isGutterPointer) return;
       if (isMobile) {
         if (_draggingCHandle) {
           final handleRadius = (_lineHeight / 2).clamp(6.0, 12.0);
@@ -11762,6 +11869,21 @@ class _CodeFieldRenderer extends RenderBox implements MouseTrackerAnnotation {
     }
 
     if (event is PointerUpEvent || event is PointerCancelEvent) {
+      if (_isGutterPointer) {
+        _isGutterPointer = false;
+        _selectionTimer?.cancel();
+        _draggingStartHandle = false;
+        _draggingEndHandle = false;
+        _draggingCHandle = false;
+        _pointerDownPosition = null;
+        _dragStartOffset = null;
+        _isDragging = false;
+        _selectionActive = selectionActiveNotifier.value = false;
+        _longPressSelected = false;
+        markNeedsPaint();
+        return;
+      }
+
       // PointerCancelEvent 表示手势被系统抢占（如侧滑返回），不应触发选区变更或键盘
       // 只有真正的 PointerUpEvent（tap）才设置 collapsed selection
       if (event is PointerUpEvent &&
