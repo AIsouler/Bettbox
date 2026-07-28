@@ -10,7 +10,8 @@ import 'package:bett_box/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../profiles/scripts.dart' show showScriptCustomOptions;
+import '../profiles/scripts.dart'
+    show showGroupSwitchOptions, showScriptCustomOptions;
 import 'advanced_settings.dart';
 import 'setting.dart';
 import 'tab.dart';
@@ -36,7 +37,10 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
     final profileOverride = ref.watch(
       currentProfileProvider.select((p) => p?.useScriptOverride ?? false),
     );
-    final hasCustom = scriptOn && compatible && profileOverride;
+    final hasScriptCustom = scriptOn && compatible && profileOverride;
+    final hasGroupCustom =
+        !scriptOn && ref.read(currentProfileIdProvider) != null;
+    final hasCustom = hasScriptCustom || hasGroupCustom;
     return [
       if (_isTab)
         IconButton(
@@ -154,8 +158,14 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
 
   Future<void> _handleCustomOptions() async {
     final script = ref.read(scriptStateProvider).currentScript;
-    if (script == null) return;
-    await showScriptCustomOptions(context, ref, script: script);
+    if (script != null) {
+      await showScriptCustomOptions(context, ref, script: script);
+      return;
+    }
+    final profileId = ref.read(currentProfileIdProvider);
+    if (profileId != null) {
+      await showGroupSwitchOptions(context, ref, profileId: profileId);
+    }
   }
 
   @override
