@@ -5164,6 +5164,16 @@ class AppLocalizations {
     return Intl.message('Custom', name: 'custom', desc: '', args: []);
   }
 
+  /// `Custom Options`
+  String get customScriptOptions {
+    return Intl.message(
+      'Custom Options',
+      name: 'customScriptOptions',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Wakelock`
   String get wakelock {
     return Intl.message('Wakelock', name: 'wakelock', desc: '', args: []);

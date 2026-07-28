@@ -1,6 +1,7 @@
 import 'package:bett_box/common/common.dart';
 import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/models/common.dart';
+import 'package:bett_box/models/config.dart';
 import 'package:bett_box/models/widget.dart';
 import 'package:bett_box/providers/providers.dart';
 import 'package:bett_box/views/proxies/list.dart';
@@ -9,6 +10,7 @@ import 'package:bett_box/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../profiles/scripts.dart' show showScriptCustomOptions;
 import 'advanced_settings.dart';
 import 'setting.dart';
 import 'tab.dart';
@@ -26,6 +28,15 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
   bool _isTab = false;
 
   List<Widget> _buildActions() {
+    final (scriptOn, compatible) = ref.watch(
+      scriptStateProvider.select(
+        (s) => (s.currentId != null, s.currentScript?.isCompatibleWithBettbox ?? false),
+      ),
+    );
+    final profileOverride = ref.watch(
+      currentProfileProvider.select((p) => p?.useScriptOverride ?? false),
+    );
+    final hasCustom = scriptOn && compatible && profileOverride;
     return [
       if (_isTab)
         IconButton(
@@ -33,6 +44,12 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
             _proxiesTabKey.currentState?.scrollToGroupSelected();
           },
           icon: Icon(Icons.adjust, weight: 1),
+        ),
+      if (hasCustom)
+        IconButton(
+          onPressed: _handleCustomOptions,
+          icon: Icon(Icons.tune),
+          tooltip: appLocalizations.custom,
         ),
       CommonPopupBox(
         targetBuilder: (open) {
@@ -133,6 +150,12 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
 
   void _onSearch(String value) {
     ref.read(queryProvider.notifier).value = value;
+  }
+
+  Future<void> _handleCustomOptions() async {
+    final script = ref.read(scriptStateProvider).currentScript;
+    if (script == null) return;
+    await showScriptCustomOptions(context, ref, script: script);
   }
 
   @override

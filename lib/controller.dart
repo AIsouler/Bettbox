@@ -247,7 +247,11 @@ class AppController {
 
     final needReapply = await _needsSetupConfig();
     if (needReapply) {
-      await _quickSetupConfig();
+      final setupResult = await _quickSetupConfig();
+      if (setupResult != true) {
+        commonPrint.log('Fast start aborted: setupConfig failed');
+        return;
+      }
     }
 
     await globalState.handleStart([updateRunTime, updateTraffic]);
@@ -266,13 +270,26 @@ class AppController {
 
   void _backgroundLoad() {
     final version = ++_backgroundLoadVersion;
+    final generation = _coreGeneration;
 
     Future.microtask(() async {
       try {
-        final groups = await clashCore.getProxiesGroups();
+        List<Group> groups = [];
+        for (var attempt = 0; attempt < 3; attempt++) {
+          if (version != _backgroundLoadVersion) return;
+          if (generation != _coreGeneration) return;
+          if (attempt > 0) {
+            await Future.delayed(Duration(milliseconds: 200 * attempt));
+          }
+          groups = await clashCore.getProxiesGroups();
+          if (groups.isNotEmpty) break;
+        }
         if (version != _backgroundLoadVersion) return;
+        if (generation != _coreGeneration) return;
 
-        _ref.read(groupsProvider.notifier).value = groups;
+        if (groups.isNotEmpty) {
+          _ref.read(groupsProvider.notifier).value = groups;
+        }
 
         await Future.delayed(const Duration(seconds: 2));
         if (version != _backgroundLoadVersion) return;
@@ -607,11 +624,12 @@ class AppController {
   Future<void> _applyProfile() async {
     _invalidateCoreReads();
     _ref.read(delayDataSourceProvider.notifier).value = {};
-    await clashCore.requestGc();
+    unawaited(clashCore.requestGc());
     final configured = await _setupCoreConfig();
     if (!configured) return;
-    await updateGroups();
-    await updateProviders();
+    final providers = await clashCore.getExternalProviders();
+    _ref.read(providersProvider.notifier).value = providers;
+    await updateGroups(preloadedProviders: providers);
   }
 
   Future<void> applyProfile({bool silence = false}) {
@@ -722,8 +740,32 @@ class AppController {
     }
   }
 
-  Future<void> updateGroups() {
-    return _coreLifecycleLock.synchronized(_updateGroups);
+  Future<void> updateGroups({List<ExternalProvider>? preloadedProviders}) {
+    return _coreLifecycleLock.synchronized(
+      () => _updateGroups(preloadedProviders: preloadedProviders),
+    );
+  }
+
+  static const List<Duration> _kGroupRetryDelays = [
+    Duration.zero,
+    Duration(milliseconds: 50),
+    Duration(milliseconds: 150),
+    Duration(milliseconds: 400),
+  ];
+
+  Future<List<Group>> _retryGetProxiesGroups(
+    List<ExternalProvider>? preloadedProviders,
+  ) async {
+    for (var attempt = 0; attempt < _kGroupRetryDelays.length; attempt++) {
+      if (attempt > 0) {
+        await Future.delayed(_kGroupRetryDelays[attempt]);
+      }
+      final groups = await clashCore.getProxiesGroups(
+        preloadedProviders: preloadedProviders,
+      );
+      if (groups.isNotEmpty) return groups;
+    }
+    return [];
   }
 
   void _handleUpdateGroupsError(int generation, dynamic e) {
@@ -755,7 +797,9 @@ class AppController {
     });
   }
 
-  Future<void> _updateGroups() async {
+  Future<void> _updateGroups({
+    List<ExternalProvider>? preloadedProviders,
+  }) async {
     if (_isUpdatingGroups) {
       commonPrint.log('updateGroups already in progress, skipping');
       return;
@@ -766,12 +810,7 @@ class AppController {
     try {
       final currentGroups = _ref.read(groupsProvider);
 
-      final newGroups = await retry(
-        task: clashCore.getProxiesGroups,
-        retryIf: (res) => res.isEmpty,
-        maxAttempts: 4,
-        delay: const Duration(milliseconds: 666),
-      );
+      final newGroups = await _retryGetProxiesGroups(preloadedProviders);
 
       if (newGroups.isEmpty) {
         _handleUpdateGroupsError(

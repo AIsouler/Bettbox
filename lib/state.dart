@@ -945,6 +945,7 @@ class GlobalState {
         return await JavaScriptRuntimeManager.evaluateScript(
           currentScript.content,
           config,
+          customOptions: currentScript.customOptions,
         );
       } catch (e) {
         commonPrint.log('Script execution failed: $e');
