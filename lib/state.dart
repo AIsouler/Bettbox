@@ -856,8 +856,11 @@ class GlobalState {
       rawConfig.remove('rule');
     }
 
+    final scriptActive = config.scriptProps.currentScript != null &&
+        profile.useScriptOverride;
+
     final overrideData = profile.overrideData;
-    if (overrideData.enable && config.scriptProps.currentScript == null) {
+    if (overrideData.enable && !scriptActive) {
       if (overrideData.rule.type == OverrideRuleType.override) {
         rules = overrideData.runningRule;
       } else {
@@ -914,7 +917,7 @@ class GlobalState {
     }
 
     if (profile.groupSwitches.isNotEmpty &&
-        config.scriptProps.currentScript == null &&
+        !scriptActive &&
         rawConfig['proxy-groups'] is List) {
       final disabledGroups = profile.groupSwitches.entries
           .where((e) => !e.value)
