@@ -11488,21 +11488,6 @@ class _CodeFieldRenderer extends RenderBox implements MouseTrackerAnnotation {
     return false;
   }
 
-  void _clearCursorAndSelection() {
-    controller.selection = const TextSelection.collapsed(offset: -1);
-    controller.clearMultiCursors();
-    _selectionActive = selectionActiveNotifier.value = false;
-    _draggingStartHandle = false;
-    _draggingEndHandle = false;
-    _draggingCHandle = false;
-    _longPressSelected = false;
-    _selectionTimer?.cancel();
-    if (focusNode.hasFocus) {
-      focusNode.unfocus();
-    }
-    markNeedsPaint();
-  }
-
   @override
   bool hitTestSelf(Offset position) => true;
 
@@ -11586,7 +11571,6 @@ class _CodeFieldRenderer extends RenderBox implements MouseTrackerAnnotation {
             _toggleFold(foldRange);
           }
         }
-        _clearCursorAndSelection();
         return;
       }
       _isGutterPointer = false;

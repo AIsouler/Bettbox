@@ -39,7 +39,7 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
     );
     final hasScriptCustom = scriptOn && compatible && profileOverride;
     final hasGroupCustom =
-        !scriptOn && ref.read(currentProfileIdProvider) != null;
+        !hasScriptCustom && ref.read(currentProfileIdProvider) != null;
     final hasCustom = hasScriptCustom || hasGroupCustom;
     return [
       if (_isTab)
@@ -157,8 +157,10 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
   }
 
   Future<void> _handleCustomOptions() async {
+    final profileOverride =
+        ref.read(currentProfileProvider)?.useScriptOverride ?? false;
     final script = ref.read(scriptStateProvider).currentScript;
-    if (script != null) {
+    if (script != null && script.isCompatibleWithBettbox && profileOverride) {
       await showScriptCustomOptions(context, ref, script: script);
       return;
     }
