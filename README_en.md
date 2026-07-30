@@ -27,7 +27,7 @@ Bettbox stands for: Better Experience, Out of the box.
 ### 🛩️ Recommended Services
 ### Niche IEPL Dedicated Lines  丨  [BBXY (百变小樱)](https://www.bbxy01.com/v2/register?code=c09R)
 
-### Low-cost Direct Connections  丨  [Liangxinyun (良心云)](https://xn--9kqz23b19z.com/#/register?code=VTnrQYAj)  丨  [Yifen (一分机场)](https://xn--4gqx1hgtfdmt.com/#/register?code=AuCiXprV)  丨  [Peiqian (赔钱机场)](https://xn--mes358aby2apfg.com/register?code=z7TUZLmM&cover=sfw)
+### Direct Connections  丨  [Liangxinyun (良心云)](https://xn--9kqz23b19z.com/#/register?code=VTnrQYAj)  丨  [Yifen (一分机场)](https://xn--4gqx1hgtfdmt.com/#/register?code=AuCiXprV)  丨  [Peiqian (赔钱机场)](https://xn--mes358aby2apfg.com/register?code=z7TUZLmM&cover=sfw)
 
 **Notes**: ❚ ❚ Dedicated lines (with direct backup) offer higher stability, while direct connections supply huge bandwidth at low cost. Good community feedback. Note: These services are unaffiliated with Bettbox. Please assess performance on your own.
 
