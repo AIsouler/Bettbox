@@ -5699,24 +5699,19 @@ class AppLocalizations {
     );
   }
 
-  /// `Goroutines`
+  /// `Routines`
   String get activeGoroutines {
     return Intl.message(
-      'Goroutines',
+      'Routines',
       name: 'activeGoroutines',
       desc: '',
       args: [],
     );
   }
 
-  /// `Heap Objects`
+  /// `Objects`
   String get heapObjects {
-    return Intl.message(
-      'Heap Objects',
-      name: 'heapObjects',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Objects', name: 'heapObjects', desc: '', args: []);
   }
 
   /// `Profile & Rules`
@@ -5769,9 +5764,9 @@ class AppLocalizations {
     );
   }
 
-  /// `Geodata Use`
+  /// `GEO Load`
   String get geodataUse {
-    return Intl.message('Geodata Use', name: 'geodataUse', desc: '', args: []);
+    return Intl.message('GEO Load', name: 'geodataUse', desc: '', args: []);
   }
 
   /// `{count}`

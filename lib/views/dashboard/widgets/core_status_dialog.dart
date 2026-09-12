@@ -460,7 +460,7 @@ class _CoreStatusDialogState extends State<CoreStatusDialog> {
             ),
           ),
           child: Text(
-            'None',
+            appLocalizations.none,
             style: context.textTheme.labelSmall?.copyWith(
               color: context.colorScheme.onSurfaceVariant,
               fontSize: 11,

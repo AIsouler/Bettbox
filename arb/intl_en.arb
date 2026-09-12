@@ -701,13 +701,13 @@
   "allocatedMemory": "Allocated",
   "reclaimableMemory": "Reclaimable",
   "activeGoroutines": "Goroutines",
-  "heapObjects": "Heap Objects",
+  "heapObjects": "Objects",
   "profileAndRules": "Profile & Rules",
   "rulesCount": "Rules",
   "proxiesCount": "Proxies",
   "proxyGroupsCount": "Proxy Groups",
   "ruleProvidersCount": "Rule Providers",
   "proxyProvidersCount": "Proxy Providers",
-  "geodataUse": "Geodata Use",
+  "geodataUse": "GEO Load",
   "itemsCount": "{count}"
 }

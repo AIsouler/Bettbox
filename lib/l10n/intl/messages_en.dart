@@ -539,7 +539,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "geodataLoaderDesc": MessageLookupByLibrary.simpleMessage(
       "Use GEO low memory loader",
     ),
-    "geodataUse": MessageLookupByLibrary.simpleMessage("Geodata Use"),
+    "geodataUse": MessageLookupByLibrary.simpleMessage("GEO Load"),
     "geoipCode": MessageLookupByLibrary.simpleMessage("GeoIP Code"),
     "getOriginRules": MessageLookupByLibrary.simpleMessage("Original Rules"),
     "global": MessageLookupByLibrary.simpleMessage("Global"),
@@ -556,7 +556,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "healthCheckTimeoutDesc": MessageLookupByLibrary.simpleMessage(
       "Node health check timeout",
     ),
-    "heapObjects": MessageLookupByLibrary.simpleMessage("Heap Objects"),
+    "heapObjects": MessageLookupByLibrary.simpleMessage("Objects"),
     "highPriority": MessageLookupByLibrary.simpleMessage("High Priority"),
     "highPriorityDesc": MessageLookupByLibrary.simpleMessage(
       "Increase priority of main process and core process",

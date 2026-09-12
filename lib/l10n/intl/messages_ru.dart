@@ -81,7 +81,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "action_start": MessageLookupByLibrary.simpleMessage("Запуск/Остановка"),
     "action_tun": MessageLookupByLibrary.simpleMessage("Режим TUN"),
     "action_view": MessageLookupByLibrary.simpleMessage("Показать/Скрыть"),
-    "activeGoroutines": MessageLookupByLibrary.simpleMessage("Goroutines"),
+    "activeGoroutines": MessageLookupByLibrary.simpleMessage("Рутины"),
     "add": MessageLookupByLibrary.simpleMessage("Добавить"),
     "addProfile": MessageLookupByLibrary.simpleMessage("Добавить профиль"),
     "addRule": MessageLookupByLibrary.simpleMessage("Добавить правило"),
@@ -127,7 +127,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "ago": MessageLookupByLibrary.simpleMessage(" назад"),
     "agree": MessageLookupByLibrary.simpleMessage("Согласен"),
     "allApps": MessageLookupByLibrary.simpleMessage("Все приложения"),
-    "allocatedMemory": MessageLookupByLibrary.simpleMessage("Allocated"),
+    "allocatedMemory": MessageLookupByLibrary.simpleMessage("Выделено"),
     "allowBypass": MessageLookupByLibrary.simpleMessage("Разрешить обход VPN"),
     "allowBypassDesc": MessageLookupByLibrary.simpleMessage(
       "Некоторые приложения смогут обходить VPN",
@@ -554,7 +554,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "geodataLoaderDesc": MessageLookupByLibrary.simpleMessage(
       "Использовать загрузчик GEO с низким потреблением памяти",
     ),
-    "geodataUse": MessageLookupByLibrary.simpleMessage("Geodata Use"),
+    "geodataUse": MessageLookupByLibrary.simpleMessage("Загрузка GEO"),
     "geoipCode": MessageLookupByLibrary.simpleMessage("Код GeoIP"),
     "getOriginRules": MessageLookupByLibrary.simpleMessage(
       "Получить исходные правила",
@@ -575,7 +575,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "healthCheckTimeoutDesc": MessageLookupByLibrary.simpleMessage(
       "Таймаут проверки работоспособности узлов",
     ),
-    "heapObjects": MessageLookupByLibrary.simpleMessage("Heap Objects"),
+    "heapObjects": MessageLookupByLibrary.simpleMessage("Объекты кучи"),
     "highPriority": MessageLookupByLibrary.simpleMessage("Высокий приоритет"),
     "highPriorityDesc": MessageLookupByLibrary.simpleMessage(
       "Повысить приоритет процесса приложения и ядра",
@@ -958,11 +958,11 @@ class MessageLookup extends MessageLookupByLibrary {
       "Провинция / Город",
     ),
     "proxies": MessageLookupByLibrary.simpleMessage("Прокси"),
-    "proxiesCount": MessageLookupByLibrary.simpleMessage("Proxies"),
+    "proxiesCount": MessageLookupByLibrary.simpleMessage("Прокси"),
     "proxiesSetting": MessageLookupByLibrary.simpleMessage("Настройки прокси"),
     "proxyChains": MessageLookupByLibrary.simpleMessage("Цепочка прокси"),
     "proxyGroup": MessageLookupByLibrary.simpleMessage("Группа прокси"),
-    "proxyGroupsCount": MessageLookupByLibrary.simpleMessage("Proxy Groups"),
+    "proxyGroupsCount": MessageLookupByLibrary.simpleMessage("Группы"),
     "proxyNameserver": MessageLookupByLibrary.simpleMessage("DNS для прокси"),
     "proxyNameserverDesc": MessageLookupByLibrary.simpleMessage(
       "Используется для разрешения доменов прокси",
@@ -973,7 +973,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "proxyProviders": MessageLookupByLibrary.simpleMessage("Провайдеры прокси"),
     "proxyProvidersCount": MessageLookupByLibrary.simpleMessage(
-      "Proxy Providers",
+      "Наборы прокси",
     ),
     "pulse": MessageLookupByLibrary.simpleMessage("Пульсация"),
     "pureBlackMode": MessageLookupByLibrary.simpleMessage("Чистый чёрный"),
@@ -1002,7 +1002,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "rainbowScheme": MessageLookupByLibrary.simpleMessage("Радуга"),
     "realTimeSpeed": MessageLookupByLibrary.simpleMessage("Текущая скорость"),
-    "reclaimableMemory": MessageLookupByLibrary.simpleMessage("Reclaimable"),
+    "reclaimableMemory": MessageLookupByLibrary.simpleMessage("К возврату"),
     "recovery": MessageLookupByLibrary.simpleMessage("Восстановить"),
     "recoveryAll": MessageLookupByLibrary.simpleMessage("Все данные"),
     "recoveryProfiles": MessageLookupByLibrary.simpleMessage("Только профили"),
@@ -1072,11 +1072,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "rule": MessageLookupByLibrary.simpleMessage("По правилам"),
     "ruleName": MessageLookupByLibrary.simpleMessage("Имя правила"),
     "ruleProviders": MessageLookupByLibrary.simpleMessage("Провайдеры правил"),
-    "ruleProvidersCount": MessageLookupByLibrary.simpleMessage(
-      "Rule Providers",
-    ),
+    "ruleProvidersCount": MessageLookupByLibrary.simpleMessage("Наборы правил"),
     "ruleTarget": MessageLookupByLibrary.simpleMessage("Цель правила"),
-    "rulesCount": MessageLookupByLibrary.simpleMessage("Rules"),
+    "rulesCount": MessageLookupByLibrary.simpleMessage("Правила"),
     "runTime": MessageLookupByLibrary.simpleMessage("Время работы"),
     "runtimeConfig": MessageLookupByLibrary.simpleMessage(
       "Рантайм-конфигурация",
