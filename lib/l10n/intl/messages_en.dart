@@ -227,7 +227,16 @@ class MessageLookup extends MessageLookupByLibrary {
       "Show System Apps",
     ),
     "cancelSelectAll": MessageLookupByLibrary.simpleMessage("Deselect All"),
+    "categoryAi": MessageLookupByLibrary.simpleMessage("AI"),
+    "categoryAll": MessageLookupByLibrary.simpleMessage("All"),
+    "categoryChina": MessageLookupByLibrary.simpleMessage("China Direct"),
+    "categoryCrypto": MessageLookupByLibrary.simpleMessage("Crypto"),
+    "categoryDeveloper": MessageLookupByLibrary.simpleMessage("Developer"),
+    "categoryGaming": MessageLookupByLibrary.simpleMessage("Gaming Center"),
+    "categorySocial": MessageLookupByLibrary.simpleMessage("Social Platforms"),
+    "categoryStreaming": MessageLookupByLibrary.simpleMessage("Streaming"),
     "checkError": MessageLookupByLibrary.simpleMessage("Check Failed"),
+    "checkFailed": MessageLookupByLibrary.simpleMessage("Timeout"),
     "checkOrAddProfile": MessageLookupByLibrary.simpleMessage(
       "Please add a profile first",
     ),
@@ -507,6 +516,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "findProcessModeDesc": MessageLookupByLibrary.simpleMessage(
       "Enable process matching",
     ),
+    "flagged": MessageLookupByLibrary.simpleMessage("Flagged"),
     "fontFamily": MessageLookupByLibrary.simpleMessage("Font"),
     "forceDnsMapping": MessageLookupByLibrary.simpleMessage(
       "Force DNS Mapping",
@@ -634,6 +644,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "layout": MessageLookupByLibrary.simpleMessage("Layout"),
     "leftClickBehavior": MessageLookupByLibrary.simpleMessage("Left Click"),
     "light": MessageLookupByLibrary.simpleMessage("Light"),
+    "limitedUnlock": MessageLookupByLibrary.simpleMessage("Originals Only"),
     "lineWrap": MessageLookupByLibrary.simpleMessage("Wrap Lines"),
     "list": MessageLookupByLibrary.simpleMessage("List"),
     "listen": MessageLookupByLibrary.simpleMessage("Listen"),
@@ -662,6 +673,20 @@ class MessageLookup extends MessageLookupByLibrary {
     "loose": MessageLookupByLibrary.simpleMessage("Loose"),
     "manualRefreshIp": MessageLookupByLibrary.simpleMessage("Refresh IP"),
     "maximize": MessageLookupByLibrary.simpleMessage("Maximize"),
+    "mediaUnlock": MessageLookupByLibrary.simpleMessage("Connectivity Test"),
+    "mediaUnlockDetails": MessageLookupByLibrary.simpleMessage(
+      "Connectivity Test Details",
+    ),
+    "mediaUnlockPinnedSettings": MessageLookupByLibrary.simpleMessage(
+      "Pinned Platforms",
+    ),
+    "mediaUnlockPinnedSettingsDesc": MessageLookupByLibrary.simpleMessage(
+      "Select up to 4 items to pin on the widget",
+    ),
+    "mediaUnlockSelectLimit": MessageLookupByLibrary.simpleMessage(
+      "You can select up to 4 items",
+    ),
+    "mediaUnlocked": MessageLookupByLibrary.simpleMessage("Unlocked"),
     "memoryAndRuntime": MessageLookupByLibrary.simpleMessage(
       "Memory & Runtime",
     ),
@@ -758,6 +783,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "notSelectedTip": MessageLookupByLibrary.simpleMessage(
       "Current proxy group cannot be selected.",
     ),
+    "notUnlocked": MessageLookupByLibrary.simpleMessage("Not Unlocked"),
     "notificationHighPriority": MessageLookupByLibrary.simpleMessage(
       "High Priority",
     ),
@@ -1164,6 +1190,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Allow concurrent TCP connections",
     ),
     "testUrl": MessageLookupByLibrary.simpleMessage("Test URL"),
+    "testing": MessageLookupByLibrary.simpleMessage("Testing"),
     "textScale": MessageLookupByLibrary.simpleMessage("Text Scaling"),
     "theme": MessageLookupByLibrary.simpleMessage("Theme"),
     "themeColor": MessageLookupByLibrary.simpleMessage("Theme Color"),
@@ -1242,6 +1269,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Exclude handshake delays from testing",
     ),
     "unknown": MessageLookupByLibrary.simpleMessage("Unknown"),
+    "unlocked": MessageLookupByLibrary.simpleMessage("Completed"),
     "unnamed": MessageLookupByLibrary.simpleMessage("Unnamed"),
     "unpin": MessageLookupByLibrary.simpleMessage("Unpin"),
     "update": MessageLookupByLibrary.simpleMessage("Update"),

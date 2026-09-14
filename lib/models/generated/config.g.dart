@@ -22,6 +22,11 @@ _AppSettingProps _$AppSettingPropsFromJson(Map<String, dynamic> json) =>
           : desktopDashboardWidgetsSafeFromJson(
               json['desktopDashboardWidgets'] as List?,
             ),
+      pinnedMediaPlatforms: json['pinnedMediaPlatforms'] == null
+          ? defaultPinnedMediaPlatforms
+          : pinnedMediaPlatformsSafeFromJson(
+              json['pinnedMediaPlatforms'] as List?,
+            ),
       onlyStatisticsProxy: json['onlyStatisticsProxy'] as bool? ?? true,
       autoLaunch: json['autoLaunch'] as bool? ?? false,
       silentLaunch: json['silentLaunch'] as bool? ?? false,
@@ -60,6 +65,9 @@ Map<String, dynamic> _$AppSettingPropsToJson(_AppSettingProps instance) =>
           .toList(),
       'desktopDashboardWidgets': instance.desktopDashboardWidgets
           .map((e) => _$DashboardWidgetEnumMap[e]!)
+          .toList(),
+      'pinnedMediaPlatforms': instance.pinnedMediaPlatforms
+          .map((e) => _$MediaPlatformEnumMap[e]!)
           .toList(),
       'onlyStatisticsProxy': instance.onlyStatisticsProxy,
       'autoLaunch': instance.autoLaunch,
@@ -108,7 +116,62 @@ const _$DashboardWidgetEnumMap = {
   DashboardWidget.providersInfo: 'providersInfo',
   DashboardWidget.fcmStatus: 'fcmStatus',
   DashboardWidget.onlinePanel: 'onlinePanel',
+  DashboardWidget.mediaUnlock: 'mediaUnlock',
+  DashboardWidget.mediaUnlockSmall: 'mediaUnlockSmall',
   DashboardWidget.startButton: 'startButton',
+};
+
+const _$MediaPlatformEnumMap = {
+  MediaPlatform.openai: 'openai',
+  MediaPlatform.claude: 'claude',
+  MediaPlatform.gemini: 'gemini',
+  MediaPlatform.grok: 'grok',
+  MediaPlatform.openrouter: 'openrouter',
+  MediaPlatform.poe: 'poe',
+  MediaPlatform.suno: 'suno',
+  MediaPlatform.cloudflare: 'cloudflare',
+  MediaPlatform.perplexity: 'perplexity',
+  MediaPlatform.netflix: 'netflix',
+  MediaPlatform.disney: 'disney',
+  MediaPlatform.youtube: 'youtube',
+  MediaPlatform.spotify: 'spotify',
+  MediaPlatform.tiktok: 'tiktok',
+  MediaPlatform.bilibili: 'bilibili',
+  MediaPlatform.iqiyi: 'iqiyi',
+  MediaPlatform.crunchyroll: 'crunchyroll',
+  MediaPlatform.missav: 'missav',
+  MediaPlatform.ehentai: 'ehentai',
+  MediaPlatform.qqnews: 'qqnews',
+  MediaPlatform.alidnsprobe: 'alidnsprobe',
+  MediaPlatform.netease: 'netease',
+  MediaPlatform.bytedance: 'bytedance',
+  MediaPlatform.cloudflarecn: 'cloudflarecn',
+  MediaPlatform.reddit: 'reddit',
+  MediaPlatform.x: 'x',
+  MediaPlatform.discord: 'discord',
+  MediaPlatform.v2ex: 'v2ex',
+  MediaPlatform.medium: 'medium',
+  MediaPlatform.stackoverflow: 'stackoverflow',
+  MediaPlatform.quora: 'quora',
+  MediaPlatform.github: 'github',
+  MediaPlatform.wikipedia: 'wikipedia',
+  MediaPlatform.apple: 'apple',
+  MediaPlatform.onetrust: 'onetrust',
+  MediaPlatform.gitlab: 'gitlab',
+  MediaPlatform.npm: 'npm',
+  MediaPlatform.jsdelivr: 'jsdelivr',
+  MediaPlatform.cdnjs: 'cdnjs',
+  MediaPlatform.unpkg: 'unpkg',
+  MediaPlatform.nodejs: 'nodejs',
+  MediaPlatform.steam: 'steam',
+  MediaPlatform.epic: 'epic',
+  MediaPlatform.ubisoft: 'ubisoft',
+  MediaPlatform.humblebundle: 'humblebundle',
+  MediaPlatform.coinbase: 'coinbase',
+  MediaPlatform.okx: 'okx',
+  MediaPlatform.kraken: 'kraken',
+  MediaPlatform.cryptocom: 'cryptocom',
+  MediaPlatform.phantom: 'phantom',
 };
 
 _AccessControl _$AccessControlFromJson(Map<String, dynamic> json) =>

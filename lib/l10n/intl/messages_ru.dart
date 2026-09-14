@@ -81,7 +81,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "action_start": MessageLookupByLibrary.simpleMessage("Запуск/Остановка"),
     "action_tun": MessageLookupByLibrary.simpleMessage("Режим TUN"),
     "action_view": MessageLookupByLibrary.simpleMessage("Показать/Скрыть"),
-    "activeGoroutines": MessageLookupByLibrary.simpleMessage("Рутины"),
+    "activeGoroutines": MessageLookupByLibrary.simpleMessage("Goroutines"),
     "add": MessageLookupByLibrary.simpleMessage("Добавить"),
     "addProfile": MessageLookupByLibrary.simpleMessage("Добавить профиль"),
     "addRule": MessageLookupByLibrary.simpleMessage("Добавить правило"),
@@ -236,7 +236,18 @@ class MessageLookup extends MessageLookupByLibrary {
       "Показать системные приложения",
     ),
     "cancelSelectAll": MessageLookupByLibrary.simpleMessage("Отменить выбор"),
+    "categoryAi": MessageLookupByLibrary.simpleMessage("AI"),
+    "categoryAll": MessageLookupByLibrary.simpleMessage("Все"),
+    "categoryChina": MessageLookupByLibrary.simpleMessage("Китай (прямой)"),
+    "categoryCrypto": MessageLookupByLibrary.simpleMessage("Криптовалюта"),
+    "categoryDeveloper": MessageLookupByLibrary.simpleMessage(
+      "Для разработчиков",
+    ),
+    "categoryGaming": MessageLookupByLibrary.simpleMessage("Игровой центр"),
+    "categorySocial": MessageLookupByLibrary.simpleMessage("Сообщество"),
+    "categoryStreaming": MessageLookupByLibrary.simpleMessage("Стриминг"),
     "checkError": MessageLookupByLibrary.simpleMessage("Ошибка проверки"),
+    "checkFailed": MessageLookupByLibrary.simpleMessage("Timeout"),
     "checkOrAddProfile": MessageLookupByLibrary.simpleMessage(
       "Добавьте профиль",
     ),
@@ -522,6 +533,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "findProcessModeDesc": MessageLookupByLibrary.simpleMessage(
       "Включить определение процессов",
     ),
+    "flagged": MessageLookupByLibrary.simpleMessage("Помечен"),
     "fontFamily": MessageLookupByLibrary.simpleMessage("Шрифт"),
     "forceDnsMapping": MessageLookupByLibrary.simpleMessage(
       "Принудительное DNS-отображение",
@@ -575,7 +587,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "healthCheckTimeoutDesc": MessageLookupByLibrary.simpleMessage(
       "Таймаут проверки работоспособности узлов",
     ),
-    "heapObjects": MessageLookupByLibrary.simpleMessage("Объекты кучи"),
+    "heapObjects": MessageLookupByLibrary.simpleMessage("Objects"),
     "highPriority": MessageLookupByLibrary.simpleMessage("Высокий приоритет"),
     "highPriorityDesc": MessageLookupByLibrary.simpleMessage(
       "Повысить приоритет процесса приложения и ядра",
@@ -655,6 +667,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "layout": MessageLookupByLibrary.simpleMessage("Ширина"),
     "leftClickBehavior": MessageLookupByLibrary.simpleMessage("Действие ЛКМ"),
     "light": MessageLookupByLibrary.simpleMessage("Светлая"),
+    "limitedUnlock": MessageLookupByLibrary.simpleMessage("Только оригиналы"),
     "lineWrap": MessageLookupByLibrary.simpleMessage("Перенос строк"),
     "list": MessageLookupByLibrary.simpleMessage("Список"),
     "listen": MessageLookupByLibrary.simpleMessage("Прослушивание"),
@@ -681,6 +694,20 @@ class MessageLookup extends MessageLookupByLibrary {
     "loose": MessageLookupByLibrary.simpleMessage("Максимальная"),
     "manualRefreshIp": MessageLookupByLibrary.simpleMessage("Обновить IP"),
     "maximize": MessageLookupByLibrary.simpleMessage("Развернуть"),
+    "mediaUnlock": MessageLookupByLibrary.simpleMessage("Проверка доступности"),
+    "mediaUnlockDetails": MessageLookupByLibrary.simpleMessage(
+      "Детали проверки доступности",
+    ),
+    "mediaUnlockPinnedSettings": MessageLookupByLibrary.simpleMessage(
+      "Закрепленные сервисы",
+    ),
+    "mediaUnlockPinnedSettingsDesc": MessageLookupByLibrary.simpleMessage(
+      "Можно выбрать до 4 элементов для закрепления в виджете",
+    ),
+    "mediaUnlockSelectLimit": MessageLookupByLibrary.simpleMessage(
+      "Можно выбрать максимум 4 элемента",
+    ),
+    "mediaUnlocked": MessageLookupByLibrary.simpleMessage("Разблокировано"),
     "memoryAndRuntime": MessageLookupByLibrary.simpleMessage(
       "Память и среда выполнения",
     ),
@@ -781,6 +808,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "notSelectedTip": MessageLookupByLibrary.simpleMessage(
       "Невозможно выбрать эту группу прокси",
     ),
+    "notUnlocked": MessageLookupByLibrary.simpleMessage("Заблокировано"),
     "notificationHighPriority": MessageLookupByLibrary.simpleMessage(
       "Высокий приоритет",
     ),
@@ -1203,6 +1231,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Разрешить параллельные TCP-соединения",
     ),
     "testUrl": MessageLookupByLibrary.simpleMessage("URL теста"),
+    "testing": MessageLookupByLibrary.simpleMessage("Проверка"),
     "textScale": MessageLookupByLibrary.simpleMessage("Масштаб текста"),
     "theme": MessageLookupByLibrary.simpleMessage("Тема"),
     "themeColor": MessageLookupByLibrary.simpleMessage("Цвет темы"),
@@ -1293,6 +1322,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Убрать задержку рукопожатия и разбора",
     ),
     "unknown": MessageLookupByLibrary.simpleMessage("Неизвестно"),
+    "unlocked": MessageLookupByLibrary.simpleMessage("Завершено"),
     "unnamed": MessageLookupByLibrary.simpleMessage("Без имени"),
     "unpin": MessageLookupByLibrary.simpleMessage("Открепить"),
     "update": MessageLookupByLibrary.simpleMessage("Обновить"),

@@ -73,7 +73,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "action_start": MessageLookupByLibrary.simpleMessage("시작 / 정지"),
     "action_tun": MessageLookupByLibrary.simpleMessage("가상 어댑터 (TUN)"),
     "action_view": MessageLookupByLibrary.simpleMessage("표시 / 숨기기"),
-    "activeGoroutines": MessageLookupByLibrary.simpleMessage("코루틴수"),
+    "activeGoroutines": MessageLookupByLibrary.simpleMessage("Goroutines"),
     "add": MessageLookupByLibrary.simpleMessage("추가"),
     "addProfile": MessageLookupByLibrary.simpleMessage("프로필 추가"),
     "addRule": MessageLookupByLibrary.simpleMessage("규칙 추가"),
@@ -186,7 +186,16 @@ class MessageLookup extends MessageLookupByLibrary {
       "시스템 앱 제외 해제",
     ),
     "cancelSelectAll": MessageLookupByLibrary.simpleMessage("전체 선택 해제"),
+    "categoryAi": MessageLookupByLibrary.simpleMessage("AI"),
+    "categoryAll": MessageLookupByLibrary.simpleMessage("전체"),
+    "categoryChina": MessageLookupByLibrary.simpleMessage("중국 다이렉트"),
+    "categoryCrypto": MessageLookupByLibrary.simpleMessage("암호화폐"),
+    "categoryDeveloper": MessageLookupByLibrary.simpleMessage("개발자"),
+    "categoryGaming": MessageLookupByLibrary.simpleMessage("게임 센터"),
+    "categorySocial": MessageLookupByLibrary.simpleMessage("커뮤니티 플랫폼"),
+    "categoryStreaming": MessageLookupByLibrary.simpleMessage("스트리밍"),
     "checkError": MessageLookupByLibrary.simpleMessage("확인 실패"),
+    "checkFailed": MessageLookupByLibrary.simpleMessage("Timeout"),
     "checkOrAddProfile": MessageLookupByLibrary.simpleMessage(
       "먼저 프로필을 추가해 주세요",
     ),
@@ -416,6 +425,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "findProcessModeDesc": MessageLookupByLibrary.simpleMessage(
       "활성화 시 프로세스 매칭 검색 가능",
     ),
+    "flagged": MessageLookupByLibrary.simpleMessage("표시됨"),
     "fontFamily": MessageLookupByLibrary.simpleMessage("글꼴"),
     "forceDnsMapping": MessageLookupByLibrary.simpleMessage("강제 DNS 매핑"),
     "forceDnsMappingDesc": MessageLookupByLibrary.simpleMessage(
@@ -453,7 +463,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "healthCheckTimeoutDesc": MessageLookupByLibrary.simpleMessage(
       "노드 상태 점검 타임아웃 시간",
     ),
-    "heapObjects": MessageLookupByLibrary.simpleMessage("힙 객체"),
+    "heapObjects": MessageLookupByLibrary.simpleMessage("Objects"),
     "highPriority": MessageLookupByLibrary.simpleMessage("높은 우선순위"),
     "highPriorityDesc": MessageLookupByLibrary.simpleMessage(
       "메인 프로세스 및 코어 프로세스 우선순위 상향",
@@ -515,6 +525,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "layout": MessageLookupByLibrary.simpleMessage("레이아웃"),
     "leftClickBehavior": MessageLookupByLibrary.simpleMessage("좌클릭"),
     "light": MessageLookupByLibrary.simpleMessage("라이트"),
+    "limitedUnlock": MessageLookupByLibrary.simpleMessage("오리지널만"),
     "lineWrap": MessageLookupByLibrary.simpleMessage("자동 줄바꿈"),
     "list": MessageLookupByLibrary.simpleMessage("목록"),
     "listen": MessageLookupByLibrary.simpleMessage("수신"),
@@ -535,6 +546,18 @@ class MessageLookup extends MessageLookupByLibrary {
     "loose": MessageLookupByLibrary.simpleMessage("여유있게"),
     "manualRefreshIp": MessageLookupByLibrary.simpleMessage("IP 다시 가져오기"),
     "maximize": MessageLookupByLibrary.simpleMessage("최대화"),
+    "mediaUnlock": MessageLookupByLibrary.simpleMessage("연결성 테스트"),
+    "mediaUnlockDetails": MessageLookupByLibrary.simpleMessage("연결성 테스트 상세"),
+    "mediaUnlockPinnedSettings": MessageLookupByLibrary.simpleMessage(
+      "고정 표시 설정",
+    ),
+    "mediaUnlockPinnedSettingsDesc": MessageLookupByLibrary.simpleMessage(
+      "위젯에 고정 표시할 항목을 최대 4개 선택할 수 있습니다",
+    ),
+    "mediaUnlockSelectLimit": MessageLookupByLibrary.simpleMessage(
+      "최대 4개 항목까지 선택할 수 있습니다",
+    ),
+    "mediaUnlocked": MessageLookupByLibrary.simpleMessage("잠금 해제됨"),
     "memoryAndRuntime": MessageLookupByLibrary.simpleMessage("메모리 및 런타임"),
     "memoryInfo": MessageLookupByLibrary.simpleMessage("메모리 정보"),
     "memoryInfoDesc": MessageLookupByLibrary.simpleMessage(
@@ -615,6 +638,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "notSelectedTip": MessageLookupByLibrary.simpleMessage(
       "현재 프록시 그룹은 선택할 수 없습니다",
     ),
+    "notUnlocked": MessageLookupByLibrary.simpleMessage("잠김"),
     "notificationHighPriority": MessageLookupByLibrary.simpleMessage("높은 우선순위"),
     "notificationHighPriorityDesc": MessageLookupByLibrary.simpleMessage(
       "현재 알림 표시줄을 포그라운드 높은 우선순위로 조정",
@@ -937,6 +961,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "TCP 동시 다중 연결 허용",
     ),
     "testUrl": MessageLookupByLibrary.simpleMessage("테스트 URL"),
+    "testing": MessageLookupByLibrary.simpleMessage("검사 중"),
     "textScale": MessageLookupByLibrary.simpleMessage("텍스트 배율"),
     "theme": MessageLookupByLibrary.simpleMessage("테마"),
     "themeColor": MessageLookupByLibrary.simpleMessage("테마 색상"),
@@ -1003,6 +1028,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "핸드셰이크 등 추가 지연 시간 제외",
     ),
     "unknown": MessageLookupByLibrary.simpleMessage("알 수 없음"),
+    "unlocked": MessageLookupByLibrary.simpleMessage("완료됨"),
     "unnamed": MessageLookupByLibrary.simpleMessage("제목 없음"),
     "unpin": MessageLookupByLibrary.simpleMessage("고정 해제"),
     "update": MessageLookupByLibrary.simpleMessage("업데이트"),
