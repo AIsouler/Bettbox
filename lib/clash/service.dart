@@ -24,7 +24,6 @@ class ClashService extends ClashHandlerInterface {
   bool _isDestroying = false;
 
   Process? process;
-  bool _coreStartedByHelper = false;
 
   Completer<void>? _restartCompleter;
 
@@ -148,11 +147,8 @@ class ClashService extends ClashHandlerInterface {
           return -1;
         },
       );
-    } else if (system.isWindows && _coreStartedByHelper) {
-      await helperClient.stopCore();
     }
     process = null;
-    _coreStartedByHelper = false;
 
     socketCompleter = Completer();
 
@@ -170,20 +166,17 @@ class ClashService extends ClashHandlerInterface {
     environment['SAFE_PATHS'] = homeDirPath;
 
     if (system.isWindows) {
-      final isHealthy = await windows?.isHelperHealthy() ?? false;
-      if (isHealthy) {
+      final serviceOk = await windows?.registerService() ?? false;
+      if (serviceOk) {
         final started = await helperClient.startCore(
           corePath: appPath.corePath,
           arg: arg,
           homeDir: homeDirPath,
         );
         if (started) {
-          _coreStartedByHelper = true;
           await _waitForCoreReady();
           isStarting = false;
-          if (system.isWindows &&
-              globalState.hasConfig &&
-              globalState.config.appSetting.enableHighPriority) {
+          if (system.isWindows && globalState.config.appSetting.enableHighPriority) {
             unawaited(
               helperClient
                   .setProcessPriority(
@@ -214,9 +207,7 @@ class ClashService extends ClashHandlerInterface {
     });
     await _waitForCoreReady();
     isStarting = false;
-    if (system.isWindows &&
-        globalState.hasConfig &&
-        globalState.config.appSetting.enableHighPriority) {
+    if (system.isWindows && globalState.config.appSetting.enableHighPriority) {
       unawaited(
         helperClient
             .setProcessPriority('${AppIdentity.coreExecutableName}.exe', true)
@@ -293,13 +284,12 @@ class ClashService extends ClashHandlerInterface {
   @override
   shutdown() async {
     _isDestroying = true;
-    if (system.isWindows && _coreStartedByHelper) {
+    if (system.isWindows) {
       await helperClient.stopCore();
     }
     await _destroySocket();
     process?.kill();
     process = null;
-    _coreStartedByHelper = false;
     return true;
   }
 
