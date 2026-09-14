@@ -43,16 +43,20 @@ class Request {
     final encodings =
         headers['content-encoding']?.map((e) => e.toLowerCase()).toList() ?? [];
     final encodingStr = encodings.join(', ');
-    final wantGzip = encodingStr.contains('gzip');
-    final wantDeflate = encodingStr.contains('deflate');
+    var wantGzip = encodingStr.contains('gzip');
+    var wantDeflate = encodingStr.contains('deflate');
 
     var current = bytes;
     for (var i = 0; i < 4; i++) {
       final isGzipMagic =
           current.length >= 2 && current[0] == 0x1f && current[1] == 0x8b;
       if (wantGzip || isGzipMagic) {
+        if (!isGzipMagic) {
+          break;
+        }
         try {
           current = Uint8List.fromList(gzip.decode(current));
+          wantGzip = false;
           continue;
         } catch (_) {
           break;
@@ -61,9 +65,18 @@ class Request {
       if (wantDeflate) {
         try {
           current = Uint8List.fromList(zlib.decode(current));
+          wantDeflate = false;
           continue;
         } catch (_) {
-          break;
+          try {
+            current = Uint8List.fromList(
+              ZLibDecoder(raw: true).convert(current),
+            );
+            wantDeflate = false;
+            continue;
+          } catch (_) {
+            break;
+          }
         }
       }
       break;
@@ -209,9 +222,7 @@ class Request {
     ];
   }
 
-  final List<String> _domesticIpSources = [
-    'https://myip.ipip.net/json',
-  ];
+  final List<String> _domesticIpSources = ['https://myip.ipip.net/json'];
 
   final List<String> _cloudflareIpInfoSources = [
     'https://ip.sb/cdn-cgi/trace',
@@ -284,15 +295,18 @@ class Request {
           .then((res) {
             if (res.statusCode == HttpStatus.ok && res.data != null) {
               try {
-                final text = utf8.decode(
-                  _decompressIfNeeded(_bytesFromResponse(res), res.headers),
-                  allowMalformed: true,
-                ).trim();
+                final text = utf8
+                    .decode(
+                      _decompressIfNeeded(_bytesFromResponse(res), res.headers),
+                      allowMalformed: true,
+                    )
+                    .trim();
                 IpInfo? ipInfo;
                 if (text.startsWith('{')) {
                   final jsonMap = json.decode(text);
                   if (jsonMap is Map<String, dynamic>) {
-                    if (url.contains('ip-api.com') && jsonMap['status'] != 'success') {
+                    if (url.contains('ip-api.com') &&
+                        jsonMap['status'] != 'success') {
                       ipInfo = null;
                     } else {
                       ipInfo = IpInfo.fromJson(jsonMap);
@@ -365,7 +379,6 @@ class Request {
     );
   }
 
-  // 备用 Cloudflare 探测接口
   Future<Result<IpInfo?>> checkIpCloudflare({
     CancelToken? cancelToken,
     Duration? timeout,
@@ -377,7 +390,11 @@ class Request {
     CancelToken? cancelToken,
     Duration? timeout,
   }) async {
-    return _checkIpFromSources(_cloudflareDomesticIpSources, cancelToken, timeout);
+    return _checkIpFromSources(
+      _cloudflareDomesticIpSources,
+      cancelToken,
+      timeout,
+    );
   }
 
   static const _ipCacheKey = 'ip_detail_cache';
@@ -456,10 +473,7 @@ class Request {
         }
       }
 
-      validEntries[cacheKey] = {
-        'timestamp': now,
-        'data': ipInfo.toJson(),
-      };
+      validEntries[cacheKey] = {'timestamp': now, 'data': ipInfo.toJson()};
 
       await prefs?.setString(_ipCacheKey, json.encode(validEntries));
     } catch (_) {}

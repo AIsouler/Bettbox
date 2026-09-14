@@ -2150,9 +2150,9 @@ class AppController {
           final vpnPropsJson = configJson['vpnProps'];
           if (vpnPropsJson != null && vpnPropsJson is Map) {
             final accessControlPropsJson = vpnPropsJson['accessControlProps'];
-            if (accessControlPropsJson != null) {
+            if (accessControlPropsJson != null && accessControlPropsJson is Map) {
               accessControl = AccessControl.fromJson(
-                accessControlPropsJson as Map<String, dynamic>,
+                Map<String, dynamic>.from(accessControlPropsJson),
               );
             }
           }

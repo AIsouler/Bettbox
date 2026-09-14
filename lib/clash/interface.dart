@@ -153,7 +153,7 @@ abstract class ClashHandlerInterface with ClashInterface {
       } else if (T == bool) {
         mDefaultValue = false;
       } else if (T == Map) {
-        mDefaultValue = {};
+        mDefaultValue = <String, dynamic>{};
       }
     }
 
@@ -253,7 +253,7 @@ abstract class ClashHandlerInterface with ClashInterface {
       method: ActionMethod.getConfig,
       data: json.encode(params),
       timeout: const Duration(seconds: 60),
-      defaultValue: Result.success({}),
+      defaultValue: Result.success(<String, dynamic>{}),
     );
     return res;
   }

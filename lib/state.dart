@@ -609,7 +609,7 @@ class GlobalState {
   }) async {
     final targetProfile = profile ?? config.currentProfile;
     if (targetProfile == null) {
-      return {};
+      return <String, dynamic>{};
     }
     final profileId = targetProfile.id;
     final configMap = await getProfileConfig(profileId);
@@ -667,7 +667,7 @@ class GlobalState {
     rawConfig['allow-lan'] = realPatchConfig.allowLan;
     rawConfig['mode'] = realPatchConfig.mode.name;
     if (rawConfig['tun'] == null) {
-      rawConfig['tun'] = {};
+      rawConfig['tun'] = <String, dynamic>{};
     }
     rawConfig['tun']['enable'] = realPatchConfig.tun.enable;
     rawConfig['tun']['device'] = realPatchConfig.tun.device;
@@ -699,7 +699,7 @@ class GlobalState {
       }
     }
     if (rawConfig['profile'] == null) {
-      rawConfig['profile'] = {};
+      rawConfig['profile'] = <String, dynamic>{};
     }
     if (rawConfig['proxy-providers'] != null) {
       final proxyProviders = rawConfig['proxy-providers'] as Map;
@@ -744,7 +744,7 @@ class GlobalState {
     rawConfig['geox-url'] = realPatchConfig.geoXUrl.toJson();
     rawConfig['global-ua'] = realPatchConfig.globalUa;
     if (rawConfig['hosts'] == null) {
-      rawConfig['hosts'] = {};
+      rawConfig['hosts'] = <String, dynamic>{};
     }
     for (final host in realPatchConfig.hosts.entries) {
       rawConfig['hosts'][host.key] = host.value.splitByMultipleSeparators;
@@ -756,7 +756,7 @@ class GlobalState {
     ];
 
     if (rawConfig['dns'] == null) {
-      rawConfig['dns'] = {};
+      rawConfig['dns'] = <String, dynamic>{};
     }
     final isEnableDns = rawConfig['dns']['enable'] == true;
     final overrideDns = globalState.config.overrideDns;
@@ -774,7 +774,7 @@ class GlobalState {
         false => realPatchConfig.dns,
       };
       rawConfig['dns'] = dns.toJson();
-      rawConfig['dns']['nameserver-policy'] = {};
+      rawConfig['dns']['nameserver-policy'] = <String, dynamic>{};
       for (final entry in dns.nameserverPolicy.entries) {
         rawConfig['dns']['nameserver-policy'][entry.key] =
             entry.value.splitByMultipleSeparators;
@@ -1063,7 +1063,7 @@ class GlobalState {
 
       if (profile != null && !profile.useScriptOverride) return config;
 
-      config['proxy-providers'] ??= {};
+      config['proxy-providers'] ??= <String, dynamic>{};
 
       try {
         return await JavaScriptRuntimeManager.evaluateScript(
