@@ -204,6 +204,7 @@ extension ProfileExtension on Profile {
         }
       } catch (_) {}
     }
+    content = utils.patchYamlConfig(content);
     if (validate) {
       final message =
           await clashCore.validateConfig(content, ageSecretKey: ageSecretKey);
@@ -238,6 +239,7 @@ extension ProfileExtension on Profile {
         }
       } catch (_) {}
     }
+    content = utils.patchYamlConfig(content);
     final message =
         await clashCore.validateConfig(content, ageSecretKey: ageSecretKey);
     if (message.isNotEmpty) {

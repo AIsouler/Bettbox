@@ -622,13 +622,24 @@ class Utils {
     return secret.toString();
   }
 
+  String patchYamlConfig(String content) {
+    final shortIdExp = RegExp(
+      r'(?<=\bshort-id\s*:\s*)(?!["\x27{\[\s])([0-9a-fA-F]+)(?=\s*(?:$|[,\s#\}]))',
+      multiLine: true,
+    );
+    return content.replaceAllMapped(shortIdExp, (match) {
+      return '"${match.group(1)}"';
+    });
+  }
+
   String patchValidateConfig(String content) {
+    final patched = patchYamlConfig(content);
     final regExp = RegExp(
       r'^(\s*geodata-mode\s*:\s*)(true|\x27true\x27|\x22true\x22)(.*)$',
       multiLine: true,
       caseSensitive: false,
     );
-    return content.replaceAllMapped(regExp, (match) {
+    return patched.replaceAllMapped(regExp, (match) {
       return '${match.group(1)}false${match.group(3)}';
     });
   }

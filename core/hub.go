@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"regexp"
 	"runtime"
 	"runtime/debug"
 	"sort"
@@ -99,6 +100,12 @@ func handleShutdown() bool {
 	return true
 }
 
+var shortIDRegexp = regexp.MustCompile(`(?m)(short-id\s*:\s*)([0-9a-fA-F]+)(\s*(?:$|[,\s#\}]))`)
+
+func patchYamlShortID(data []byte) []byte {
+	return shortIDRegexp.ReplaceAll(data, []byte(`${1}"${2}"${3}`))
+}
+
 func handleValidateConfig(params *ValidateConfigParams) string {
 	ageMutex.Lock()
 	defer ageMutex.Unlock()
@@ -108,7 +115,8 @@ func handleValidateConfig(params *ValidateConfigParams) string {
 		defer age.SetGlobalSecretKeys()
 	}
 
-	_, err := config.Parse([]byte(params.Data))
+	data := patchYamlShortID([]byte(params.Data))
+	_, err := config.Parse(data)
 	if err != nil {
 		return err.Error()
 	}
@@ -676,6 +684,7 @@ func handleGetConfig(params *GetConfigParams) (*config.RawConfig, error) {
 	if err != nil {
 		return nil, err
 	}
+	bytes = patchYamlShortID(bytes)
 	prof, err := config.UnmarshalRawConfig(bytes)
 	if err != nil {
 		return nil, err

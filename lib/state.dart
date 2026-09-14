@@ -1002,7 +1002,7 @@ class GlobalState {
         final realityOpts = proxy['reality-opts'];
         if (realityOpts is Map) {
           final shortId = realityOpts['short-id'];
-          if (shortId is num) {
+          if (shortId is int) {
             realityOpts['short-id'] = shortId.toString();
           }
         }
