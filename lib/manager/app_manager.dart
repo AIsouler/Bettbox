@@ -53,6 +53,10 @@ class _AppStateManagerState extends ConsumerState<AppStateManager>
     ref.listenManual(checkIpProvider, (prev, next) {
       if (next.b && (prev?.a != next.a)) {
         detectionState.startCheck();
+      }
+    });
+    ref.listenManual(checkIpNumProvider, (prev, next) {
+      if (prev != next) {
         mediaUnlockState.tryStartCheck();
       }
     });
@@ -183,6 +187,7 @@ class _AppStateManagerState extends ConsumerState<AppStateManager>
       if (hasDetection) {
         detectionState.tryStartCheck();
       }
+      mediaUnlockState.tryStartCheck();
     }
     if (state == AppLifecycleState.resumed && system.isAndroid) {
       final hidden = ref.read(appSettingProvider.select((s) => s.hidden));

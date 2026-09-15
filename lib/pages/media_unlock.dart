@@ -80,23 +80,6 @@ class _MediaUnlockPageState extends ConsumerState<MediaUnlockPage> {
     );
   }
 
-  Color _getStatusColor(MediaUnlockStatus status, BuildContext context) {
-    switch (status) {
-      case MediaUnlockStatus.unlocked:
-        return const Color(0xFF4CAF50);
-      case MediaUnlockStatus.limited:
-      case MediaUnlockStatus.flagged:
-        return Colors.orange;
-      case MediaUnlockStatus.blocked:
-      case MediaUnlockStatus.failed:
-        return context.colorScheme.error;
-      case MediaUnlockStatus.testing:
-        return context.colorScheme.primary;
-      case MediaUnlockStatus.unknown:
-        return context.colorScheme.outline;
-    }
-  }
-
   String _getStatusText(MediaUnlockStatus status, [MediaPlatform? platform]) {
     switch (status) {
       case MediaUnlockStatus.unlocked:
@@ -146,7 +129,7 @@ class _MediaUnlockPageState extends ConsumerState<MediaUnlockPage> {
         colorFilter: ColorFilter.mode(
           isBrandColor
               ? context.colorScheme.onSurface
-              : _getStatusColor(status, context),
+              : status.statusColor(context.colorScheme),
           BlendMode.srcIn,
         ),
       );
@@ -383,7 +366,7 @@ class _MediaUnlockPageState extends ConsumerState<MediaUnlockPage> {
         (isTesting ? MediaUnlockStatus.testing : MediaUnlockStatus.unknown);
     final color = isTesting
         ? context.colorScheme.primary
-        : _getStatusColor(status, context);
+        : status.statusColor(context.colorScheme);
     final statusText = isTesting
         ? appLocalizations.testing
         : _getStatusText(status, platform);
@@ -727,7 +710,7 @@ class _MediaUnlockPageState extends ConsumerState<MediaUnlockPage> {
               ..._buildStatusSectionSlivers(
                 title: appLocalizations.other,
                 icon: Icons.help_outline_rounded,
-                color: Colors.orange,
+                color: mediaUnlockOrange,
                 platforms: otherList,
                 state: state,
               ),
@@ -736,7 +719,7 @@ class _MediaUnlockPageState extends ConsumerState<MediaUnlockPage> {
                     ? appLocalizations.mediaUnlocked
                     : appLocalizations.unlocked,
                 icon: Icons.check_circle_outline_rounded,
-                color: const Color(0xFF4CAF50),
+                color: mediaUnlockGreen,
                 platforms: unlockedList,
                 state: state,
               ),

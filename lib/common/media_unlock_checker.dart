@@ -25,13 +25,15 @@ class MediaUnlockChecker {
     if (!_useUnifiedDelay) return initialLatency;
     final sw = Stopwatch()..start();
     try {
-      await dio.head<void>(
-        url,
-        options: Options(
-          sendTimeout: const Duration(seconds: 2),
-          receiveTimeout: const Duration(seconds: 2),
-        ),
-      );
+      await dio
+          .head<void>(
+            url,
+            options: Options(
+              sendTimeout: const Duration(seconds: 2),
+              receiveTimeout: const Duration(seconds: 2),
+            ),
+          )
+          .timeout(const Duration(seconds: 3));
       final delay = sw.elapsedMilliseconds;
       return delay > 0 ? delay : initialLatency;
     } catch (_) {
@@ -44,6 +46,7 @@ class MediaUnlockChecker {
       BaseOptions(
         connectTimeout: _timeout,
         receiveTimeout: _timeout,
+        sendTimeout: _timeout,
         headers: {
           'User-Agent': browserUa,
           'Accept-Language': 'en-US,en;q=0.9',
@@ -286,7 +289,14 @@ class MediaUnlockChecker {
     final sw = Stopwatch()..start();
     final dio = _createDio(followRedirects: false);
     try {
-      final res1 = await dio.get<void>('https://www.netflix.com/title/70143836');
+      final res1 = await dio.get<void>(
+        'https://www.netflix.com/title/70143836',
+        options: Options(
+          responseType: ResponseType.plain,
+          receiveTimeout: const Duration(seconds: 4),
+          sendTimeout: const Duration(seconds: 4),
+        ),
+      );
       final loc1 = res1.headers.value('location') ?? '';
       final regionMatch = RegExp(r'netflix\.com/([a-z]{2})(?:-[a-z]{2})?/title/').firstMatch(loc1);
       final MediaUnlockStatus status;
@@ -297,7 +307,14 @@ class MediaUnlockChecker {
       } else if (res1.statusCode == 200) {
         status = MediaUnlockStatus.unlocked;
       } else {
-        final res2 = await dio.get<void>('https://www.netflix.com/title/81280792');
+        final res2 = await dio.get<void>(
+          'https://www.netflix.com/title/81280792',
+          options: Options(
+            responseType: ResponseType.plain,
+            receiveTimeout: const Duration(seconds: 4),
+            sendTimeout: const Duration(seconds: 4),
+          ),
+        );
         final loc2 = res2.headers.value('location') ?? '';
         final regionMatch2 = RegExp(r'netflix\.com/([a-z]{2})(?:-[a-z]{2})?/title/').firstMatch(loc2);
         region = regionMatch2?.group(1)?.toUpperCase() ?? region;
@@ -329,7 +346,14 @@ class MediaUnlockChecker {
     final sw = Stopwatch()..start();
     final dio = _createDio(followRedirects: true);
     try {
-      final res = await dio.get<String>('https://www.disneyplus.com/');
+      final res = await dio.get<void>(
+        'https://www.disneyplus.com/',
+        options: Options(
+          responseType: ResponseType.plain,
+          receiveTimeout: const Duration(seconds: 4),
+          sendTimeout: const Duration(seconds: 4),
+        ),
+      );
       final loc = res.headers.value('physical-location') ?? res.headers.value('region');
       final region = (loc != null && loc.isNotEmpty) ? loc.toUpperCase() : null;
       final MediaUnlockStatus status;
@@ -444,28 +468,28 @@ class MediaUnlockChecker {
     final sw = Stopwatch()..start();
     final dio = _createDio(followRedirects: true);
     try {
-      final res = await dio.post<dynamic>(
-        'https://spclient.wg.spotify.com/signup/public/v1/account',
-        data:
-            'birth_day=11&birth_month=11&birth_year=2000&collect_personal_info=undefined&creation_flow=&creation_point=https%3A%2F%2Fwww.spotify.com%2Fhk-en%2F&displayname=BettboxUser&gender=male&iagree=1&key=a1e486e2729f46d6bb368d6b2bcda326&platform=www&referrer=&send-email=0&thirdpartyemail=0&identifier_token=AgE6YTvEzkReHNfJpO114514',
+      final res = await dio.get<String>(
+        'https://www.spotify.com/signup',
         options: Options(
-          contentType: Headers.formUrlEncodedContentType,
+          responseType: ResponseType.plain,
+          receiveTimeout: const Duration(seconds: 4),
+          sendTimeout: const Duration(seconds: 4),
         ),
       );
-      final json = _parseJson(res.data);
-      final statusNum = json?['status'];
-      final country = json?['country']?.toString();
-      final isLaunched = json?['is_country_launched'];
+      final finalUrl = res.realUri.toString();
+      final body = res.data ?? '';
+      final geoMatch = RegExp(r'geoCountry"?\s*:\s*"([A-Z]{2})"').firstMatch(body);
+      final pathMatch = RegExp(r'spotify\.com/([a-z]{2})(?:-[a-z]{2})?/').firstMatch(finalUrl);
+      final rawRegion = geoMatch?.group(1) ?? pathMatch?.group(1)?.toUpperCase();
+      final region = rawRegion != null ? utils.normalizeRegion(rawRegion) : null;
 
       final MediaUnlockStatus status;
-      if (statusNum == 320 || statusNum == 120) {
+      if (finalUrl.contains('why-not-available')) {
         status = MediaUnlockStatus.blocked;
-      } else if (statusNum == 311) {
-        status = isLaunched == false
-            ? MediaUnlockStatus.limited
-            : MediaUnlockStatus.unlocked;
-      } else if (res.statusCode == 200) {
+      } else if (finalUrl.contains('signup') && (res.statusCode == 200 || (res.statusCode ?? 0) < 400)) {
         status = MediaUnlockStatus.unlocked;
+      } else if (res.statusCode == 403 || res.statusCode == 429) {
+        status = MediaUnlockStatus.blocked;
       } else {
         status = (res.statusCode ?? 0) < 400
             ? MediaUnlockStatus.unlocked
@@ -474,15 +498,13 @@ class MediaUnlockChecker {
 
       final latency = await _measureLatency(
         dio,
-        'https://spclient.wg.spotify.com/signup/public/v1/account',
+        'https://www.spotify.com/',
         sw.elapsedMilliseconds,
       );
       return MediaUnlockResult(
         platform: MediaPlatform.spotify,
         status: status,
-        region: country != null && country.isNotEmpty
-            ? utils.normalizeRegion(country)
-            : null,
+        region: region,
         latency: latency,
       );
     } catch (_) {
@@ -884,7 +906,7 @@ class MediaUnlockChecker {
   }
 
   Future<MediaUnlockResult> checkPlatform(MediaPlatform platform) {
-    return switch (platform) {
+    final checkFuture = switch (platform) {
       MediaPlatform.openai =>
         _checkCloudflareTrace(MediaPlatform.openai, 'api.openai.com'),
       MediaPlatform.claude =>
@@ -974,6 +996,13 @@ class MediaUnlockChecker {
       MediaPlatform.phantom =>
         _checkCloudflareTrace(MediaPlatform.phantom, 'phantom.com'),
     };
+    return checkFuture.timeout(
+      const Duration(seconds: 8),
+      onTimeout: () => MediaUnlockResult(
+        platform: platform,
+        status: MediaUnlockStatus.failed,
+      ),
+    );
   }
 
   Future<Map<MediaPlatform, MediaUnlockResult>> checkAll({

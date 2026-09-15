@@ -82,6 +82,14 @@ class GlobalState {
   final Lock _scriptEvaluateLock = Lock();
   bool isInit = false;
 
+  bool get hasMediaUnlockWidget {
+    final widgets = system.isAndroid
+        ? config.appSetting.mobileDashboardWidgets
+        : config.appSetting.desktopDashboardWidgets;
+    return widgets.contains(DashboardWidget.mediaUnlock) ||
+        widgets.contains(DashboardWidget.mediaUnlockSmall);
+  }
+
   bool get isStart => startTime != null && startTime!.isBeforeNow;
 
   AppController get appController => _appController!;
@@ -1388,6 +1396,13 @@ class MediaUnlockStateNotifier {
     return _instance!;
   }
 
+  List<MediaPlatform> get pinnedPlatforms {
+    final pinned = globalState.config.appSetting.pinnedMediaPlatforms;
+    return (pinned.isNotEmpty ? pinned : defaultPinnedMediaPlatforms)
+        .take(4)
+        .toList();
+  }
+
   void checkSingle(MediaPlatform platform) async {
     if (state.value.testingPlatforms.contains(platform)) return;
     final currentTesting =
@@ -1395,7 +1410,13 @@ class MediaUnlockStateNotifier {
     state.value = state.value.copyWith(testingPlatforms: currentTesting);
 
     try {
-      final res = await _checker.checkPlatform(platform);
+      final res = await _checker.checkPlatform(platform).timeout(
+        const Duration(seconds: 8),
+        onTimeout: () => MediaUnlockResult(
+          platform: platform,
+          status: MediaUnlockStatus.failed,
+        ),
+      );
       final finalMap =
           Map<MediaPlatform, MediaUnlockResult>.from(state.value.results);
       finalMap[platform] = res;
@@ -1409,45 +1430,63 @@ class MediaUnlockStateNotifier {
     } catch (_) {
       final finalMap =
           Map<MediaPlatform, MediaUnlockResult>.from(state.value.results);
-      finalMap[platform] = MediaUnlockResult(
-        platform: platform,
-        status: MediaUnlockStatus.failed,
+      finalMap.putIfAbsent(
+        platform,
+        () => MediaUnlockResult(
+          platform: platform,
+          status: MediaUnlockStatus.failed,
+        ),
       );
       final nextTesting =
           Set<MediaPlatform>.from(state.value.testingPlatforms)..remove(platform);
       state.value = state.value.copyWith(
         results: finalMap,
         testingPlatforms: nextTesting,
+        lastChecked: DateTime.now(),
       );
     }
   }
 
-  void checkAll({
+  void checkPlatforms(
+    List<MediaPlatform> platforms, {
     bool force = false,
-    List<MediaPlatform>? platforms,
+    bool isFullCheck = false,
   }) async {
     final isRunning = globalState.appState.runTime != null;
     if (!isRunning && !force) return;
-    if (state.value.isLoading) return;
 
-    final targetPlatforms = platforms ?? MediaPlatform.values;
-    final pendingTesting = Set<MediaPlatform>.from(targetPlatforms);
+    final targetPlatforms = platforms
+        .where((p) => !state.value.testingPlatforms.contains(p))
+        .toList();
+    if (targetPlatforms.isEmpty) return;
+
+    final pendingTesting =
+        Set<MediaPlatform>.from(state.value.testingPlatforms)
+          ..addAll(targetPlatforms);
 
     state.value = state.value.copyWith(
-      isLoading: true,
+      isLoading: isFullCheck ? true : state.value.isLoading,
       testingPlatforms: pendingTesting,
     );
 
     Timer? throttleTimer;
-    final pendingResults =
-        Map<MediaPlatform, MediaUnlockResult>.from(state.value.results);
+    final bufferResults = <MediaPlatform, MediaUnlockResult>{};
 
     void flushUpdates() {
       throttleTimer?.cancel();
       throttleTimer = null;
+      if (bufferResults.isEmpty) return;
+      final updates = Map<MediaPlatform, MediaUnlockResult>.from(bufferResults);
+      bufferResults.clear();
+      final nextResults =
+          Map<MediaPlatform, MediaUnlockResult>.from(state.value.results)
+            ..addAll(updates);
+      final nextTesting =
+          Set<MediaPlatform>.from(state.value.testingPlatforms)
+            ..removeAll(updates.keys);
       state.value = state.value.copyWith(
-        results: Map<MediaPlatform, MediaUnlockResult>.from(pendingResults),
-        testingPlatforms: Set<MediaPlatform>.from(pendingTesting),
+        results: nextResults,
+        testingPlatforms: nextTesting,
       );
     }
 
@@ -1455,42 +1494,89 @@ class MediaUnlockStateNotifier {
       final results = await _checker.checkAll(
         platforms: targetPlatforms,
         onProgress: (res) {
-          pendingResults[res.platform] = res;
-          pendingTesting.remove(res.platform);
+          bufferResults[res.platform] = res;
           throttleTimer ??= Timer(
             const Duration(milliseconds: 100),
             flushUpdates,
           );
         },
+      ).timeout(
+        Duration(seconds: (targetPlatforms.length <= 4 ? 10 : 50)),
+        onTimeout: () {
+          final timeoutMap = <MediaPlatform, MediaUnlockResult>{};
+          for (final p in targetPlatforms) {
+            timeoutMap[p] = bufferResults[p] ??
+                state.value.results[p] ??
+                MediaUnlockResult(
+                  platform: p,
+                  status: MediaUnlockStatus.failed,
+                );
+          }
+          return timeoutMap;
+        },
       );
       flushUpdates();
-      final merged =
-          Map<MediaPlatform, MediaUnlockResult>.from(state.value.results);
-      merged.addAll(results);
-      state.value = MediaUnlockState(
-        isLoading: false,
-        results: merged,
-        testingPlatforms: const {},
+      final nextResults =
+          Map<MediaPlatform, MediaUnlockResult>.from(state.value.results)
+            ..addAll(results);
+      final nextTesting =
+          Set<MediaPlatform>.from(state.value.testingPlatforms)
+            ..removeAll(targetPlatforms);
+      state.value = state.value.copyWith(
+        isLoading: isFullCheck ? false : state.value.isLoading,
+        results: nextResults,
+        testingPlatforms: nextTesting,
         lastChecked: DateTime.now(),
       );
     } catch (_) {
       throttleTimer?.cancel();
+      flushUpdates();
+      final fallbackResults =
+          Map<MediaPlatform, MediaUnlockResult>.from(state.value.results);
+      for (final p in targetPlatforms) {
+        fallbackResults.putIfAbsent(
+          p,
+          () => MediaUnlockResult(
+            platform: p,
+            status: MediaUnlockStatus.failed,
+          ),
+        );
+      }
+      final nextTesting =
+          Set<MediaPlatform>.from(state.value.testingPlatforms)
+            ..removeAll(targetPlatforms);
       state.value = state.value.copyWith(
-        isLoading: false,
-        testingPlatforms: const {},
+        isLoading: isFullCheck ? false : state.value.isLoading,
+        results: fallbackResults,
+        testingPlatforms: nextTesting,
+        lastChecked: DateTime.now(),
       );
     }
+  }
+
+  void checkPinned({bool force = false, List<MediaPlatform>? platforms}) {
+    checkPlatforms(platforms ?? pinnedPlatforms, force: force);
+  }
+
+  void checkAll({
+    bool force = false,
+    List<MediaPlatform>? platforms,
+  }) {
+    final targets = platforms ?? MediaPlatform.values;
+    final isFull = targets.length >= MediaPlatform.values.length;
+    checkPlatforms(targets, force: force, isFullCheck: isFull);
   }
 
   void tryStartCheck() {
     final isRunning = globalState.appState.runTime != null;
     if (!isRunning) return;
-    if (state.value.isLoading) return;
+    if (!globalState.hasMediaUnlockWidget) return;
+    if (state.value.isLoading || state.value.testingPlatforms.isNotEmpty) return;
     if (state.value.lastChecked != null &&
         DateTime.now().difference(state.value.lastChecked!).inSeconds < 10) {
       return;
     }
-    checkAll();
+    checkPinned();
   }
 }
 

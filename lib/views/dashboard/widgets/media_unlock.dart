@@ -17,28 +17,12 @@ class MediaUnlock extends ConsumerStatefulWidget {
 }
 
 class _MediaUnlockState extends ConsumerState<MediaUnlock> {
-  static const _monochromeFilter = ColorFilter.matrix(<double>[
-    0.2126, 0.7152, 0.0722, 0, 0,
-    0.2126, 0.7152, 0.0722, 0, 0,
-    0.2126, 0.7152, 0.0722, 0, 0,
-    0,      0,      0,      1, 0,
-  ]);
-
-  Color _getStatusColor(MediaUnlockStatus status, BuildContext context) {
-    switch (status) {
-      case MediaUnlockStatus.unlocked:
-        return const Color(0xFF10B981);
-      case MediaUnlockStatus.limited:
-      case MediaUnlockStatus.flagged:
-        return const Color(0xFFF59E0B);
-      case MediaUnlockStatus.blocked:
-      case MediaUnlockStatus.failed:
-        return context.colorScheme.error;
-      case MediaUnlockStatus.testing:
-        return context.colorScheme.primary;
-      case MediaUnlockStatus.unknown:
-        return context.colorScheme.outlineVariant;
-    }
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      mediaUnlockState.tryStartCheck();
+    });
   }
 
   String _getStatusText(MediaUnlockStatus status, [MediaPlatform? platform]) {
@@ -126,7 +110,7 @@ class _MediaUnlockState extends ConsumerState<MediaUnlock> {
     final status = isTesting
         ? MediaUnlockStatus.testing
         : (result?.status ?? (isLoading ? MediaUnlockStatus.testing : MediaUnlockStatus.unknown));
-    final color = _getStatusColor(status, context);
+    final color = status.statusColor(context.colorScheme);
     final latency = result?.latency;
     final String statusDisplay;
     if (status == MediaUnlockStatus.unknown) {
@@ -160,7 +144,7 @@ class _MediaUnlockState extends ConsumerState<MediaUnlock> {
       );
     } else {
       icon = ColorFiltered(
-        colorFilter: _monochromeFilter,
+        colorFilter: monochromeColorFilter,
         child: SvgPicture.asset(
           'assets/images/platforms/${platform.name}.svg',
           width: 16.ap,
@@ -252,6 +236,8 @@ class _MediaUnlockState extends ConsumerState<MediaUnlock> {
       child: ValueListenableBuilder<MediaUnlockState>(
         valueListenable: mediaUnlockState.state,
         builder: (context, state, _) {
+          final isWidgetLoading =
+              displayedPlatforms.any(state.testingPlatforms.contains);
           return CommonCard(
             onPressed: () {
               showExtend(
@@ -286,10 +272,13 @@ class _MediaUnlockState extends ConsumerState<MediaUnlock> {
                         height: 24.ap,
                         child: IconButton(
                           padding: EdgeInsets.zero,
-                          onPressed: state.isLoading
+                          onPressed: isWidgetLoading
                               ? null
-                              : () => mediaUnlockState.checkAll(force: true),
-                          icon: state.isLoading
+                              : () => mediaUnlockState.checkPlatforms(
+                                    displayedPlatforms,
+                                    force: true,
+                                  ),
+                          icon: isWidgetLoading
                               ? SizedBox(
                                   width: 13.ap,
                                   height: 13.ap,

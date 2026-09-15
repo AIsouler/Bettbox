@@ -1,3 +1,15 @@
+import 'package:flutter/material.dart';
+
+const monochromeColorFilter = ColorFilter.matrix(<double>[
+  0.2126, 0.7152, 0.0722, 0, 0,
+  0.2126, 0.7152, 0.0722, 0, 0,
+  0.2126, 0.7152, 0.0722, 0, 0,
+  0,      0,      0,      1, 0,
+]);
+
+const mediaUnlockGreen = Color(0xFF10B981);
+const mediaUnlockOrange = Color(0xFFF59E0B);
+
 enum MediaCategory {
   ai,
   streaming,
@@ -196,6 +208,18 @@ enum MediaUnlockStatus {
   failed,
   testing,
   unknown,
+}
+
+extension MediaUnlockStatusExt on MediaUnlockStatus {
+  Color statusColor(ColorScheme colorScheme) => switch (this) {
+        MediaUnlockStatus.unlocked => mediaUnlockGreen,
+        MediaUnlockStatus.limited || MediaUnlockStatus.flagged =>
+          mediaUnlockOrange,
+        MediaUnlockStatus.blocked || MediaUnlockStatus.failed =>
+          colorScheme.error,
+        MediaUnlockStatus.testing => colorScheme.primary,
+        MediaUnlockStatus.unknown => colorScheme.outlineVariant,
+      };
 }
 
 class MediaUnlockResult {
