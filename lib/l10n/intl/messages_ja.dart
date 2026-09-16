@@ -535,10 +535,20 @@ class MessageLookup extends MessageLookupByLibrary {
     "manualRefreshIp": MessageLookupByLibrary.simpleMessage("IPを再取得"),
     "maximize": MessageLookupByLibrary.simpleMessage("最大化"),
     "mediaUnlock": MessageLookupByLibrary.simpleMessage("接続性テスト"),
+    "mediaUnlockColorfulIcons": MessageLookupByLibrary.simpleMessage(
+      "既定でカラーアイコンを表示",
+    ),
     "mediaUnlockDetails": MessageLookupByLibrary.simpleMessage("接続性テスト詳細"),
-    "mediaUnlockPinnedSettings": MessageLookupByLibrary.simpleMessage("常駐表示設定"),
+    "mediaUnlockDisplaySettings": MessageLookupByLibrary.simpleMessage("表示設定"),
+    "mediaUnlockExtraDetails": MessageLookupByLibrary.simpleMessage(
+      "IP の詳細情報を表示",
+    ),
+    "mediaUnlockMiscSettings": MessageLookupByLibrary.simpleMessage("その他の設定"),
     "mediaUnlockPinnedSettingsDesc": MessageLookupByLibrary.simpleMessage(
       "ウィジェットに常駐表示する最大4項目を選択できます",
+    ),
+    "mediaUnlockRefreshOnNodeChange": MessageLookupByLibrary.simpleMessage(
+      "ノード変更時に自動更新",
     ),
     "mediaUnlockSelectLimit": MessageLookupByLibrary.simpleMessage(
       "最大4項目まで選択できます",

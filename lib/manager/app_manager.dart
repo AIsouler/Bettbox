@@ -55,9 +55,9 @@ class _AppStateManagerState extends ConsumerState<AppStateManager>
         detectionState.startCheck();
       }
     });
-    ref.listenManual(checkIpNumProvider, (prev, next) {
-      if (prev != next) {
-        mediaUnlockState.tryStartCheck();
+    ref.listenManual(checkMediaUnlockProvider, (prev, next) {
+      if (next.b && (prev?.a != next.a)) {
+        mediaUnlockState.startCheckOnNodeChange();
       }
     });
     ref.listenManual(configStateProvider, (prev, next) {

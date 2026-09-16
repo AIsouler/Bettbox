@@ -713,7 +713,12 @@
   "itemsCount": "{count}",
   "mediaUnlock": "연결성 테스트",
   "mediaUnlockDetails": "연결성 테스트 상세",
-  "mediaUnlockPinnedSettings": "고정 표시 설정",
+  "mediaUnlockDisplaySettings": "표시 설정",
+  "mediaUnlockMiscSettings": "기타 설정",
+  "mediaUnlockExtraDetails": "IP 상세 정보 더 보기",
+  "mediaUnlockRefreshOnNodeChange": "노드 변경 시 자동 새로고침",
+  "mediaUnlockColorfulIcons": "기본적으로 컬러 아이콘 표시",
+
   "mediaUnlockPinnedSettingsDesc": "위젯에 고정 표시할 항목을 최대 4개 선택할 수 있습니다",
   "mediaUnlockSelectLimit": "최대 4개 항목까지 선택할 수 있습니다",
   "categoryAll": "전체",

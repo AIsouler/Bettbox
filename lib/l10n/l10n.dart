@@ -5794,11 +5794,51 @@ class AppLocalizations {
     );
   }
 
-  /// `Pinned Platforms`
-  String get mediaUnlockPinnedSettings {
+  /// `Display Settings`
+  String get mediaUnlockDisplaySettings {
     return Intl.message(
-      'Pinned Platforms',
-      name: 'mediaUnlockPinnedSettings',
+      'Display Settings',
+      name: 'mediaUnlockDisplaySettings',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Misc Settings`
+  String get mediaUnlockMiscSettings {
+    return Intl.message(
+      'Misc Settings',
+      name: 'mediaUnlockMiscSettings',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Show more IP details`
+  String get mediaUnlockExtraDetails {
+    return Intl.message(
+      'Show more IP details',
+      name: 'mediaUnlockExtraDetails',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Auto refresh on node change`
+  String get mediaUnlockRefreshOnNodeChange {
+    return Intl.message(
+      'Auto refresh on node change',
+      name: 'mediaUnlockRefreshOnNodeChange',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Show colored icons by default`
+  String get mediaUnlockColorfulIcons {
+    return Intl.message(
+      'Show colored icons by default',
+      name: 'mediaUnlockColorfulIcons',
       desc: '',
       args: [],
     );

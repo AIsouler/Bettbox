@@ -489,10 +489,20 @@ class MessageLookup extends MessageLookupByLibrary {
     "manualRefreshIp": MessageLookupByLibrary.simpleMessage("重新取得 IP"),
     "maximize": MessageLookupByLibrary.simpleMessage("最大化"),
     "mediaUnlock": MessageLookupByLibrary.simpleMessage("連通性測試"),
+    "mediaUnlockColorfulIcons": MessageLookupByLibrary.simpleMessage(
+      "預設顯示彩色 ICON 圖示",
+    ),
     "mediaUnlockDetails": MessageLookupByLibrary.simpleMessage("連通性測試詳情"),
-    "mediaUnlockPinnedSettings": MessageLookupByLibrary.simpleMessage("常駐顯示設定"),
+    "mediaUnlockDisplaySettings": MessageLookupByLibrary.simpleMessage("顯示設定"),
+    "mediaUnlockExtraDetails": MessageLookupByLibrary.simpleMessage(
+      "返回更多 IP 詳細資訊",
+    ),
+    "mediaUnlockMiscSettings": MessageLookupByLibrary.simpleMessage("雜項設定"),
     "mediaUnlockPinnedSettingsDesc": MessageLookupByLibrary.simpleMessage(
       "可選 4 個在小組件常駐展示的項目",
+    ),
+    "mediaUnlockRefreshOnNodeChange": MessageLookupByLibrary.simpleMessage(
+      "節點變化時自動重新整理檢測",
     ),
     "mediaUnlockSelectLimit": MessageLookupByLibrary.simpleMessage(
       "最多只能選擇 4 個項目",

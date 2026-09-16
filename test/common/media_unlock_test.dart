@@ -39,6 +39,8 @@ void main() {
       expect(MediaPlatform.netease.category, MediaCategory.china);
       expect(MediaPlatform.bytedance.defaultName, 'Douyin(CN)');
       expect(MediaPlatform.bytedance.category, MediaCategory.china);
+      expect(MediaPlatform.bilibili.defaultName, 'Bilibili(CN)');
+      expect(MediaPlatform.bilibili.category, MediaCategory.china);
       expect(MediaPlatform.cloudflarecn.defaultName, 'Cloudflare(CN)');
       expect(MediaPlatform.cloudflarecn.category, MediaCategory.china);
 
@@ -47,7 +49,6 @@ void main() {
       expect(MediaPlatform.youtube.category, MediaCategory.streaming);
       expect(MediaPlatform.spotify.category, MediaCategory.streaming);
       expect(MediaPlatform.tiktok.category, MediaCategory.streaming);
-      expect(MediaPlatform.bilibili.category, MediaCategory.streaming);
       expect(MediaPlatform.iqiyi.category, MediaCategory.streaming);
       expect(MediaPlatform.crunchyroll.category, MediaCategory.streaming);
       expect(MediaPlatform.missav.category, MediaCategory.streaming);
@@ -61,6 +62,9 @@ void main() {
       expect(MediaPlatform.medium.category, MediaCategory.social);
       expect(MediaPlatform.stackoverflow.category, MediaCategory.social);
       expect(MediaPlatform.quora.category, MediaCategory.social);
+      expect(MediaPlatform.telegram.defaultName, 'Telegram');
+      expect(MediaPlatform.telegram.category, MediaCategory.social);
+      expect(MediaPlatform.telegram.pinColoBadge, true);
 
       expect(MediaPlatform.github.category, MediaCategory.developer);
       expect(MediaPlatform.wikipedia.category, MediaCategory.developer);
@@ -68,7 +72,6 @@ void main() {
       expect(MediaPlatform.onetrust.category, MediaCategory.developer);
       expect(MediaPlatform.gitlab.category, MediaCategory.developer);
       expect(MediaPlatform.npm.category, MediaCategory.developer);
-      expect(MediaPlatform.jsdelivr.category, MediaCategory.developer);
       expect(MediaPlatform.cdnjs.category, MediaCategory.developer);
       expect(MediaPlatform.unpkg.category, MediaCategory.developer);
       expect(MediaPlatform.nodejs.category, MediaCategory.developer);
@@ -91,6 +94,13 @@ void main() {
       expect(MediaPlatform.epic.isMonochrome, true);
       expect(MediaPlatform.openai.isMonochrome, false);
       expect(MediaPlatform.netflix.isMonochrome, false);
+    });
+    test('defaultPinnedMediaPlatforms has 3 items: reddit, gemini, cloudflare', () {
+      expect(defaultPinnedMediaPlatforms, [
+        MediaPlatform.reddit,
+        MediaPlatform.gemini,
+        MediaPlatform.cloudflare,
+      ]);
     });
 
     test('pinnedMediaPlatformsSafeFromJson migration', () {

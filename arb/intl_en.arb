@@ -712,7 +712,12 @@
   "itemsCount": "{count}",
   "mediaUnlock": "Connectivity Test",
   "mediaUnlockDetails": "Connectivity Test Details",
-  "mediaUnlockPinnedSettings": "Pinned Platforms",
+  "mediaUnlockDisplaySettings": "Display Settings",
+  "mediaUnlockMiscSettings": "Misc Settings",
+  "mediaUnlockExtraDetails": "Show more IP details",
+  "mediaUnlockRefreshOnNodeChange": "Auto refresh on node change",
+  "mediaUnlockColorfulIcons": "Show colored icons by default",
+
   "mediaUnlockPinnedSettingsDesc": "Select up to 4 items to pin on the widget",
   "mediaUnlockSelectLimit": "You can select up to 4 items",
   "categoryAll": "All",

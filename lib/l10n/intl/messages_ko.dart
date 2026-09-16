@@ -547,12 +547,20 @@ class MessageLookup extends MessageLookupByLibrary {
     "manualRefreshIp": MessageLookupByLibrary.simpleMessage("IP 다시 가져오기"),
     "maximize": MessageLookupByLibrary.simpleMessage("최대화"),
     "mediaUnlock": MessageLookupByLibrary.simpleMessage("연결성 테스트"),
-    "mediaUnlockDetails": MessageLookupByLibrary.simpleMessage("연결성 테스트 상세"),
-    "mediaUnlockPinnedSettings": MessageLookupByLibrary.simpleMessage(
-      "고정 표시 설정",
+    "mediaUnlockColorfulIcons": MessageLookupByLibrary.simpleMessage(
+      "기본적으로 컬러 아이콘 표시",
     ),
+    "mediaUnlockDetails": MessageLookupByLibrary.simpleMessage("연결성 테스트 상세"),
+    "mediaUnlockDisplaySettings": MessageLookupByLibrary.simpleMessage("표시 설정"),
+    "mediaUnlockExtraDetails": MessageLookupByLibrary.simpleMessage(
+      "IP 상세 정보 더 보기",
+    ),
+    "mediaUnlockMiscSettings": MessageLookupByLibrary.simpleMessage("기타 설정"),
     "mediaUnlockPinnedSettingsDesc": MessageLookupByLibrary.simpleMessage(
       "위젯에 고정 표시할 항목을 최대 4개 선택할 수 있습니다",
+    ),
+    "mediaUnlockRefreshOnNodeChange": MessageLookupByLibrary.simpleMessage(
+      "노드 변경 시 자동 새로고침",
     ),
     "mediaUnlockSelectLimit": MessageLookupByLibrary.simpleMessage(
       "최대 4개 항목까지 선택할 수 있습니다",

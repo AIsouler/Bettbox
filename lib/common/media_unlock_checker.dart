@@ -1,9 +1,28 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:bett_box/common/common.dart';
 import 'package:bett_box/models/models.dart';
 import 'package:bett_box/state.dart';
+
+class _BatchTokenInterceptor extends Interceptor {
+  _BatchTokenInterceptor(this.token);
+  final CancelToken token;
+
+  @override
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    if (token.isCancelled) {
+      handler.reject(
+        DioException(requestOptions: options, type: DioExceptionType.cancel),
+        true,
+      );
+      return;
+    }
+    options.cancelToken ??= token;
+    handler.next(options);
+  }
+}
 
 class MediaUnlockChecker {
   static const _timeout = Duration(seconds: 5);
@@ -41,8 +60,21 @@ class MediaUnlockChecker {
     }
   }
 
+  CancelToken _batchToken = CancelToken();
+
+  CancelToken beginBatch() {
+    _batchToken.cancel();
+    return _batchToken = CancelToken();
+  }
+
+  void cancel() {
+    final current = _batchToken;
+    _batchToken = CancelToken();
+    current.cancel();
+  }
+
   Dio _createDio({bool followRedirects = false}) {
-    return Dio(
+    final dio = Dio(
       BaseOptions(
         connectTimeout: _timeout,
         receiveTimeout: _timeout,
@@ -55,58 +87,90 @@ class MediaUnlockChecker {
         validateStatus: (status) => true,
       ),
     );
+    dio.interceptors.add(_BatchTokenInterceptor(_batchToken));
+    return dio;
   }
+
+  static const _openaiUnsupportedRegions = {
+    'CN', 'HK', 'MO', 'RU', 'IR', 'KP', 'SY', 'CU', 'VE', 'BY',
+    'AF', 'SS', 'YE', 'ZW', 'MM', 'SD', 'SO', 'CF',
+  };
+
+  static const _claudeUnsupportedRegions = {
+    'CN', 'HK', 'MO', 'RU', 'IR', 'KP', 'SY', 'CU', 'BY', 'VN',
+    'TR', 'AF', 'SS', 'YE', 'ZW', 'MM', 'SD', 'SO', 'CF', 'VE',
+  };
 
   Future<MediaUnlockResult> _checkCloudflareTrace(
     MediaPlatform platform,
-    String domain,
-  ) async {
+    String domain, {
+    Set<String>? unsupportedRegions,
+    String? fallbackUrl,
+  }) async {
     final sw = Stopwatch()..start();
     final dio = _createDio(followRedirects: true);
     try {
-      final url =
-          'https://$domain/cdn-cgi/trace?_t=${DateTime.now().millisecondsSinceEpoch}';
+      final url = 'https://$domain/cdn-cgi/trace';
       final res = await dio.get<String>(url);
       final statusCode = res.statusCode ?? 0;
-      if (statusCode >= 200 && statusCode < 400 && res.data != null) {
+      String? ip;
+      String? loc;
+      String? colo;
+      bool isWarp = false;
+
+      if (statusCode >= 200 &&
+          statusCode < 400 &&
+          res.data != null &&
+          !res.data!.contains('<!DOCTYPE')) {
         final lines = res.data!.split('\n');
-        final map = <String, String>{};
         for (final line in lines) {
           final idx = line.indexOf('=');
           if (idx > 0) {
-            map[line.substring(0, idx).trim()] =
-                line.substring(idx + 1).trim();
+            final k = line.substring(0, idx).trim();
+            final v = line.substring(idx + 1).trim();
+            if (k == 'ip') ip = v;
+            if (k == 'loc') loc = v;
+            if (k == 'colo') colo = v;
+            if (k == 'warp') isWarp = v != 'off';
           }
         }
-        final ip = map['ip'];
-        final loc = map['loc'];
-        final colo = map['colo'];
-        final warp = map['warp'];
-        final isWarp = warp != null && warp != 'off';
-        final latency = await _measureLatency(
-          dio,
-          'https://$domain/',
-          sw.elapsedMilliseconds,
-        );
-
-        return MediaUnlockResult(
-          platform: platform,
-          status: (ip != null && ip.isNotEmpty)
-              ? MediaUnlockStatus.unlocked
-              : MediaUnlockStatus.limited,
-          region: loc?.toUpperCase(),
-          colo: colo?.toUpperCase(),
-          ip: ip,
-          isWarp: isWarp,
-          latency: latency,
-        );
-      } else {
-        return MediaUnlockResult(
-          platform: platform,
-          status: MediaUnlockStatus.blocked,
-          latency: sw.elapsedMilliseconds,
-        );
       }
+
+      final region = loc?.toUpperCase();
+      final MediaUnlockStatus status;
+      if (ip != null && ip.isNotEmpty) {
+        if (unsupportedRegions != null &&
+            region != null &&
+            unsupportedRegions.contains(region)) {
+          status = MediaUnlockStatus.blocked;
+        } else {
+          status = MediaUnlockStatus.unlocked;
+        }
+      } else if (fallbackUrl != null) {
+        final probe = await dio.get<void>(fallbackUrl);
+        final code = probe.statusCode ?? 0;
+        status = (code >= 200 && code < 400)
+            ? MediaUnlockStatus.unlocked
+            : MediaUnlockStatus.blocked;
+      } else {
+        status = MediaUnlockStatus.blocked;
+      }
+
+      final latency = await _measureLatency(
+        dio,
+        'https://$domain/',
+        sw.elapsedMilliseconds,
+      );
+
+      return MediaUnlockResult(
+        platform: platform,
+        status: status,
+        region: region,
+        colo: colo?.toUpperCase(),
+        ip: ip,
+        isWarp: isWarp,
+        latency: latency,
+      );
     } catch (_) {
       return MediaUnlockResult(
         platform: platform,
@@ -283,6 +347,61 @@ class MediaUnlockChecker {
     } finally {
       dio.close(force: true);
     }
+  }
+
+  static const _telegramDcHost = '91.108.56.100';
+  static const _telegramDcPort = 80;
+
+  MediaUnlockResult _telegramResult(int latency) {
+    return MediaUnlockResult(
+      platform: MediaPlatform.telegram,
+      status: MediaUnlockStatus.unlocked,
+      region: 'SG',
+      colo: 'DC5',
+      latency: latency,
+    );
+  }
+
+  bool _isCleartextBlocked(Object error) {
+    final raw = error is DioException ? (error.error ?? error) : error;
+    return raw.toString().toLowerCase().contains('insecure http');
+  }
+
+  Future<int?> _tcpConnectRtt(String host, int port) async {
+    final sw = Stopwatch()..start();
+    Socket? socket;
+    try {
+      socket = await Socket.connect(host, port, timeout: _timeout);
+      final rtt = sw.elapsedMilliseconds;
+      return rtt > 0 ? rtt : 1;
+    } catch (_) {
+      return null;
+    } finally {
+      socket?.destroy();
+    }
+  }
+
+  Future<MediaUnlockResult> checkTelegram() async {
+    final sw = Stopwatch()..start();
+    final dio = _createDio();
+    try {
+      final res = await dio.get<void>('http://$_telegramDcHost/');
+      if ((res.statusCode ?? 0) > 0) {
+        return _telegramResult(sw.elapsedMilliseconds);
+      }
+    } catch (e) {
+      if (_isCleartextBlocked(e)) {
+        final rtt = await _tcpConnectRtt(_telegramDcHost, _telegramDcPort);
+        if (rtt != null) return _telegramResult(rtt);
+      }
+    } finally {
+      dio.close(force: true);
+    }
+    return MediaUnlockResult(
+      platform: MediaPlatform.telegram,
+      status: MediaUnlockStatus.failed,
+      latency: sw.elapsedMilliseconds,
+    );
   }
 
   Future<MediaUnlockResult> checkNetflix() async {
@@ -907,10 +1026,16 @@ class MediaUnlockChecker {
 
   Future<MediaUnlockResult> checkPlatform(MediaPlatform platform) {
     final checkFuture = switch (platform) {
-      MediaPlatform.openai =>
-        _checkCloudflareTrace(MediaPlatform.openai, 'api.openai.com'),
-      MediaPlatform.claude =>
-        _checkCloudflareTrace(MediaPlatform.claude, 'api.anthropic.com'),
+      MediaPlatform.openai => _checkCloudflareTrace(
+        MediaPlatform.openai,
+        'chatgpt.com',
+        unsupportedRegions: _openaiUnsupportedRegions,
+      ),
+      MediaPlatform.claude => _checkCloudflareTrace(
+        MediaPlatform.claude,
+        'api.anthropic.com',
+        unsupportedRegions: _claudeUnsupportedRegions,
+      ),
       MediaPlatform.gemini => checkGemini(),
       MediaPlatform.grok =>
         _checkCloudflareTrace(MediaPlatform.grok, 'api.x.ai'),
@@ -946,8 +1071,11 @@ class MediaUnlockChecker {
         'www.cloudflare-cn.com',
       ),
       MediaPlatform.reddit => checkReddit(),
-      MediaPlatform.x =>
-        _checkCloudflareTrace(MediaPlatform.x, 'x.com'),
+      MediaPlatform.x => _checkCloudflareTrace(
+        MediaPlatform.x,
+        'x.com',
+        fallbackUrl: 'https://x.com/',
+      ),
       MediaPlatform.discord =>
         _checkCloudflareTrace(MediaPlatform.discord, 'gateway.discord.gg'),
       MediaPlatform.v2ex =>
@@ -960,6 +1088,7 @@ class MediaUnlockChecker {
       ),
       MediaPlatform.quora =>
         _checkCloudflareTrace(MediaPlatform.quora, 'www.quora.com'),
+      MediaPlatform.telegram => checkTelegram(),
       MediaPlatform.github => checkGitHub(),
       MediaPlatform.wikipedia => checkWikipedia(),
       MediaPlatform.apple => checkApple(),
@@ -968,8 +1097,6 @@ class MediaUnlockChecker {
         _checkCloudflareTrace(MediaPlatform.gitlab, 'gitlab.com'),
       MediaPlatform.npm =>
         _checkCloudflareTrace(MediaPlatform.npm, 'registry.npmjs.org'),
-      MediaPlatform.jsdelivr =>
-        _checkCloudflareTrace(MediaPlatform.jsdelivr, 'jsdelivr.com'),
       MediaPlatform.cdnjs => _checkCloudflareTrace(
         MediaPlatform.cdnjs,
         'cdnjs.cloudflare.com',
@@ -1009,19 +1136,22 @@ class MediaUnlockChecker {
     List<MediaPlatform>? platforms,
     void Function(MediaUnlockResult result)? onProgress,
   }) async {
+    final token = beginBatch();
     final targetPlatforms = platforms ?? MediaPlatform.values;
     final results = <MediaPlatform, MediaUnlockResult>{};
     final queue = List<MediaPlatform>.from(targetPlatforms);
     const concurrency = 8;
     final workers = List.generate(concurrency, (_) async {
       while (true) {
-        if (queue.isEmpty) break;
+        if (token.isCancelled || queue.isEmpty) break;
         final p = queue.removeAt(0);
         try {
           final r = await checkPlatform(p);
+          if (token.isCancelled) break;
           results[p] = r;
           onProgress?.call(r);
         } catch (_) {
+          if (token.isCancelled) break;
           final fail = MediaUnlockResult(
             platform: p,
             status: MediaUnlockStatus.failed,

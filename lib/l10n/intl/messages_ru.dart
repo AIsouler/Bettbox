@@ -695,14 +695,26 @@ class MessageLookup extends MessageLookupByLibrary {
     "manualRefreshIp": MessageLookupByLibrary.simpleMessage("Обновить IP"),
     "maximize": MessageLookupByLibrary.simpleMessage("Развернуть"),
     "mediaUnlock": MessageLookupByLibrary.simpleMessage("Проверка доступности"),
+    "mediaUnlockColorfulIcons": MessageLookupByLibrary.simpleMessage(
+      "Показывать цветные значки по умолчанию",
+    ),
     "mediaUnlockDetails": MessageLookupByLibrary.simpleMessage(
       "Детали проверки доступности",
     ),
-    "mediaUnlockPinnedSettings": MessageLookupByLibrary.simpleMessage(
-      "Закрепленные сервисы",
+    "mediaUnlockDisplaySettings": MessageLookupByLibrary.simpleMessage(
+      "Настройки отображения",
+    ),
+    "mediaUnlockExtraDetails": MessageLookupByLibrary.simpleMessage(
+      "Показывать больше сведений об IP",
+    ),
+    "mediaUnlockMiscSettings": MessageLookupByLibrary.simpleMessage(
+      "Прочие настройки",
     ),
     "mediaUnlockPinnedSettingsDesc": MessageLookupByLibrary.simpleMessage(
       "Можно выбрать до 4 элементов для закрепления в виджете",
+    ),
+    "mediaUnlockRefreshOnNodeChange": MessageLookupByLibrary.simpleMessage(
+      "Автообновление при смене узла",
     ),
     "mediaUnlockSelectLimit": MessageLookupByLibrary.simpleMessage(
       "Можно выбрать максимум 4 элемента",

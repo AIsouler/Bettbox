@@ -713,7 +713,12 @@
   "itemsCount": "{count}",
   "mediaUnlock": "連通性測試",
   "mediaUnlockDetails": "連通性測試詳情",
-  "mediaUnlockPinnedSettings": "常駐顯示設定",
+  "mediaUnlockDisplaySettings": "顯示設定",
+  "mediaUnlockMiscSettings": "雜項設定",
+  "mediaUnlockExtraDetails": "返回更多 IP 詳細資訊",
+  "mediaUnlockRefreshOnNodeChange": "節點變化時自動重新整理檢測",
+  "mediaUnlockColorfulIcons": "預設顯示彩色 ICON 圖示",
+
   "mediaUnlockPinnedSettingsDesc": "可選 4 個在小組件常駐展示的項目",
   "mediaUnlockSelectLimit": "最多只能選擇 4 個項目",
   "categoryAll": "全部",

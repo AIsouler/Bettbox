@@ -1384,6 +1384,9 @@ final detectionState = DetectionState();
 class MediaUnlockStateNotifier {
   static MediaUnlockStateNotifier? _instance;
   final _checker = MediaUnlockChecker();
+  int _requestId = 0;
+  Timer? _nodeChangeTimer;
+  static const _nodeChangeDelay = Duration(milliseconds: 800);
 
   final state = ValueNotifier<MediaUnlockState>(
     const MediaUnlockState(),
@@ -1405,6 +1408,7 @@ class MediaUnlockStateNotifier {
 
   void checkSingle(MediaPlatform platform) async {
     if (state.value.testingPlatforms.contains(platform)) return;
+    final requestId = _requestId;
     final currentTesting =
         Set<MediaPlatform>.from(state.value.testingPlatforms)..add(platform);
     state.value = state.value.copyWith(testingPlatforms: currentTesting);
@@ -1417,6 +1421,7 @@ class MediaUnlockStateNotifier {
           status: MediaUnlockStatus.failed,
         ),
       );
+      if (requestId != _requestId) return;
       final finalMap =
           Map<MediaPlatform, MediaUnlockResult>.from(state.value.results);
       finalMap[platform] = res;
@@ -1428,6 +1433,7 @@ class MediaUnlockStateNotifier {
         lastChecked: DateTime.now(),
       );
     } catch (_) {
+      if (requestId != _requestId) return;
       final finalMap =
           Map<MediaPlatform, MediaUnlockResult>.from(state.value.results);
       finalMap.putIfAbsent(
@@ -1460,6 +1466,7 @@ class MediaUnlockStateNotifier {
         .toList();
     if (targetPlatforms.isEmpty) return;
 
+    final requestId = ++_requestId;
     final pendingTesting =
         Set<MediaPlatform>.from(state.value.testingPlatforms)
           ..addAll(targetPlatforms);
@@ -1475,7 +1482,7 @@ class MediaUnlockStateNotifier {
     void flushUpdates() {
       throttleTimer?.cancel();
       throttleTimer = null;
-      if (bufferResults.isEmpty) return;
+      if (requestId != _requestId || bufferResults.isEmpty) return;
       final updates = Map<MediaPlatform, MediaUnlockResult>.from(bufferResults);
       bufferResults.clear();
       final nextResults =
@@ -1494,6 +1501,7 @@ class MediaUnlockStateNotifier {
       final results = await _checker.checkAll(
         platforms: targetPlatforms,
         onProgress: (res) {
+          if (requestId != _requestId) return;
           bufferResults[res.platform] = res;
           throttleTimer ??= Timer(
             const Duration(milliseconds: 100),
@@ -1501,8 +1509,9 @@ class MediaUnlockStateNotifier {
           );
         },
       ).timeout(
-        Duration(seconds: (targetPlatforms.length <= 4 ? 10 : 50)),
+        Duration(seconds: (targetPlatforms.length / 8).ceil() * 8 + 5),
         onTimeout: () {
+          _checker.cancel();
           final timeoutMap = <MediaPlatform, MediaUnlockResult>{};
           for (final p in targetPlatforms) {
             timeoutMap[p] = bufferResults[p] ??
@@ -1515,6 +1524,7 @@ class MediaUnlockStateNotifier {
           return timeoutMap;
         },
       );
+      if (requestId != _requestId) return;
       flushUpdates();
       final nextResults =
           Map<MediaPlatform, MediaUnlockResult>.from(state.value.results)
@@ -1530,6 +1540,7 @@ class MediaUnlockStateNotifier {
       );
     } catch (_) {
       throttleTimer?.cancel();
+      if (requestId != _requestId) return;
       flushUpdates();
       final fallbackResults =
           Map<MediaPlatform, MediaUnlockResult>.from(state.value.results);
@@ -1567,15 +1578,36 @@ class MediaUnlockStateNotifier {
     checkPlatforms(targets, force: force, isFullCheck: isFull);
   }
 
+  void startCheckOnNodeChange() {
+    final isRunning = globalState.appState.runTime != null;
+    if (!isRunning) return;
+    if (!globalState.hasMediaUnlockWidget) return;
+    if (!globalState.config.appSetting.mediaUnlockRefreshOnNodeChange) return;
+    _checker.cancel();
+    _nodeChangeTimer?.cancel();
+    final nextResults =
+        Map<MediaPlatform, MediaUnlockResult>.from(state.value.results);
+    for (final p in pinnedPlatforms) {
+      nextResults.remove(p);
+    }
+    state.value = state.value.copyWith(
+      results: nextResults,
+      testingPlatforms: {},
+      isLoading: false,
+    );
+    _nodeChangeTimer = Timer(_nodeChangeDelay, () {
+      checkPinned(force: true);
+    });
+  }
+
   void tryStartCheck() {
     final isRunning = globalState.appState.runTime != null;
     if (!isRunning) return;
     if (!globalState.hasMediaUnlockWidget) return;
     if (state.value.isLoading || state.value.testingPlatforms.isNotEmpty) return;
-    if (state.value.lastChecked != null &&
-        DateTime.now().difference(state.value.lastChecked!).inSeconds < 10) {
-      return;
-    }
+    final needsInitialCheck =
+        pinnedPlatforms.any((p) => !state.value.results.containsKey(p));
+    if (!needsInitialCheck) return;
     checkPinned();
   }
 }

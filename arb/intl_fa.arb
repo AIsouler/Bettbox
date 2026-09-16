@@ -713,7 +713,12 @@
   "itemsCount": "{count}",
   "mediaUnlock": "تست اتصال",
   "mediaUnlockDetails": "جزئیات تست اتصال",
-  "mediaUnlockPinnedSettings": "تنظیمات نمایش پین‌شده",
+  "mediaUnlockDisplaySettings": "تنظیمات نمایش",
+  "mediaUnlockMiscSettings": "تنظیمات متفرقه",
+  "mediaUnlockExtraDetails": "نمایش جزئیات بیشتر IP",
+  "mediaUnlockRefreshOnNodeChange": "به‌روزرسانی خودکار هنگام تغییر گره",
+  "mediaUnlockColorfulIcons": "نمایش آیکون‌های رنگی به‌صورت پیش‌فرض",
+
   "mediaUnlockPinnedSettingsDesc": "امکان انتخاب حداکثر ۴ مورد برای پین کردن در ویجت",
   "mediaUnlockSelectLimit": "حداکثر می‌توانید ۴ مورد را انتخاب کنید",
   "categoryAll": "همه",

@@ -676,14 +676,26 @@ class MessageLookup extends MessageLookupByLibrary {
     "manualRefreshIp": MessageLookupByLibrary.simpleMessage("دریافت مجدد IP"),
     "maximize": MessageLookupByLibrary.simpleMessage("بزرگ کردن"),
     "mediaUnlock": MessageLookupByLibrary.simpleMessage("تست اتصال"),
+    "mediaUnlockColorfulIcons": MessageLookupByLibrary.simpleMessage(
+      "نمایش آیکون‌های رنگی به‌صورت پیش‌فرض",
+    ),
     "mediaUnlockDetails": MessageLookupByLibrary.simpleMessage(
       "جزئیات تست اتصال",
     ),
-    "mediaUnlockPinnedSettings": MessageLookupByLibrary.simpleMessage(
-      "تنظیمات نمایش پین‌شده",
+    "mediaUnlockDisplaySettings": MessageLookupByLibrary.simpleMessage(
+      "تنظیمات نمایش",
+    ),
+    "mediaUnlockExtraDetails": MessageLookupByLibrary.simpleMessage(
+      "نمایش جزئیات بیشتر IP",
+    ),
+    "mediaUnlockMiscSettings": MessageLookupByLibrary.simpleMessage(
+      "تنظیمات متفرقه",
     ),
     "mediaUnlockPinnedSettingsDesc": MessageLookupByLibrary.simpleMessage(
       "امکان انتخاب حداکثر ۴ مورد برای پین کردن در ویجت",
+    ),
+    "mediaUnlockRefreshOnNodeChange": MessageLookupByLibrary.simpleMessage(
+      "به‌روزرسانی خودکار هنگام تغییر گره",
     ),
     "mediaUnlockSelectLimit": MessageLookupByLibrary.simpleMessage(
       "حداکثر می‌توانید ۴ مورد را انتخاب کنید",

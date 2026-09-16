@@ -481,10 +481,20 @@ class MessageLookup extends MessageLookupByLibrary {
     "manualRefreshIp": MessageLookupByLibrary.simpleMessage("重新获取 IP"),
     "maximize": MessageLookupByLibrary.simpleMessage("最大化"),
     "mediaUnlock": MessageLookupByLibrary.simpleMessage("连通性测试"),
+    "mediaUnlockColorfulIcons": MessageLookupByLibrary.simpleMessage(
+      "默认显示彩色 ICON 图标",
+    ),
     "mediaUnlockDetails": MessageLookupByLibrary.simpleMessage("连通性测试详情"),
-    "mediaUnlockPinnedSettings": MessageLookupByLibrary.simpleMessage("常驻显示设置"),
+    "mediaUnlockDisplaySettings": MessageLookupByLibrary.simpleMessage("显示设置"),
+    "mediaUnlockExtraDetails": MessageLookupByLibrary.simpleMessage(
+      "返回更多 IP 详细信息",
+    ),
+    "mediaUnlockMiscSettings": MessageLookupByLibrary.simpleMessage("杂项设置"),
     "mediaUnlockPinnedSettingsDesc": MessageLookupByLibrary.simpleMessage(
       "可选 4 个在小部件常驻展示的项目",
+    ),
+    "mediaUnlockRefreshOnNodeChange": MessageLookupByLibrary.simpleMessage(
+      "节点变化时自动刷新检测",
     ),
     "mediaUnlockSelectLimit": MessageLookupByLibrary.simpleMessage(
       "最多只能选择 4 个项目",
