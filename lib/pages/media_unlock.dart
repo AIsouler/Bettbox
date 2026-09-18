@@ -481,14 +481,12 @@ class _MediaUnlockPageState extends ConsumerState<MediaUnlockPage> {
 
   Widget _buildPlatformRow(
     MediaPlatform platform,
-    MediaUnlockResult? result,
-    bool isGlobalLoading, {
+    MediaUnlockResult? result, {
     bool isItemTesting = false,
     required bool showExtraDetails,
   }) {
-    final isTesting = isItemTesting ||
-        (isGlobalLoading &&
-            (result == null || result.status == MediaUnlockStatus.testing));
+    final isTesting =
+        isItemTesting || result?.status == MediaUnlockStatus.testing;
     final status = result?.status ??
         (isTesting ? MediaUnlockStatus.testing : MediaUnlockStatus.unknown);
     final color = isTesting
@@ -716,7 +714,6 @@ class _MediaUnlockPageState extends ConsumerState<MediaUnlockPage> {
     required List<MediaPlatform> platforms,
     required MediaUnlockState state,
     required bool showExtraDetails,
-    bool isCategoryLoading = false,
   }) {
     if (platforms.isEmpty) return const [];
     return [
@@ -749,7 +746,6 @@ class _MediaUnlockPageState extends ConsumerState<MediaUnlockPage> {
           return _buildPlatformRow(
             platform,
             state.results[platform],
-            isCategoryLoading,
             isItemTesting: state.testingPlatforms.contains(platform),
             showExtraDetails: showExtraDetails,
           );
@@ -795,9 +791,8 @@ class _MediaUnlockPageState extends ConsumerState<MediaUnlockPage> {
                 .toList();
 
         final isCategoryLoading = refreshByCategory
-            ? (state.isLoading ||
-                displayedPlatforms.any(state.testingPlatforms.contains))
-            : (state.isLoading || state.testingPlatforms.isNotEmpty);
+            ? mediaUnlockState.isBatchChecking(displayedPlatforms)
+            : mediaUnlockState.isBatchChecking();
 
         for (final p in displayedPlatforms) {
           final status = state.results[p]?.status;
@@ -865,7 +860,6 @@ class _MediaUnlockPageState extends ConsumerState<MediaUnlockPage> {
                 platforms: unlockedList,
                 state: state,
                 showExtraDetails: showExtraDetails,
-                isCategoryLoading: isCategoryLoading,
               ),
               ..._buildStatusSectionSlivers(
                 title: appLocalizations.notUnlocked,
@@ -874,7 +868,6 @@ class _MediaUnlockPageState extends ConsumerState<MediaUnlockPage> {
                 platforms: blockedList,
                 state: state,
                 showExtraDetails: showExtraDetails,
-                isCategoryLoading: isCategoryLoading,
               ),
               ..._buildStatusSectionSlivers(
                 title: appLocalizations.other,
@@ -883,7 +876,6 @@ class _MediaUnlockPageState extends ConsumerState<MediaUnlockPage> {
                 platforms: otherList,
                 state: state,
                 showExtraDetails: showExtraDetails,
-                isCategoryLoading: isCategoryLoading,
               ),
               const SliverToBoxAdapter(child: SizedBox(height: 24)),
             ],

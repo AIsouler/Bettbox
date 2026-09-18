@@ -1403,6 +1403,19 @@ class MediaUnlockStateNotifier {
   final state = ValueNotifier<MediaUnlockState>(
     const MediaUnlockState(),
   );
+  final Set<MediaPlatform> _batchTestingPlatforms = {};
+
+  bool isBatchChecking([Iterable<MediaPlatform>? platforms]) {
+    if (state.value.isLoading) return true;
+    if (platforms == null) {
+      return state.value.testingPlatforms.any(_batchTestingPlatforms.contains);
+    }
+    return platforms.any(
+      (p) =>
+          state.value.testingPlatforms.contains(p) &&
+          _batchTestingPlatforms.contains(p),
+    );
+  }
 
   MediaUnlockStateNotifier._internal();
 
@@ -1419,6 +1432,7 @@ class MediaUnlockStateNotifier {
   }
 
   void checkSingle(MediaPlatform platform) async {
+    _batchTestingPlatforms.remove(platform);
     if (state.value.testingPlatforms.contains(platform)) return;
     final currentTesting =
         Set<MediaPlatform>.from(state.value.testingPlatforms)..add(platform);
@@ -1465,6 +1479,7 @@ class MediaUnlockStateNotifier {
     List<MediaPlatform> platforms, {
     bool force = false,
     bool isFullCheck = false,
+    bool isBatchCheck = false,
   }) async {
     final isRunning = globalState.appState.runTime != null;
     if (!isRunning && !force) return;
@@ -1481,6 +1496,9 @@ class MediaUnlockStateNotifier {
     if (targetPlatforms.isEmpty) return;
 
     final requestId = ++_requestId;
+    if (isBatchCheck) {
+      _batchTestingPlatforms.addAll(targetPlatforms);
+    }
     final pendingTesting =
         Set<MediaPlatform>.from(state.value.testingPlatforms)
           ..addAll(targetPlatforms);
@@ -1580,6 +1598,7 @@ class MediaUnlockStateNotifier {
       );
     } finally {
       throttleTimer?.cancel();
+      _batchTestingPlatforms.removeAll(targetPlatforms);
       final nextTesting =
           Set<MediaPlatform>.from(state.value.testingPlatforms)
             ..removeAll(targetPlatforms);
@@ -1602,7 +1621,12 @@ class MediaUnlockStateNotifier {
   }) {
     final targets = platforms ?? MediaPlatform.values;
     final isFull = targets.length >= MediaPlatform.values.length;
-    checkPlatforms(targets, force: force, isFullCheck: isFull);
+    checkPlatforms(
+      targets,
+      force: force,
+      isFullCheck: isFull,
+      isBatchCheck: true,
+    );
   }
 
   void startCheckOnNodeChange() {
@@ -1622,6 +1646,7 @@ class MediaUnlockStateNotifier {
     ++_requestId;
     _checker.cancel();
     _nodeChangeTimer?.cancel();
+    _batchTestingPlatforms.clear();
     final nextResults =
         Map<MediaPlatform, MediaUnlockResult>.from(state.value.results);
     for (final p in pinnedPlatforms) {
