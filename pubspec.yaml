@@ -47,8 +47,6 @@ dependencies:
   hotkey_manager: ^0.2.3
   uni_platform: ^0.1.3
   device_info_plus: ^12.4.0
-  sqflite: ^2.4.3
-  sqflite_common_ffi: ^2.4.2
   yaml: ^3.1.2
   connectivity_plus: 7.0.0
   screen_retriever: ^0.2.0
@@ -58,7 +56,6 @@ dependencies:
   riverpod: ^2.6.1
   flutter_svg: ^2.2.4
   xml: ^6.6.1
-  flutter_cache_manager: ^3.4.1
   crypto: ^3.0.7
   google_nav_bar: ^5.0.7
   wakelock_plus: ^1.4.0

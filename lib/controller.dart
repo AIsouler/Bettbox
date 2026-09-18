@@ -27,7 +27,6 @@ import 'package:yaml/yaml.dart';
 
 import 'common/archive.dart' show restoreBackupFiles;
 import 'common/common.dart';
-import 'common/flclash_database_extractor.dart';
 import 'models/models.dart';
 import 'views/profiles/override_profile.dart';
 
@@ -2070,68 +2069,25 @@ class AppController {
 
     await restoreBackupFiles(profileFiles, homeDirPath);
 
-    // Extract profiles from backup
     List<Profile> profiles = [];
-    bool extractedFromDatabase = false;
 
-    // 1. Try SQLite database first (FlClash backup)
-    final dbFile = archive.files.firstWhereOrNull(
-      (file) => file.name.endsWith('database.sqlite'),
-    );
+    if (backupConfig.profiles.isNotEmpty) {
+      profiles = backupConfig.profiles;
+    } else {
+      for (final profileFile in profileFiles) {
+        final fileName = profileFile.name.split('/').last;
+        if (fileName.endsWith('.yaml') || fileName.endsWith('.yml')) {
+          final id = fileName.replaceAll(RegExp(r'\.(yaml|yml)$'), '');
+          final label = await _extractLabelFromYaml(profileFile) ?? id;
 
-    if (dbFile != null && dbFile.content.isNotEmpty) {
-      try {
-        // Save database temporarily
-        final tempDbPath = join(await appPath.tempPath, 'temp_flclash.db');
-        final tempDb = File(tempDbPath);
-        await tempDb.writeAsBytes(dbFile.content);
-
-        // Extract profiles from database
-        profiles = await FlClashDatabaseExtractor.extractProfiles(tempDbPath);
-        extractedFromDatabase = true;
-
-        // Clean up temp file
-        if (await tempDb.exists()) {
-          await tempDb.delete();
-        }
-
-        commonPrint.log(
-          'Extracted ${profiles.length} profiles from FlClash database',
-        );
-      } catch (e) {
-        commonPrint.log(
-          'Failed to extract from database, fallback to file names: $e',
-        );
-        profiles = [];
-        extractedFromDatabase = false;
-      }
-    }
-
-    // 2. Fallback if database extraction failed
-    if (profiles.isEmpty) {
-      // Get from config.json
-      if (backupConfig.profiles.isNotEmpty) {
-        profiles = backupConfig.profiles;
-      } else {
-        // Extract ID from profile file names (FlClash mode)
-        for (final profileFile in profileFiles) {
-          final fileName = profileFile.name.split('/').last;
-          if (fileName.endsWith('.yaml') || fileName.endsWith('.yml')) {
-            final id = fileName.replaceAll(RegExp(r'\.(yaml|yml)$'), '');
-
-            // Try to extract friendly label from YAML
-            final label = await _extractLabelFromYaml(profileFile) ?? id;
-
-            // Create basic Profile object
-            profiles.add(
-              Profile(
-                id: id,
-                label: label,
-                autoUpdateDuration: defaultUpdateDuration,
-                url: '', // Mark empty, user needs to add
-              ),
-            );
-          }
+          profiles.add(
+            Profile(
+              id: id,
+              label: label,
+              autoUpdateDuration: defaultUpdateDuration,
+              url: '',
+            ),
+          );
         }
       }
     }
@@ -2175,7 +2131,7 @@ class AppController {
     _recoveryLimited(limitedConfig, recoveryOption);
 
     // Show recovery result message
-    _showRecoveryResultMessage(profiles, extractedFromDatabase);
+    _showRecoveryResultMessage(profiles);
   }
 
   /// Extract label
@@ -2215,19 +2171,13 @@ class AppController {
   }
 
   /// Show results
-  void _showRecoveryResultMessage(
-    List<Profile> profiles,
-    bool extractedFromDatabase,
-  ) {
+  void _showRecoveryResultMessage(List<Profile> profiles) {
     if (profiles.isEmpty) return;
 
     final hasEmptyUrl = profiles.any((p) => p.url.isEmpty);
 
     String message;
-    if (extractedFromDatabase) {
-      // Successfully extracted from database
-      message = 'Restored ${profiles.length} subscriptions with URLs.';
-    } else if (hasEmptyUrl) {
+    if (hasEmptyUrl) {
       // Partial recovery, missing URLs
       message =
           'Restored ${profiles.length} subscriptions.\n\n'
