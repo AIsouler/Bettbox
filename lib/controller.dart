@@ -1176,9 +1176,12 @@ class AppController {
     );
     if (res == true) {
       final file = File(await appPath.sharedPreferencesPath);
-      final isExists = await file.exists();
-      if (isExists) {
+      if (await file.exists()) {
         await file.delete();
+      }
+      final configFile = File(await appPath.appConfigPath);
+      if (await configFile.exists()) {
+        await configFile.delete();
       }
     }
     await handleExit();
