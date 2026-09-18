@@ -2028,10 +2028,35 @@ class AppController {
       json.decode(utf8.decode(configContent)),
     );
 
+    final recoveryStrategy = _ref.read(
+      appSettingProvider.select((state) => state.recoveryStrategy),
+    );
+    if (recoveryStrategy == RecoveryStrategy.override) {
+      await _cleanProfilesDirForOverride();
+    }
+
     await restoreBackupFiles(profiles, homeDirPath);
 
-    // Apply recovery logic
     _recovery(tempConfig, recoveryOption);
+    await savePreferences();
+  }
+
+  Future<void> _cleanProfilesDirForOverride() async {
+    try {
+      final profilesDirPath = await appPath.profilesPath;
+      final dir = Directory(profilesDirPath);
+      if (await dir.exists()) {
+        await for (final entity in dir.list(followLinks: false)) {
+          try {
+            await entity.delete(recursive: true);
+          } catch (e) {
+            commonPrint.log('Delete profile entity failed: $e');
+          }
+        }
+      }
+    } catch (e) {
+      commonPrint.log('Clean profiles dir for override failed: $e');
+    }
   }
 
   /// Restore legacy
@@ -2067,6 +2092,13 @@ class AppController {
       json.decode(utf8.decode(configContent)),
     );
 
+    final recoveryStrategy = _ref.read(
+      appSettingProvider.select((state) => state.recoveryStrategy),
+    );
+    if (recoveryStrategy == RecoveryStrategy.override) {
+      await _cleanProfilesDirForOverride();
+    }
+
     await restoreBackupFiles(profileFiles, homeDirPath);
 
     List<Profile> profiles = [];
@@ -2092,20 +2124,15 @@ class AppController {
       }
     }
 
-    // Create limited recovery config (subscriptions only)
     Config limitedConfig = globalState.config.copyWith(profiles: profiles);
 
-    // Android: also restore app list
     if (system.isAndroid) {
-      // FlClash uses accessControlProps instead of accessControl
       final vpnProps = backupConfig.vpnProps;
       AccessControl? accessControl;
 
-      // Try to get from vpnProps.accessControl
       try {
         accessControl = vpnProps.accessControl;
       } catch (_) {
-        // Fallback: try accessControlProps from raw JSON
         try {
           final configJson = json.decode(utf8.decode(configFile.content));
           final vpnPropsJson = configJson['vpnProps'];
@@ -2127,10 +2154,9 @@ class AppController {
       }
     }
 
-    // Apply limited recovery
     _recoveryLimited(limitedConfig, recoveryOption);
+    await savePreferences();
 
-    // Show recovery result message
     _showRecoveryResultMessage(profiles);
   }
 
