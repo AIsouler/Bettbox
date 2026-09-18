@@ -325,7 +325,7 @@ class CodeForge extends StatefulWidget {
     this.keyboardType = TextInputType.multiline,
     this.textDirection = TextDirection.ltr,
     this.tabSize,
-    this.useSpaceAsTab = false,
+    this.useSpaceAsTab = true,
     this.enableGutter = true,
     this.enableGutterDivider = false,
     this.enableMagnifier = true,
@@ -475,7 +475,8 @@ class _CodeForgeState extends State<CodeForge> with TickerProviderStateMixin {
       _readOnly = true;
     }
 
-    if (widget._tabSize != _controller.tabSize) {
+    if ((_ownsController || widget.tabSize != null) &&
+        widget._tabSize != _controller.tabSize) {
       _controller.tabSize = widget._tabSize;
     }
 
@@ -1083,7 +1084,8 @@ class _CodeForgeState extends State<CodeForge> with TickerProviderStateMixin {
   void didUpdateWidget(covariant CodeForge oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    if (widget._tabSize != _controller.tabSize) {
+    if ((_ownsController || widget.tabSize != null) &&
+        widget._tabSize != _controller.tabSize) {
       _controller.tabSize = widget._tabSize;
     }
     if (widget.useSpaceAsTab != _controller.useSpaceAsTab) {

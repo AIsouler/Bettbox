@@ -1091,11 +1091,15 @@ class Utils {
   }
 
   String patchYamlConfig(String content) {
+    final sanitized = content.replaceAllMapped(
+      RegExp(r'^[ \t]+', multiLine: true),
+      (match) => match.group(0)!.replaceAll('\t', '  '),
+    );
     final shortIdExp = RegExp(
       r'(?<=\bshort-id\s*:\s*)(?!["\x27{\[\s])([0-9a-fA-F]+)(?=\s*(?:$|[,\s#\}]))',
       multiLine: true,
     );
-    return content.replaceAllMapped(shortIdExp, (match) {
+    return sanitized.replaceAllMapped(shortIdExp, (match) {
       return '"${match.group(1)}"';
     });
   }

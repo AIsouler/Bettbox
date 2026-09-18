@@ -1157,7 +1157,10 @@ class CodeForgeController implements DeltaTextInputClient {
         final shouldIncreaseIndent = RegExp(r'[:{[(]\s*$').hasMatch(lineText);
         final tabStr = useSpaceAsTab ? ' ' * tabSize : '\t';
         final extraIndent = shouldIncreaseIndent ? tabStr : '';
-        toInsert = '\n$currentIndent$extraIndent';
+        final normalizedCurrentIndent = useSpaceAsTab
+            ? currentIndent.replaceAll('\t', ' ' * tabSize)
+            : currentIndent;
+        toInsert = '\n$normalizedCurrentIndent$extraIndent';
       }
 
       insertedLengths[k] = toInsert.runes.length;
@@ -1836,10 +1839,10 @@ class CodeForgeController implements DeltaTextInputClient {
   bool readOnly = false;
 
   /// Use space instead of the `\t` character for tab key press.
-  bool useSpaceAsTab = false;
+  bool useSpaceAsTab = true;
 
   /// Custom tabSize for the editor.
-  int tabSize = 1;
+  int tabSize = 2;
 
   /// The tabspace inserted on tab key press.
   String get tabSpace {
@@ -5022,7 +5025,9 @@ class CodeForgeController implements DeltaTextInputClient {
           .map(
             (line) => line.startsWith(tabSpace)
                 ? line.substring(tabSize)
-                : line.replaceFirst(RegExp(r'^ +'), ''),
+                : (line.startsWith('\t')
+                    ? line.substring(1)
+                    : line.replaceFirst(RegExp(r'^ +'), '')),
           )
           .join('\n');
 
@@ -5030,17 +5035,20 @@ class CodeForgeController implements DeltaTextInputClient {
       for (final line in lines) {
         if (line.startsWith(tabSpace)) {
           removedChars += tabSize;
+        } else if (line.startsWith('\t')) {
+          removedChars += 1;
         } else {
           removedChars += RegExp(r'^ +').stringMatch(line)?.length ?? 0;
         }
       }
 
+      final firstLineRemoved = lines.first.startsWith(tabSpace)
+          ? tabSize
+          : (lines.first.startsWith('\t')
+              ? 1
+              : (RegExp(r'^ +').stringMatch(lines.first)?.length ?? 0));
       final newSelection = TextSelection(
-        baseOffset:
-            selection.baseOffset -
-            (lines.first.startsWith(tabSpace)
-                ? tabSize
-                : (RegExp(r'^ +').stringMatch(lines.first)?.length ?? 0)),
+        baseOffset: selection.baseOffset - firstLineRemoved,
         extentOffset: selection.extentOffset - removedChars,
       );
 
@@ -5056,6 +5064,8 @@ class CodeForgeController implements DeltaTextInputClient {
       int removeCount = 0;
       if (line.startsWith(tabSpace)) {
         removeCount = tabSize;
+      } else if (line.startsWith('\t')) {
+        removeCount = 1;
       } else {
         removeCount = RegExp(r'^ +').stringMatch(line)?.length ?? 0;
       }
@@ -6101,7 +6111,10 @@ class CodeForgeController implements DeltaTextInputClient {
           final prevIndent = indentMatch?.group(0) ?? '';
           final shouldIndent = RegExp(r'[:{[(]\s*$').hasMatch(prevLine);
           final extraIndent = shouldIndent ? tabSpace : '';
-          final indent = prevIndent + extraIndent;
+          final normalizedPrevIndent = useSpaceAsTab
+              ? prevIndent.replaceAll('\t', ' ' * tabSize)
+              : prevIndent;
+          final indent = normalizedPrevIndent + extraIndent;
           final openToClose = {'{': '}', '(': ')', '[': ']'};
           final trimmedPrev = prevLine.trimRight();
           final lastChar = trimmedPrev.isNotEmpty
@@ -6114,7 +6127,7 @@ class CodeForgeController implements DeltaTextInputClient {
               isBracketOpen && openToClose[lastChar] == nextChar;
 
           if (isBracketOpen && isNextClosing) {
-            actualInsertedText = '\n$indent\n$prevIndent';
+            actualInsertedText = '\n$indent\n$normalizedPrevIndent';
             actualSelection = TextSelection.collapsed(
               offset: offset + 1 + indent.length,
             );
