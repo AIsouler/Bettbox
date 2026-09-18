@@ -343,6 +343,7 @@ class AppController {
     if (currentProfile == null) {
       return false;
     }
+    await _initCore();
     await currentProfile.checkAndUpdate();
     final patchConfig = _ref.read(patchClashConfigProvider);
     final targetTun = enableTun ?? patchConfig.tun.enable;
@@ -605,6 +606,7 @@ class AppController {
   }
 
   Future<void> _updateClashConfig() async {
+    await _initCore();
     final updateParams = _ref.read(updateParamsProvider);
     final tunResult = await _requestAdmin(updateParams.tun.enable);
     if (tunResult.isError) return;
@@ -1186,12 +1188,20 @@ class AppController {
     await handleExit();
   }
 
-  Future<void> _initCore() async {
-    final isInit = await clashCore.isInit;
-    if (!isInit) {
-      await clashCore.init();
-      await clashCore.setState(globalState.getCoreState());
-    }
+  Future<void>? _initCoreFuture;
+
+  Future<void> _initCore() {
+    return _initCoreFuture ??= () async {
+      try {
+        final isInit = await clashCore.isInit;
+        if (!isInit) {
+          await clashCore.init();
+          await clashCore.setState(globalState.getCoreState());
+        }
+      } finally {
+        _initCoreFuture = null;
+      }
+    }();
   }
 
   void startWakelockAutoRecovery() {
