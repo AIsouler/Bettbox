@@ -90,10 +90,84 @@ class Request {
     return Uint8List.fromList((data as List).cast<int>());
   }
 
+  Future<Response> _getFileResponseForUrl(
+    String url,
+    ResponseType responseType,
+  ) async {
+    final uri = Uri.parse(url);
+    final segments =
+        uri.pathSegments.where((segment) => segment.isNotEmpty).toList();
+    if (segments.isEmpty && uri.host.isEmpty) {
+      throw Exception('Empty file path in file url: $url');
+    }
+
+    final filePath = _buildFilePath(uri, segments);
+    final file = File(filePath);
+
+    if (!await file.exists()) {
+      throw Exception('Local file not found: $filePath');
+    }
+
+    final bytes = await file.readAsBytes();
+    return _buildResponseFromBytes(
+      url: url,
+      bytes: bytes,
+      responseType: responseType,
+      fileName: segments.lastOrNull,
+    );
+  }
+
+  String _buildFilePath(Uri uri, List<String> segments) {
+    if (segments.isNotEmpty && segments.first.contains(':')) {
+      return segments.join('/');
+    }
+    final host = uri.host;
+    if (host.isNotEmpty && host.toLowerCase() != 'localhost') {
+      if (host.length == 1 && RegExp(r'^[a-zA-Z]$').hasMatch(host)) {
+        return '$host:/${segments.join('/')}';
+      }
+      return '//$host/${segments.join('/')}';
+    }
+    return '/${segments.join('/')}';
+  }
+
+  Response _buildResponseFromBytes({
+    required String url,
+    required Uint8List bytes,
+    required ResponseType responseType,
+    String? fileName,
+  }) {
+    final requestOptions = RequestOptions(path: url);
+    final disposition = fileName == null
+        ? null
+        : 'attachment; filename*=UTF-8\'\'${Uri.encodeComponent(fileName)}';
+    final headers = disposition == null
+        ? null
+        : Headers.fromMap({'content-disposition': [disposition]});
+    if (responseType == ResponseType.plain) {
+      return Response(
+        requestOptions: requestOptions,
+        data: utf8.decode(bytes, allowMalformed: true),
+        statusCode: HttpStatus.ok,
+        headers: headers,
+      );
+    }
+    return Response(
+      requestOptions: requestOptions,
+      data: bytes,
+      statusCode: HttpStatus.ok,
+      headers: headers,
+    );
+  }
+
   Future<Response> _getResponseForUrl(
     String url,
     ResponseType responseType,
   ) async {
+    if (url.isFileUrl) {
+      return _getFileResponseForUrl(url, responseType);
+    }
+
     String? userInfo;
     String requestUrl = url;
 
