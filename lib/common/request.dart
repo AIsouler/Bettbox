@@ -397,7 +397,7 @@ class Request {
     );
   }
 
-  static const _cacheDuration = Duration(days: 14);
+  static const _cacheDuration = Duration(days: 30);
 
   Future<File> _getIpCacheFile() async {
     final filePath = await appPath.ipCacheFilePath;
@@ -510,7 +510,6 @@ class Request {
     final isZh = Intl.getCurrentLocale().toLowerCase().startsWith('zh');
     final cacheKey = '${ip}_${isZh ? 'zh' : 'en'}';
 
-    // 1. 检查本地缓存并执行过期清理（有效时长7天）
     final cached = await _getValidCachedIp(cacheKey);
     if (cached != null) {
       return Result.success(cached);
@@ -540,7 +539,6 @@ class Request {
           return Result.error(message);
         }
         final ipInfo = IpInfo.fromJson(data);
-        // 2. 写入 7 天有效期的本地缓存
         await _saveCachedIp(cacheKey, ipInfo);
         return Result.success(ipInfo);
       }
