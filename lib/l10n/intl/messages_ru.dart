@@ -713,6 +713,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "mediaUnlockPinnedSettingsDesc": MessageLookupByLibrary.simpleMessage(
       "Можно выбрать до 4 элементов для закрепления в виджете",
     ),
+    "mediaUnlockRefreshByCategory": MessageLookupByLibrary.simpleMessage(
+      "Частичное обновление по текущей категории",
+    ),
     "mediaUnlockRefreshOnNodeChange": MessageLookupByLibrary.simpleMessage(
       "Автообновление при смене узла",
     ),

@@ -30,6 +30,8 @@ _AppSettingProps _$AppSettingPropsFromJson(
   mediaUnlockRefreshOnNodeChange:
       json['mediaUnlockRefreshOnNodeChange'] as bool? ?? true,
   mediaUnlockColorfulIcons: json['mediaUnlockColorfulIcons'] as bool? ?? true,
+  mediaUnlockRefreshByCategory:
+      json['mediaUnlockRefreshByCategory'] as bool? ?? true,
   onlyStatisticsProxy: json['onlyStatisticsProxy'] as bool? ?? true,
   autoLaunch: json['autoLaunch'] as bool? ?? false,
   silentLaunch: json['silentLaunch'] as bool? ?? false,
@@ -75,6 +77,7 @@ Map<String, dynamic> _$AppSettingPropsToJson(_AppSettingProps instance) =>
       'mediaUnlockExtraDetails': instance.mediaUnlockExtraDetails,
       'mediaUnlockRefreshOnNodeChange': instance.mediaUnlockRefreshOnNodeChange,
       'mediaUnlockColorfulIcons': instance.mediaUnlockColorfulIcons,
+      'mediaUnlockRefreshByCategory': instance.mediaUnlockRefreshByCategory,
       'onlyStatisticsProxy': instance.onlyStatisticsProxy,
       'autoLaunch': instance.autoLaunch,
       'silentLaunch': instance.silentLaunch,

@@ -559,6 +559,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "mediaUnlockPinnedSettingsDesc": MessageLookupByLibrary.simpleMessage(
       "위젯에 고정 표시할 항목을 최대 4개 선택할 수 있습니다",
     ),
+    "mediaUnlockRefreshByCategory": MessageLookupByLibrary.simpleMessage(
+      "현재 카테고리를 기반으로 부분 새로고침",
+    ),
     "mediaUnlockRefreshOnNodeChange": MessageLookupByLibrary.simpleMessage(
       "노드 변경 시 자동 새로고침",
     ),

@@ -718,6 +718,7 @@
   "mediaUnlockExtraDetails": "返回更多 IP 詳細資訊",
   "mediaUnlockRefreshOnNodeChange": "節點變化時自動重新整理檢測",
   "mediaUnlockColorfulIcons": "預設顯示彩色 ICON 圖示",
+  "mediaUnlockRefreshByCategory": "根據當前分組狀態局部重新整理",
 
   "mediaUnlockPinnedSettingsDesc": "可選 4 個在小組件常駐展示的項目",
   "mediaUnlockSelectLimit": "最多只能選擇 4 個項目",

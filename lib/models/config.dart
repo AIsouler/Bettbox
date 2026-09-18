@@ -158,6 +158,7 @@ abstract class AppSettingProps with _$AppSettingProps {
     @Default(false) bool mediaUnlockExtraDetails,
     @Default(true) bool mediaUnlockRefreshOnNodeChange,
     @Default(true) bool mediaUnlockColorfulIcons,
+    @Default(true) bool mediaUnlockRefreshByCategory,
     @Default(true) bool onlyStatisticsProxy,
     @Default(false) bool autoLaunch,
     @Default(false) bool silentLaunch,

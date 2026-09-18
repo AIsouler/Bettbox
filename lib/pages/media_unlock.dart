@@ -334,6 +334,18 @@ class _MediaUnlockPageState extends ConsumerState<MediaUnlockPage> {
                 globalState.appController.savePreferencesDebounce();
               }
 
+              final divider = Divider(
+                height: 1,
+                thickness: 1,
+                color: context.colorScheme.outlineVariant.withValues(
+                  alpha: context.colorScheme.brightness == Brightness.light
+                      ? 0.6
+                      : 0.45,
+                ),
+                indent: 16,
+                endIndent: 16,
+              );
+
               return Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -348,6 +360,7 @@ class _MediaUnlockPageState extends ConsumerState<MediaUnlockPage> {
                       },
                     ),
                   ),
+                  divider,
                   ListItem.switchItem(
                     title: Text(appLocalizations.mediaUnlockRefreshOnNodeChange),
                     delegate: SwitchDelegate(
@@ -359,6 +372,7 @@ class _MediaUnlockPageState extends ConsumerState<MediaUnlockPage> {
                       },
                     ),
                   ),
+                  divider,
                   ListItem.switchItem(
                     title: Text(appLocalizations.mediaUnlockColorfulIcons),
                     delegate: SwitchDelegate(
@@ -366,6 +380,18 @@ class _MediaUnlockPageState extends ConsumerState<MediaUnlockPage> {
                       onChanged: (value) {
                         updateSetting(
                           (s) => s.copyWith(mediaUnlockColorfulIcons: value),
+                        );
+                      },
+                    ),
+                  ),
+                  divider,
+                  ListItem.switchItem(
+                    title: Text(appLocalizations.mediaUnlockRefreshByCategory),
+                    delegate: SwitchDelegate(
+                      value: setting.mediaUnlockRefreshByCategory,
+                      onChanged: (value) {
+                        updateSetting(
+                          (s) => s.copyWith(mediaUnlockRefreshByCategory: value),
                         );
                       },
                     ),
@@ -690,6 +716,7 @@ class _MediaUnlockPageState extends ConsumerState<MediaUnlockPage> {
     required List<MediaPlatform> platforms,
     required MediaUnlockState state,
     required bool showExtraDetails,
+    bool isCategoryLoading = false,
   }) {
     if (platforms.isEmpty) return const [];
     return [
@@ -722,7 +749,7 @@ class _MediaUnlockPageState extends ConsumerState<MediaUnlockPage> {
           return _buildPlatformRow(
             platform,
             state.results[platform],
-            state.isLoading,
+            isCategoryLoading,
             isItemTesting: state.testingPlatforms.contains(platform),
             showExtraDetails: showExtraDetails,
           );
@@ -734,8 +761,13 @@ class _MediaUnlockPageState extends ConsumerState<MediaUnlockPage> {
   @override
   Widget build(BuildContext context) {
     final isChinese = Localizations.localeOf(context).languageCode == 'zh';
-    final showExtraDetails = ref.watch(
-      appSettingProvider.select((state) => state.mediaUnlockExtraDetails),
+    final (showExtraDetails, refreshByCategory) = ref.watch(
+      appSettingProvider.select(
+        (state) => (
+          state.mediaUnlockExtraDetails,
+          state.mediaUnlockRefreshByCategory,
+        ),
+      ),
     );
 
     return ValueListenableBuilder<MediaUnlockState>(
@@ -762,6 +794,11 @@ class _MediaUnlockPageState extends ConsumerState<MediaUnlockPage> {
                 .where((p) => p.category == effectiveCategory)
                 .toList();
 
+        final isCategoryLoading = refreshByCategory
+            ? (state.isLoading ||
+                displayedPlatforms.any(state.testingPlatforms.contains))
+            : (state.isLoading || state.testingPlatforms.isNotEmpty);
+
         for (final p in displayedPlatforms) {
           final status = state.results[p]?.status;
           if (status == MediaUnlockStatus.unlocked) {
@@ -783,13 +820,17 @@ class _MediaUnlockPageState extends ConsumerState<MediaUnlockPage> {
               onPressed: _showPinnedSettingsDialog,
             ),
             IconButton(
-              onPressed: state.isLoading
+              onPressed: isCategoryLoading
                   ? null
                   : () {
-                      mediaUnlockState.checkAll(force: true);
+                      mediaUnlockState.checkAll(
+                        force: true,
+                        platforms:
+                            refreshByCategory ? displayedPlatforms : null,
+                      );
                     },
               tooltip: appLocalizations.retry,
-              icon: state.isLoading
+              icon: isCategoryLoading
                   ? SizedBox(
                       width: 16,
                       height: 16,
@@ -824,6 +865,7 @@ class _MediaUnlockPageState extends ConsumerState<MediaUnlockPage> {
                 platforms: unlockedList,
                 state: state,
                 showExtraDetails: showExtraDetails,
+                isCategoryLoading: isCategoryLoading,
               ),
               ..._buildStatusSectionSlivers(
                 title: appLocalizations.notUnlocked,
@@ -832,6 +874,7 @@ class _MediaUnlockPageState extends ConsumerState<MediaUnlockPage> {
                 platforms: blockedList,
                 state: state,
                 showExtraDetails: showExtraDetails,
+                isCategoryLoading: isCategoryLoading,
               ),
               ..._buildStatusSectionSlivers(
                 title: appLocalizations.other,
@@ -840,6 +883,7 @@ class _MediaUnlockPageState extends ConsumerState<MediaUnlockPage> {
                 platforms: otherList,
                 state: state,
                 showExtraDetails: showExtraDetails,
+                isCategoryLoading: isCategoryLoading,
               ),
               const SliverToBoxAdapter(child: SizedBox(height: 24)),
             ],

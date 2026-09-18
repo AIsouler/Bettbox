@@ -493,6 +493,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "mediaUnlockPinnedSettingsDesc": MessageLookupByLibrary.simpleMessage(
       "可选 4 个在小部件常驻展示的项目",
     ),
+    "mediaUnlockRefreshByCategory": MessageLookupByLibrary.simpleMessage(
+      "根据当前分组状态局部刷新",
+    ),
     "mediaUnlockRefreshOnNodeChange": MessageLookupByLibrary.simpleMessage(
       "节点变化时自动刷新检测",
     ),

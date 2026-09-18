@@ -692,6 +692,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "mediaUnlockPinnedSettingsDesc": MessageLookupByLibrary.simpleMessage(
       "Select up to 4 items to pin on the widget",
     ),
+    "mediaUnlockRefreshByCategory": MessageLookupByLibrary.simpleMessage(
+      "Partially refresh based on current category",
+    ),
     "mediaUnlockRefreshOnNodeChange": MessageLookupByLibrary.simpleMessage(
       "Auto refresh on node change",
     ),

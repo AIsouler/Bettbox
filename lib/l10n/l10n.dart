@@ -5844,6 +5844,16 @@ class AppLocalizations {
     );
   }
 
+  /// `Partially refresh based on current category`
+  String get mediaUnlockRefreshByCategory {
+    return Intl.message(
+      'Partially refresh based on current category',
+      name: 'mediaUnlockRefreshByCategory',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Select up to 4 items to pin on the widget`
   String get mediaUnlockPinnedSettingsDesc {
     return Intl.message(

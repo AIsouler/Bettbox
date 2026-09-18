@@ -718,6 +718,7 @@
   "mediaUnlockExtraDetails": "IP 상세 정보 더 보기",
   "mediaUnlockRefreshOnNodeChange": "노드 변경 시 자동 새로고침",
   "mediaUnlockColorfulIcons": "기본적으로 컬러 아이콘 표시",
+  "mediaUnlockRefreshByCategory": "현재 카테고리를 기반으로 부분 새로고침",
 
   "mediaUnlockPinnedSettingsDesc": "위젯에 고정 표시할 항목을 최대 4개 선택할 수 있습니다",
   "mediaUnlockSelectLimit": "최대 4개 항목까지 선택할 수 있습니다",

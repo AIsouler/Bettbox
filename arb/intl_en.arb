@@ -717,6 +717,7 @@
   "mediaUnlockExtraDetails": "Show more IP details",
   "mediaUnlockRefreshOnNodeChange": "Auto refresh on node change",
   "mediaUnlockColorfulIcons": "Show colored icons by default",
+  "mediaUnlockRefreshByCategory": "Partially refresh based on current category",
 
   "mediaUnlockPinnedSettingsDesc": "Select up to 4 items to pin on the widget",
   "mediaUnlockSelectLimit": "You can select up to 4 items",

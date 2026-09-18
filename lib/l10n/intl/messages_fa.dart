@@ -694,6 +694,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "mediaUnlockPinnedSettingsDesc": MessageLookupByLibrary.simpleMessage(
       "امکان انتخاب حداکثر ۴ مورد برای پین کردن در ویجت",
     ),
+    "mediaUnlockRefreshByCategory": MessageLookupByLibrary.simpleMessage(
+      "تازه‌سازی جزئی بر اساس دسته‌بندی فعلی",
+    ),
     "mediaUnlockRefreshOnNodeChange": MessageLookupByLibrary.simpleMessage(
       "به‌روزرسانی خودکار هنگام تغییر گره",
     ),

@@ -720,6 +720,7 @@
   "mediaUnlockExtraDetails": "Показывать больше сведений об IP",
   "mediaUnlockRefreshOnNodeChange": "Автообновление при смене узла",
   "mediaUnlockColorfulIcons": "Показывать цветные значки по умолчанию",
+  "mediaUnlockRefreshByCategory": "Частичное обновление по текущей категории",
 
   "mediaUnlockPinnedSettingsDesc": "Можно выбрать до 4 элементов для закрепления в виджете",
   "mediaUnlockSelectLimit": "Можно выбрать максимум 4 элемента",

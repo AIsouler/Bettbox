@@ -187,7 +187,6 @@ class _AppStateManagerState extends ConsumerState<AppStateManager>
       if (hasDetection) {
         detectionState.tryStartCheck();
       }
-      mediaUnlockState.tryStartCheck();
     }
     if (state == AppLifecycleState.resumed && system.isAndroid) {
       final hidden = ref.read(appSettingProvider.select((s) => s.hidden));

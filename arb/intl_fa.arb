@@ -718,6 +718,7 @@
   "mediaUnlockExtraDetails": "نمایش جزئیات بیشتر IP",
   "mediaUnlockRefreshOnNodeChange": "به‌روزرسانی خودکار هنگام تغییر گره",
   "mediaUnlockColorfulIcons": "نمایش آیکون‌های رنگی به‌صورت پیش‌فرض",
+  "mediaUnlockRefreshByCategory": "تازه‌سازی جزئی بر اساس دسته‌بندی فعلی",
 
   "mediaUnlockPinnedSettingsDesc": "امکان انتخاب حداکثر ۴ مورد برای پین کردن در ویجت",
   "mediaUnlockSelectLimit": "حداکثر می‌توانید ۴ مورد را انتخاب کنید",
