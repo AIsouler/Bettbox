@@ -90,6 +90,13 @@ class GlobalState {
         widgets.contains(DashboardWidget.mediaUnlockSmall);
   }
 
+  bool get hasNetworkDetectionWidget {
+    final widgets = system.isAndroid
+        ? config.appSetting.mobileDashboardWidgets
+        : config.appSetting.desktopDashboardWidgets;
+    return widgets.contains(DashboardWidget.networkDetection);
+  }
+
   bool get isStart => startTime != null && startTime!.isBeforeNow;
 
   AppController get appController => _appController!;
@@ -1248,12 +1255,10 @@ class DetectionState {
     final appState = globalState.appState;
     if (!appState.isInit) return;
 
-    if (showLoading || state.value.ipInfo == null) {
-      state.value = state.value.copyWith(
-        isLoading: true,
-        errorMessage: null,
-      );
-    }
+    state.value = state.value.copyWith(
+      isLoading: true,
+      errorMessage: null,
+    );
 
     final delay = immediate
         ? Duration.zero
@@ -1388,6 +1393,7 @@ class MediaUnlockStateNotifier {
   Timer? _nodeChangeTimer;
   static const _nodeChangeDelay = Duration(milliseconds: 800);
   String? _lastCheckedNodeSignature;
+  bool? _preIsStart;
 
   String _getNodeSignature() {
     final profileId = globalState.config.currentProfileId ?? '';
@@ -1629,37 +1635,69 @@ class MediaUnlockStateNotifier {
     );
   }
 
-  void startCheckOnNodeChange() {
+  void startCheckOnNodeChange() async {
     final isRunning = globalState.appState.runTime != null;
-    if (!isRunning) return;
+    if (!isRunning) {
+      _preIsStart = false;
+      return;
+    }
+    final isStartup = _preIsStart != true;
+    _preIsStart = true;
+
     if (!globalState.hasMediaUnlockWidget) return;
     if (!globalState.config.appSetting.mediaUnlockRefreshOnNodeChange) return;
 
-    final currentSignature = _getNodeSignature();
-    if (_lastCheckedNodeSignature != null &&
-        _lastCheckedNodeSignature == currentSignature &&
-        state.value.results.isNotEmpty) {
-      return;
-    }
-    _lastCheckedNodeSignature = currentSignature;
-
-    ++_requestId;
-    _checker.cancel();
+    final requestId = ++_requestId;
     _nodeChangeTimer?.cancel();
-    _batchTestingPlatforms.clear();
-    final nextResults =
-        Map<MediaPlatform, MediaUnlockResult>.from(state.value.results);
-    for (final p in pinnedPlatforms) {
-      nextResults.remove(p);
+    _checker.cancel();
+
+    if (isStartup) {
+      if (globalState.hasNetworkDetectionWidget) {
+        var waited = 0;
+        while (detectionState.state.value.isLoading &&
+            waited < 6000 &&
+            globalState.appState.runTime != null &&
+            requestId == _requestId) {
+          await Future.delayed(const Duration(milliseconds: 150));
+          waited += 150;
+        }
+      } else {
+        await Future.delayed(const Duration(seconds: 2));
+      }
+      if (requestId != _requestId || globalState.appState.runTime == null) return;
+      final nextResults =
+          Map<MediaPlatform, MediaUnlockResult>.from(state.value.results);
+      for (final p in pinnedPlatforms) {
+        nextResults.remove(p);
+      }
+      state.value = state.value.copyWith(
+        results: nextResults,
+        testingPlatforms: {},
+        isLoading: false,
+      );
+    } else {
+      final currentSignature = _getNodeSignature();
+      if (_lastCheckedNodeSignature == currentSignature &&
+          state.value.results.isNotEmpty) {
+        return;
+      }
+      _lastCheckedNodeSignature = currentSignature;
+      final nextResults =
+          Map<MediaPlatform, MediaUnlockResult>.from(state.value.results);
+      for (final p in pinnedPlatforms) {
+        nextResults.remove(p);
+      }
+      state.value = state.value.copyWith(
+        results: nextResults,
+        testingPlatforms: {},
+        isLoading: false,
+      );
+      await Future.delayed(_nodeChangeDelay);
+      if (requestId != _requestId || globalState.appState.runTime == null) return;
     }
-    state.value = state.value.copyWith(
-      results: nextResults,
-      testingPlatforms: {},
-      isLoading: false,
-    );
-    _nodeChangeTimer = Timer(_nodeChangeDelay, () {
-      checkPinned(force: true);
-    });
+
+    _lastCheckedNodeSignature = _getNodeSignature();
+    checkPinned(force: true);
   }
 
   void tryStartCheck() {

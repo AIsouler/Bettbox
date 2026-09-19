@@ -320,12 +320,14 @@ class Request {
       BaseOptions(
         receiveTimeout: effectiveTimeout,
         connectTimeout: effectiveTimeout,
+        sendTimeout: effectiveTimeout,
       ),
     );
     dio.httpClientAdapter = IOHttpClientAdapter(
       createHttpClient: () {
         final client = HttpClient();
         client.autoUncompress = false;
+        client.connectionTimeout = effectiveTimeout;
         return client;
       },
     );
@@ -423,7 +425,15 @@ class Request {
 
     return await firstCompleter.future.timeout(
       effectiveTimeout,
-      onTimeout: () => Result.success(primaryInfo ?? fallbackInfo),
+      onTimeout: () {
+        cleanup();
+        cancelToken?.cancel('timeout');
+        final res = primaryInfo ?? fallbackInfo;
+        if (res != null) {
+          return Result.success(res);
+        }
+        return Result.error('timeout');
+      },
     );
   }
 
