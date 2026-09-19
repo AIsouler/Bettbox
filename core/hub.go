@@ -22,7 +22,6 @@ import (
 	"github.com/metacubex/mihomo/common/utils"
 	"github.com/metacubex/mihomo/common/yaml"
 	"github.com/metacubex/mihomo/component/age"
-	"github.com/metacubex/mihomo/component/geodata"
 	"github.com/metacubex/mihomo/component/mmdb"
 	"github.com/metacubex/mihomo/component/resolver"
 	"github.com/metacubex/mihomo/component/updater"
@@ -84,6 +83,7 @@ func handleGetIsInit() bool {
 func handleForceGc(forceFreeOSMemory bool) {
 	go func() {
 		log.Infoln("[APP] Request force GC, forceFreeOSMemory=%t", forceFreeOSMemory)
+		tryUnloadGeoData()
 		runtime.GC()
 		if forceFreeOSMemory {
 			debug.FreeOSMemory()
@@ -94,6 +94,7 @@ func handleForceGc(forceFreeOSMemory bool) {
 func handleShutdown() bool {
 	stopListeners()
 	executor.Shutdown()
+	tryUnloadGeoData()
 	runtime.GC()
 	debug.FreeOSMemory()
 	isInit = false
@@ -602,25 +603,7 @@ func handleGetCoreStatus(fn func(value string)) {
 			ruleProvidersCount = len(tunnel.RuleProviders())
 		}
 
-		hasMMDB := geodata.GeoIpEnable()
-		hasSite := geodata.GeoSiteEnable()
-		hasASN := geodata.ASNEnable()
-
-		if !hasMMDB || !hasSite || !hasASN {
-			for _, r := range tunnel.Rules() {
-				if r == nil {
-					continue
-				}
-				switch r.RuleType() {
-				case constant.GEOIP, constant.SrcGEOIP:
-					hasMMDB = true
-				case constant.GEOSITE:
-					hasSite = true
-				case constant.IPASN, constant.SrcIPASN:
-					hasASN = true
-				}
-			}
-		}
+		hasMMDB, hasSite, hasASN := checkActiveGeoUsage()
 
 		var geodatas []string
 		if hasMMDB {
