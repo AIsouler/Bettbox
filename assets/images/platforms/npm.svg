@@ -1,4 +1,15 @@
-<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-<rect width="24" height="24" rx="4" fill="#CB3837"/>
-<path d="M4 7h16v10H12v-7H9.5v7H4V7z" fill="#FFFFFF"/>
+<svg viewBox="0 0 2500 2500" xmlns="http://www.w3.org/2000/svg" width="2500" height="2500">
+  <path fill="#c00" d="
+    M150 0
+    H2350
+    Q2500 0 2500 150
+    V2350
+    Q2500 2500 2350 2500
+    H150
+    Q0 2500 0 2350
+    V150
+    Q0 0 150 0
+    Z
+  "/>
+  <path fill="#fff" d="M1241.5 268.5h-973v1962.9h972.9V763.5h495v1467.9h495V268.5z"/>
 </svg>
