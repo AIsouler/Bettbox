@@ -114,11 +114,17 @@ mixin AndroidClashInterface {
   Future<DateTime?> getRunTime();
 }
 
+class CoreDisconnectedException implements Exception {
+  const CoreDisconnectedException();
+}
+
 abstract class ClashHandlerInterface with ClashInterface {
   Map<String, Completer> callbackCompleterMap = {};
+  final Map<String, Object> _requestChannels = {};
 
   Future<void> handleResult(ActionResult result) async {
     final completer = callbackCompleterMap[result.id];
+    _requestChannels.remove(result.id);
     try {
       switch (result.method) {
         case ActionMethod.message:
@@ -141,7 +147,21 @@ abstract class ClashHandlerInterface with ClashInterface {
     }
   }
 
-  FutureOr<void> sendMessage(String message);
+  FutureOr<Object?> sendMessage(String message);
+
+  void abortRequests(Object channel) {
+    final ids = _requestChannels.entries
+        .where((entry) => identical(entry.value, channel))
+        .map((entry) => entry.key)
+        .toList();
+    for (final id in ids) {
+      _requestChannels.remove(id);
+      final completer = callbackCompleterMap.remove(id);
+      if (completer != null && !completer.isCompleted) {
+        completer.completeError(const CoreDisconnectedException());
+      }
+    }
+  }
 
   FutureOr<void> reStart();
 
@@ -156,7 +176,8 @@ abstract class ClashHandlerInterface with ClashInterface {
   }) async {
     final id = '${method.name}#${utils.id}';
 
-    callbackCompleterMap[id] = Completer<T>();
+    final completer = Completer<T>();
+    callbackCompleterMap[id] = completer;
 
     dynamic mDefaultValue = defaultValue;
     if (mDefaultValue == null) {
@@ -168,26 +189,36 @@ abstract class ClashHandlerInterface with ClashInterface {
         mDefaultValue = <String, dynamic>{};
       }
     }
+    final FutureOr<T> Function() fallback = onTimeout ?? () => mDefaultValue;
 
     try {
-      await sendMessage(json.encode(Action(id: id, method: method, data: data)));
+      final channel = await sendMessage(
+        json.encode(Action(id: id, method: method, data: data)),
+      );
+      if (channel != null && !completer.isCompleted) {
+        _requestChannels[id] = channel;
+      }
+    } on CoreDisconnectedException {
+      callbackCompleterMap.remove(id);
+      return fallback();
     } catch (e) {
       callbackCompleterMap.remove(id);
       rethrow;
     }
 
-    return (callbackCompleterMap[id] as Completer<T>).safeFuture(
-      timeout: timeout,
-      onLast: () {
-        callbackCompleterMap.remove(id);
-      },
-      onTimeout:
-          onTimeout ??
-          () {
-            return mDefaultValue;
-          },
-      functionName: id,
-    );
+    try {
+      return await completer.safeFuture(
+        timeout: timeout,
+        onLast: () {
+          callbackCompleterMap.remove(id);
+          _requestChannels.remove(id);
+        },
+        onTimeout: fallback,
+        functionName: id,
+      );
+    } on CoreDisconnectedException {
+      return fallback();
+    }
   }
 
   void _invokeAndForget(ActionMethod method, {dynamic data}) {

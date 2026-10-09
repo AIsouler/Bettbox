@@ -108,6 +108,7 @@ class ClashService extends ClashHandlerInterface {
                 },
                 onDone: () {
                   commonPrint.log('Socket connection closed');
+                  abortRequests(socket);
                 },
               );
         }
@@ -313,9 +314,9 @@ class ClashService extends ClashHandlerInterface {
   }
 
   @override
-  sendMessage(String message) async {
+  Future<Socket> sendMessage(String message) async {
     if (_isDestroying || globalState.isExiting) {
-      return;
+      throw const CoreDisconnectedException();
     }
     final socket = await socketCompleter.future.timeout(
       const Duration(seconds: 5),
@@ -326,12 +327,13 @@ class ClashService extends ClashHandlerInterface {
     try {
       final frame = FrameCodec.encode(message);
       socket.add(frame);
+      return socket;
     } on SocketException catch (e) {
       if (_isDestroying || globalState.isExiting || isStarting) {
         commonPrint.log(
           'Ignored message send on closed socket during transition: $e',
         );
-        return;
+        throw const CoreDisconnectedException();
       }
       rethrow;
     } on StateError catch (e) {
@@ -339,7 +341,7 @@ class ClashService extends ClashHandlerInterface {
         commonPrint.log(
           'Ignored message send on closed socket during transition: $e',
         );
-        return;
+        throw const CoreDisconnectedException();
       }
       rethrow;
     }

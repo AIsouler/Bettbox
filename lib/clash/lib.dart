@@ -119,6 +119,7 @@ class ClashLib extends ClashHandlerInterface with AndroidClashInterface {
       await _waitForIpc();
       sendPort?.send(message);
     }
+    return null;
   }
 
   // @override
