@@ -15,6 +15,7 @@ import 'package:bett_box/providers/providers.dart';
 import 'package:bett_box/providers/state.dart' as providers_state;
 
 import 'package:bett_box/widgets/dialog.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' as flutter_riverpod;
@@ -141,7 +142,9 @@ class GlobalState {
       await appPath.ensureAppImageCoreSynced();
     }
     coreSHA256 = const String.fromEnvironment('CORE_SHA256');
-    if (system.isWindows && (coreSHA256 == null || coreSHA256!.isEmpty)) {
+    if (system.isWindows &&
+        !kDebugMode &&
+        (coreSHA256 == null || coreSHA256!.isEmpty)) {
       coreSHA256 = await _calcCoreSHA256();
     }
     isPre = const String.fromEnvironment('APP_ENV') != 'stable';

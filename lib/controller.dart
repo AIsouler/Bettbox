@@ -1036,6 +1036,7 @@ class AppController {
         '${AppIdentity.mainExecutableName}.exe',
         enable,
       );
+      if (kDebugMode) return;
       await helperClient.setProcessPriority(
         '${AppIdentity.coreExecutableName}.exe',
         enable,

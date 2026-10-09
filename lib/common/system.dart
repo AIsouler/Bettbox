@@ -11,6 +11,7 @@ import 'package:bett_box/helper/helper.dart';
 import 'package:bett_box/plugins/app.dart';
 import 'package:bett_box/state.dart';
 import 'package:bett_box/widgets/input.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart';
 import 'package:synchronized/synchronized.dart';
@@ -52,6 +53,7 @@ class System {
   Future<bool> checkIsAdmin() async {
     final corePath = appPath.corePath;
     if (system.isWindows) {
+      if (kDebugMode) return windows?.isUserAnAdmin ?? false;
       final result = await windows?.checkService();
       return result == WindowsHelperServiceStatus.running;
     }
@@ -95,6 +97,7 @@ class System {
     if (await checkIsAdmin()) return AuthorizeCode.none;
 
     if (system.isWindows) {
+      if (kDebugMode) return AuthorizeCode.error;
       if (await windows?.isHelperHealthy() ?? false) return AuthorizeCode.none;
       final result = await windows?.registerService();
       return result == true ? AuthorizeCode.success : AuthorizeCode.error;
@@ -343,6 +346,12 @@ class Windows {
         calloc.free(memoryPriorityInfo);
       }
     }
+  }
+
+  bool get isUserAnAdmin {
+    final isUserAnAdmin = _shell32
+        .lookupFunction<Int32 Function(), int Function()>('IsUserAnAdmin');
+    return isUserAnAdmin() != 0;
   }
 
   bool runas(String command, String arguments, {bool showWindow = false}) {
