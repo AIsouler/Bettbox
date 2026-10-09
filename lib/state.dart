@@ -642,6 +642,20 @@ class GlobalState {
       preferences.saveConfig(config);
       this.config = config;
     }
+
+    final prefs = await preferences.sharedPreferencesCompleter.future;
+    if (prefs != null && prefs.containsKey(customDashboardTitleKey)) {
+      config = config.copyWith(
+        appSetting: config.appSetting.copyWith(
+          dashboardTitle:
+              prefs.getString(customDashboardTitleKey) ??
+              config.appSetting.dashboardTitle,
+        ),
+      );
+      await preferences.saveConfig(config);
+      this.config = config;
+      await prefs.remove(customDashboardTitleKey);
+    }
   }
 
   CoreState getCoreState() {

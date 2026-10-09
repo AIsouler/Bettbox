@@ -11,32 +11,6 @@ import 'package:bett_box/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-final customDashboardTitleProvider =
-    StateNotifierProvider<CustomDashboardTitleNotifier, String?>((ref) {
-      return CustomDashboardTitleNotifier();
-    });
-
-class CustomDashboardTitleNotifier extends StateNotifier<String?> {
-  CustomDashboardTitleNotifier() : super(null) {
-    _init();
-  }
-
-  Future<void> _init() async {
-    final prefs = await preferences.sharedPreferencesCompleter.future;
-    state = prefs?.getString(customDashboardTitleKey);
-  }
-
-  Future<void> updateTitle(String? title) async {
-    state = title;
-    final prefs = await preferences.sharedPreferencesCompleter.future;
-    if (title == null) {
-      prefs?.remove(customDashboardTitleKey);
-    } else {
-      prefs?.setString(customDashboardTitleKey, title);
-    }
-  }
-}
-
 typedef _IsEditWidgetBuilder = Widget Function(bool isEdit);
 
 class DashboardView extends ConsumerStatefulWidget {
@@ -157,14 +131,17 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
   }
 
   void _showEditTitleDialog() async {
-    final currentTitle = ref.read(customDashboardTitleProvider) ?? '';
+    final currentTitle = ref.read(appSettingProvider).dashboardTitle ?? '';
     final title = await globalState.showCommonDialog<String>(
       child: _DashboardTitleDialog(initialValue: currentTitle),
     );
     if (title != null) {
       ref
-          .read(customDashboardTitleProvider.notifier)
-          .updateTitle(title.isEmpty ? null : title);
+          .read(appSettingProvider.notifier)
+          .updateState(
+            (state) =>
+                state.copyWith(dashboardTitle: title.isEmpty ? null : title),
+          );
     }
   }
 
@@ -225,7 +202,8 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
     });
     return CommonScaffold(
       title:
-          ref.watch(customDashboardTitleProvider) ?? appLocalizations.dashboard,
+          ref.watch(appSettingProvider.select((s) => s.dashboardTitle)) ??
+          appLocalizations.dashboard,
       actions: _buildActions(),
       body: Align(
         alignment: Alignment.topCenter,

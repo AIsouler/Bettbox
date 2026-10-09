@@ -193,6 +193,7 @@ abstract class AppSettingProps with _$AppSettingProps {
     @Default(false) bool enableHighRefreshRate,
     @Default(RecoveryStrategy.compatible) RecoveryStrategy recoveryStrategy,
     @Default(false) bool enableHighPriority,
+    String? dashboardTitle,
   }) = _AppSettingProps;
 
   factory AppSettingProps.fromJson(Map<String, Object?> json) =>

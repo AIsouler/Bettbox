@@ -60,6 +60,7 @@ _AppSettingProps _$AppSettingPropsFromJson(
       ) ??
       RecoveryStrategy.compatible,
   enableHighPriority: json['enableHighPriority'] as bool? ?? false,
+  dashboardTitle: json['dashboardTitle'] as String?,
 );
 
 Map<String, dynamic> _$AppSettingPropsToJson(_AppSettingProps instance) =>
@@ -103,6 +104,7 @@ Map<String, dynamic> _$AppSettingPropsToJson(_AppSettingProps instance) =>
       'enableHighRefreshRate': instance.enableHighRefreshRate,
       'recoveryStrategy': _$RecoveryStrategyEnumMap[instance.recoveryStrategy]!,
       'enableHighPriority': instance.enableHighPriority,
+      'dashboardTitle': instance.dashboardTitle,
     };
 
 const _$RecoveryStrategyEnumMap = {
