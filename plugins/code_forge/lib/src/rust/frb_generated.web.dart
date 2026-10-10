@@ -7,7 +7,6 @@
 // ignore_for_file: argument_type_not_assignable
 
 import 'api/editor.dart';
-import 'api/rope.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'frb_generated.dart';
@@ -22,18 +21,8 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   });
 
   CrossPlatformFinalizerArg
-  get rust_arc_decrement_strong_count_LayoutMapPtr => wire
-      .rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerLayoutMap;
-
-  CrossPlatformFinalizerArg
   get rust_arc_decrement_strong_count_RopeBridgePtr => wire
       .rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRopeBridge;
-
-  @protected
-  LayoutMap
-  dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerLayoutMap(
-    dynamic raw,
-  );
 
   @protected
   RopeBridge
@@ -42,26 +31,8 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
-  LayoutMap
-  dco_decode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerLayoutMap(
-    dynamic raw,
-  );
-
-  @protected
-  LayoutMap
-  dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerLayoutMap(
-    dynamic raw,
-  );
-
-  @protected
   RopeBridge
   dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRopeBridge(
-    dynamic raw,
-  );
-
-  @protected
-  LayoutMap
-  dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerLayoutMap(
     dynamic raw,
   );
 
@@ -75,19 +46,7 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   String dco_decode_String(dynamic raw);
 
   @protected
-  BiDiSegment dco_decode_bi_di_segment(dynamic raw);
-
-  @protected
-  bool dco_decode_bool(dynamic raw);
-
-  @protected
-  CharOffset dco_decode_char_offset(dynamic raw);
-
-  @protected
-  double dco_decode_f_32(dynamic raw);
-
-  @protected
-  double dco_decode_f_64(dynamic raw);
+  BigInt dco_decode_box_autoadd_usize(dynamic raw);
 
   @protected
   GuideBlock dco_decode_guide_block(dynamic raw);
@@ -96,25 +55,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   int dco_decode_i_32(dynamic raw);
 
   @protected
-  PlatformInt64 dco_decode_i_64(dynamic raw);
-
-  @protected
-  LineCount dco_decode_line_count(dynamic raw);
-
-  @protected
-  LineSummary dco_decode_line_summary(dynamic raw);
-
-  @protected
   List<String> dco_decode_list_String(dynamic raw);
 
   @protected
-  List<BiDiSegment> dco_decode_list_bi_di_segment(dynamic raw);
-
-  @protected
   List<GuideBlock> dco_decode_list_guide_block(dynamic raw);
-
-  @protected
-  List<LineSummary> dco_decode_list_line_summary(dynamic raw);
 
   @protected
   Uint8List dco_decode_list_prim_u_8_strict(dynamic raw);
@@ -123,16 +67,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<RustFoldRange> dco_decode_list_rust_fold_range(dynamic raw);
 
   @protected
-  PixelHeight dco_decode_pixel_height(dynamic raw);
+  BigInt? dco_decode_opt_box_autoadd_usize(dynamic raw);
 
   @protected
   RustFoldRange dco_decode_rust_fold_range(dynamic raw);
-
-  @protected
-  SelectionState dco_decode_selection_state(dynamic raw);
-
-  @protected
-  TextDirection dco_decode_text_direction(dynamic raw);
 
   @protected
   int dco_decode_u_8(dynamic raw);
@@ -144,44 +82,14 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   BigInt dco_decode_usize(dynamic raw);
 
   @protected
-  ViewportFrame dco_decode_viewport_frame(dynamic raw);
-
-  @protected
-  VisibleLineRange dco_decode_visible_line_range(dynamic raw);
-
-  @protected
-  LayoutMap
-  sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerLayoutMap(
-    SseDeserializer deserializer,
-  );
-
-  @protected
   RopeBridge
   sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRopeBridge(
     SseDeserializer deserializer,
   );
 
   @protected
-  LayoutMap
-  sse_decode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerLayoutMap(
-    SseDeserializer deserializer,
-  );
-
-  @protected
-  LayoutMap
-  sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerLayoutMap(
-    SseDeserializer deserializer,
-  );
-
-  @protected
   RopeBridge
   sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRopeBridge(
-    SseDeserializer deserializer,
-  );
-
-  @protected
-  LayoutMap
-  sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerLayoutMap(
     SseDeserializer deserializer,
   );
 
@@ -195,19 +103,7 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   String sse_decode_String(SseDeserializer deserializer);
 
   @protected
-  BiDiSegment sse_decode_bi_di_segment(SseDeserializer deserializer);
-
-  @protected
-  bool sse_decode_bool(SseDeserializer deserializer);
-
-  @protected
-  CharOffset sse_decode_char_offset(SseDeserializer deserializer);
-
-  @protected
-  double sse_decode_f_32(SseDeserializer deserializer);
-
-  @protected
-  double sse_decode_f_64(SseDeserializer deserializer);
+  BigInt sse_decode_box_autoadd_usize(SseDeserializer deserializer);
 
   @protected
   GuideBlock sse_decode_guide_block(SseDeserializer deserializer);
@@ -216,25 +112,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   int sse_decode_i_32(SseDeserializer deserializer);
 
   @protected
-  PlatformInt64 sse_decode_i_64(SseDeserializer deserializer);
-
-  @protected
-  LineCount sse_decode_line_count(SseDeserializer deserializer);
-
-  @protected
-  LineSummary sse_decode_line_summary(SseDeserializer deserializer);
-
-  @protected
   List<String> sse_decode_list_String(SseDeserializer deserializer);
 
   @protected
-  List<BiDiSegment> sse_decode_list_bi_di_segment(SseDeserializer deserializer);
-
-  @protected
   List<GuideBlock> sse_decode_list_guide_block(SseDeserializer deserializer);
-
-  @protected
-  List<LineSummary> sse_decode_list_line_summary(SseDeserializer deserializer);
 
   @protected
   Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer);
@@ -245,16 +126,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
-  PixelHeight sse_decode_pixel_height(SseDeserializer deserializer);
+  BigInt? sse_decode_opt_box_autoadd_usize(SseDeserializer deserializer);
 
   @protected
   RustFoldRange sse_decode_rust_fold_range(SseDeserializer deserializer);
-
-  @protected
-  SelectionState sse_decode_selection_state(SseDeserializer deserializer);
-
-  @protected
-  TextDirection sse_decode_text_direction(SseDeserializer deserializer);
 
   @protected
   int sse_decode_u_8(SseDeserializer deserializer);
@@ -266,17 +141,7 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   BigInt sse_decode_usize(SseDeserializer deserializer);
 
   @protected
-  ViewportFrame sse_decode_viewport_frame(SseDeserializer deserializer);
-
-  @protected
-  VisibleLineRange sse_decode_visible_line_range(SseDeserializer deserializer);
-
-  @protected
-  void
-  sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerLayoutMap(
-    LayoutMap self,
-    SseSerializer serializer,
-  );
+  bool sse_decode_bool(SseDeserializer deserializer);
 
   @protected
   void
@@ -287,29 +152,8 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void
-  sse_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerLayoutMap(
-    LayoutMap self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void
-  sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerLayoutMap(
-    LayoutMap self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void
   sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRopeBridge(
     RopeBridge self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void
-  sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerLayoutMap(
-    LayoutMap self,
     SseSerializer serializer,
   );
 
@@ -324,19 +168,7 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_String(String self, SseSerializer serializer);
 
   @protected
-  void sse_encode_bi_di_segment(BiDiSegment self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_bool(bool self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_char_offset(CharOffset self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_f_32(double self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_f_64(double self, SseSerializer serializer);
+  void sse_encode_box_autoadd_usize(BigInt self, SseSerializer serializer);
 
   @protected
   void sse_encode_guide_block(GuideBlock self, SseSerializer serializer);
@@ -345,32 +177,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_i_32(int self, SseSerializer serializer);
 
   @protected
-  void sse_encode_i_64(PlatformInt64 self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_line_count(LineCount self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_line_summary(LineSummary self, SseSerializer serializer);
-
-  @protected
   void sse_encode_list_String(List<String> self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_list_bi_di_segment(
-    List<BiDiSegment> self,
-    SseSerializer serializer,
-  );
 
   @protected
   void sse_encode_list_guide_block(
     List<GuideBlock> self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_list_line_summary(
-    List<LineSummary> self,
     SseSerializer serializer,
   );
 
@@ -387,19 +198,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
-  void sse_encode_pixel_height(PixelHeight self, SseSerializer serializer);
+  void sse_encode_opt_box_autoadd_usize(BigInt? self, SseSerializer serializer);
 
   @protected
   void sse_encode_rust_fold_range(RustFoldRange self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_selection_state(
-    SelectionState self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_text_direction(TextDirection self, SseSerializer serializer);
 
   @protected
   void sse_encode_u_8(int self, SseSerializer serializer);
@@ -411,35 +213,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_usize(BigInt self, SseSerializer serializer);
 
   @protected
-  void sse_encode_viewport_frame(ViewportFrame self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_visible_line_range(
-    VisibleLineRange self,
-    SseSerializer serializer,
-  );
+  void sse_encode_bool(bool self, SseSerializer serializer);
 }
 
 // Section: wire_class
 
 class RustLibWire implements BaseWire {
   RustLibWire.fromExternalLibrary(ExternalLibrary lib);
-
-  void
-  rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerLayoutMap(
-    int ptr,
-  ) => wasmModule
-      .rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerLayoutMap(
-        ptr,
-      );
-
-  void
-  rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerLayoutMap(
-    int ptr,
-  ) => wasmModule
-      .rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerLayoutMap(
-        ptr,
-      );
 
   void
   rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRopeBridge(
@@ -464,16 +244,6 @@ external RustLibWasmModule get wasmModule;
 @JS()
 @anonymous
 extension type RustLibWasmModule._(JSObject _) implements JSObject {
-  external void
-  rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerLayoutMap(
-    int ptr,
-  );
-
-  external void
-  rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerLayoutMap(
-    int ptr,
-  );
-
   external void
   rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRopeBridge(
     int ptr,

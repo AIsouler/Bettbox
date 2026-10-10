@@ -193,6 +193,7 @@ class OverflowAwareLayoutDelegate extends SingleChildLayoutDelegate {
 
 class CommonPopupMenu extends StatelessWidget {
   final List<PopupMenuItemData> items;
+  final Widget? footer;
   final double minWidth;
   final double minItemVerticalPadding;
   final double fontSize;
@@ -200,6 +201,7 @@ class CommonPopupMenu extends StatelessWidget {
   const CommonPopupMenu({
     super.key,
     required this.items,
+    this.footer,
     this.minWidth = 200,
     this.minItemVerticalPadding = 16,
     this.fontSize = 15,
@@ -270,6 +272,10 @@ class CommonPopupMenu extends StatelessWidget {
               for (final item in items.asMap().entries) ...[
                 _popupMenuItem(context, item: item.value, index: item.key),
                 if (item.value != items.last) Divider(height: 0),
+              ],
+              if (footer case final footer?) ...[
+                const Divider(height: 0),
+                footer,
               ],
             ],
           ),
