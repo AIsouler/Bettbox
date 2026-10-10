@@ -1330,11 +1330,9 @@ class GlobalState {
         return await JavaScriptRuntimeManager.evaluateScript(
           currentScript.content,
           config,
-          // 内置脚本用不到的开关（链式代理）永远不传给它：这种开关开着只会让脚本抛错，
-          // 整份配置都覆写不出来
-          customOptions: currentScript.id == builtinScriptId
-              ? builtinScriptCustomOptions(currentScript.customOptions)
-              : currentScript.customOptions,
+          // 自定义开关原样交给脚本：脚本没声明的开关它自己忽略，
+          // App 侧不再过滤（免得求值与签名用两份数据）
+          customOptions: currentScript.customOptions,
         );
       } catch (e) {
         commonPrint.log('Script execution failed: $e');

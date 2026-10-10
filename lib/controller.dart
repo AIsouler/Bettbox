@@ -496,9 +496,8 @@ class AppController {
       if (builtin == null) {
         throw Exception(appLocalizations.builtinScriptMissing);
       }
-      // 内置脚本不支持的开关（自定义节点/链式代理）一律不传给它，
-      // 签名也必须用同一份开关，免得自己把自己判成过期。
-      final builtinOptions = builtinScriptCustomOptions(builtin.customOptions);
+      // 求值与脚本签名必须用同一份自定义开关，免得自己把自己判成过期。
+      final builtinOptions = builtin.customOptions;
 
       final memberConfigs = <BundleMemberConfig>[];
       final memberWarnings = <BundleMergeWarning>[];
@@ -606,7 +605,7 @@ class AppController {
         ? null
         : builtinScriptStamp(
             content: builtin.content,
-            customOptions: builtinScriptCustomOptions(builtin.customOptions),
+            customOptions: builtin.customOptions,
           );
     final profiles = _ref.read(profilesProvider);
     for (final bundle in bundles) {

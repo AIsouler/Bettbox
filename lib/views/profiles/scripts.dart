@@ -107,13 +107,7 @@ Future<void> showScriptCustomOptions(
           data,
           script,
         );
-        // 内置脚本不开放编辑、也没有自定义节点，链式代理这类开关开了只会让
-        // 配置生成失败，不给显示（目录见 builtinScriptHiddenOptions）
-        if (script.id == builtinScriptId) {
-          for (final key in builtinScriptHiddenOptions) {
-            options.remove(key);
-          }
-        }
+        // 面板只列脚本自己声明的开关，App 侧不再额外隐藏 / 过滤任何开关
 
         final targetDuration = cached != null
             ? _kCachedMinLoadingDuration

@@ -318,14 +318,6 @@ class ScriptState extends _$ScriptState with AutoDisposeNotifierMixin {
   }
 
   void setScript(Script script) {
-    // 内置脚本用不到的开关（链式代理）不允许落盘：存量数据里开着也在这里归零，
-    // 免得它被当成 true 传给脚本、把整份配置跑崩
-    final options = script.customOptions;
-    if (script.id == builtinScriptId && options != null && options.isNotEmpty) {
-      script = script.copyWith(
-        customOptions: builtinScriptCustomOptions(options),
-      );
-    }
     final list = List<Script>.from(state.scripts);
     final index = list.indexWhere((item) => item.id == script.id);
     final previous = index == -1 ? null : list[index];

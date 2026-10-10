@@ -5,31 +5,16 @@ import 'package:flutter_test/flutter_test.dart';
 /// 内置脚本的签名决定「脚本改了 → 合并配置过期」，这里把它的判定钉住。
 ///
 /// 注意：这个文件里**只能有一个 testWidgets**，而且后续不要再用普通 `test` 做真实 IO
-/// （读文件 / 起引擎）——`testWidgets` 装上 fake async 之后，后面的真实异步再也回不来，
-/// 用例会一路挂到 10 分钟超时。要读脚本内容就复用下面这次 `rootBundle` 的结果。
+/// （读文件 / 起引擎）——`testWidgets` 装上 fake async 之后，真实异步再也回不来，用例会
+/// 一路挂到 10 分钟超时。要读脚本内容就复用下面这次 `rootBundle` 的结果（读的时候必须
+/// 走 `runAsync`，否则同样是挂住）。
 void main() {
-  testWidgets('随包脚本资源已注册且可加载，隐藏开关名单有效', (tester) async {
-    final content = await rootBundle.loadString(builtinScriptAssetPath);
+  testWidgets('随包脚本资源已注册且可加载', (tester) async {
+    final content = await tester.runAsync(
+      () => rootBundle.loadString(builtinScriptAssetPath),
+    );
     expect(content, contains('Compatible_With_Bettbox'));
     expect(content, contains('function main(config)'));
-
-    // 隐藏名单不能失效：脚本里得真有这些开关，否则隐藏逻辑就是死的
-    for (final key in builtinScriptHiddenOptions) {
-      expect(content, contains(key));
-    }
-
-    // 历史数据里开着的隐藏开关不该影响签名，否则合并配置会被反复判成过期
-    final base = builtinScriptStamp(
-      content: content,
-      customOptions: builtinScriptCustomOptions(const {'Google': true}),
-    );
-    final withStaleChain = builtinScriptStamp(
-      content: content,
-      customOptions: builtinScriptCustomOptions(
-        const {'Google': true, '链式代理': true},
-      ),
-    );
-    expect(withStaleChain, base);
   });
 
   test('内容或自定义开关变化都会改变签名', () {
@@ -67,18 +52,5 @@ void main() {
       builtinScriptStamp(content: 'x', customOptions: const {}),
       builtinScriptStamp(content: 'x'),
     );
-  });
-
-  test('内置脚本会滤掉隐藏开关（链式代理），其余开关原样保留', () {
-    expect(
-      builtinScriptCustomOptions({
-        '链式代理': true,
-        'Google': false,
-        '极简模式': true,
-      }),
-      {'Google': false, '极简模式': true},
-    );
-    expect(builtinScriptCustomOptions(null), isEmpty);
-    expect(builtinScriptCustomOptions(const {}), isEmpty);
   });
 }
