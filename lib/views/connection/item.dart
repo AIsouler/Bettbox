@@ -282,6 +282,7 @@ class _ProcessIconState extends State<_ProcessIcon> {
           height: 42,
           alignment: Alignment.center,
           child: FutureBuilder<Uint8List?>(
+            initialData: _iconCache[widget.process],
             future: _iconFuture,
             builder: (context, snapshot) {
               final iconBytes = snapshot.data;
@@ -494,6 +495,17 @@ class TrackerInfoDetailView extends ConsumerWidget {
 
     final remoteDestParsed = _parseIpAndPort(info.metadata.remoteDestination);
 
+    final isLight = context.colorScheme.brightness == Brightness.light;
+    final divider = Divider(
+      height: 1,
+      thickness: 1,
+      color: context.colorScheme.outlineVariant.withValues(
+        alpha: isLight ? 0.45 : 0.25,
+      ),
+      indent: 16,
+      endIndent: 16,
+    );
+
     final items = [
       _buildItem(
         title: appLocalizations.creationTime,
@@ -553,11 +565,13 @@ class TrackerInfoDetailView extends ConsumerWidget {
                 title: appLocalizations.upload,
                 desc: TrafficValue(value: upload).show,
               ),
+              divider,
               _buildItem(
                 title: appLocalizations.download,
                 desc: TrafficValue(value: download).show,
               ),
-              if (isAlive)
+              if (isAlive) ...[
+                divider,
                 _buildItem(
                   title: appLocalizations.realTimeSpeed,
                   desc: Traffic(
@@ -565,6 +579,7 @@ class TrackerInfoDetailView extends ConsumerWidget {
                     down: liveInfo.downloadSpeed,
                   ).toString(),
                 ),
+              ],
             ],
           );
         },
@@ -606,15 +621,25 @@ class TrackerInfoDetailView extends ConsumerWidget {
                 title: appLocalizations.remoteDestination,
                 desc: info.metadata.remoteDestination,
               ),
-      _buildChains(info),
+      if (info.chains.isNotEmpty) _buildChains(info),
     ];
     return SelectionArea(
-      child: ListView.builder(
-        padding: EdgeInsets.symmetric(vertical: 12),
-        itemCount: items.length,
-        itemBuilder: (_, index) {
-          return items[index];
-        },
+      child: ListView(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        children: [
+          CommonCard(
+            type: CommonCardType.filled,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (var i = 0; i < items.length; i++) ...[
+                  items[i],
+                  if (i != items.length - 1) divider,
+                ],
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

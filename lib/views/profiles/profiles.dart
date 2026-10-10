@@ -111,7 +111,7 @@ class _ProfilesViewState extends ConsumerState<ProfilesView> {
               scriptStateProvider.select((state) => state.realId != null),
             );
             return Icon(
-              Icons.functions,
+              Icons.terminal_outlined,
               color: isScriptMode ? context.colorScheme.primary : null,
             );
           },

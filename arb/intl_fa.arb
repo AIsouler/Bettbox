@@ -72,6 +72,8 @@
   "dozeSuspendDesc": "همگام‌سازی با حالت خواب سیستم (Doze)",
   "storeFix": "ترمیم استور",
   "storeFixDesc": "رفع مشکلات دانلود Google Play Store",
+  "loopbackProtection": "محافظت در برابر لوپ‌بک",
+  "loopbackProtectionDesc": "مسدودسازی ترافیک لوپ‌بک ناشی از خطای شبکه",
   "disableQuic": "غیرفعال‌سازی QUIC",
   "disableQuicDesc": "غیرفعال‌سازی QUIC برای رفع مشکلات شبکه",
   "notificationHighPriority": "اولویت بالا",
@@ -606,8 +608,8 @@
   "saveChanges": "آیا تغییرات ذخیره شوند؟",
   "generalDesc": "تغییر تنظیمات عمومی",
   "findProcessModeDesc": "امکان جستجو و تطبیق پردازش‌ها",
-  "navBarHapticFeedback": "بازخورد لمسی",
-  "navBarHapticFeedbackDesc": "لرزش هنگام تغییر زبانه‌های نوار پایین",
+  "navBarHapticFeedback": "بازخورد انیمیشن",
+  "navBarHapticFeedbackDesc": "انیمیشن نوار ناوبری پایین و بازخورد لمسی",
   "saveTip": "آیا از ذخیره تغییرات اطمینان دارید؟",
   "colorSchemes": "پالت‌های رنگی",
   "palette": "پالت",
@@ -691,6 +693,7 @@
   "openDashboard": "باز کردن Zashboard",
   "custom": "سفارشی",
   "customScriptOptions": "قوانین سفارشی",
+  "scriptOtherOptions": "تنظیمات دیگر",
   "wakelock": "قفل روشن ماندن صفحه",
   "wakelockDescription": "جلوگیری از خاموش شدن خودکار صفحه نمایش برای فعال ماندن برنامه‌ها در پس‌زمینه.",
   "tunEnableRequireAdmin": "استفاده از حالت TUN نیازمند دسترسی Admin یا ROOT است",
@@ -802,6 +805,18 @@
   "addUser": "افزودن کاربر",
   "editUser": "ویرایش کاربر",
   "userAuthEmpty": "کاربری برای احراز هویت تنظیم نشده، اتصال شبکه محلی نیازی به مشخصات ندارد",
-  "usernameCannotContainColon": "نام کاربری نباید شامل دونقطه (:) باشد"
+  "usernameCannotContainColon": "نام کاربری نباید شامل دونقطه (:) باشد",
+  "intranetAndGateway": "شبکه محلی و گیت‌وی",
+  "networkType": "نوع شبکه",
+  "defaultGateway": "گیت‌وی",
+  "lanSharing": "اشتراک‌گذاری در شبکه محلی",
+  "sharedAddress": "آدرس اشتراکی",
+  "dnsResolution": "تفکیک DNS",
+  "systemDns": "DNS",
+  "enabled": "فعال",
+  "disabled": "غیرفعال",
+  "openRouterAdmin": "باز کردن گیت‌وی"
 }
+
+
 

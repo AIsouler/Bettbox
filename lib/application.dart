@@ -12,6 +12,7 @@ import 'package:bett_box/plugins/app.dart';
 import 'package:bett_box/providers/providers.dart';
 import 'package:bett_box/state.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -51,6 +52,9 @@ class ApplicationState extends ConsumerState<Application>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    if (system.isAndroid) {
+      unawaited(SystemNavigator.setFrameworkHandlesBack(true));
+    }
     globalState.backgroundMode.addListener(_syncAutoUpdateTasks);
     _syncAutoUpdateTasks();
     globalState.appController = AppController(context, ref);
@@ -160,7 +164,13 @@ class ApplicationState extends ConsumerState<Application>
         child: ConnectivityManager(
           onConnectivityChanged: (results) async {
             if (!results.contains(ConnectivityResult.vpn)) {
-              clashCore.closeConnections();
+              unawaited(
+                clashCore.closeConnections().then<void>(
+                  (_) {},
+                  onError: (Object e) =>
+                      commonPrint.log('closeConnections ignored: $e'),
+                ),
+              );
             }
             if (system.isMacOS) {
               // Wait for DHCP and the default route to settle before moving the
@@ -242,6 +252,16 @@ class ApplicationState extends ConsumerState<Application>
               theme: ThemeData(
                 useMaterial3: true,
                 pageTransitionsTheme: _pageTransitionsTheme,
+                scaffoldBackgroundColor: _getAppColorScheme(
+                  brightness: Brightness.light,
+                  primaryColor: themeProps.primaryColor,
+                ).surfaceContainer,
+                appBarTheme: const AppBarTheme(
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                  scrolledUnderElevation: 0,
+                  surfaceTintColor: Colors.transparent,
+                ),
                 colorScheme: _getAppColorScheme(
                   brightness: Brightness.light,
                   primaryColor: themeProps.primaryColor,
@@ -329,6 +349,16 @@ class ApplicationState extends ConsumerState<Application>
               darkTheme: ThemeData(
                 useMaterial3: true,
                 pageTransitionsTheme: _pageTransitionsTheme,
+                scaffoldBackgroundColor: _getAppColorScheme(
+                  brightness: Brightness.dark,
+                  primaryColor: themeProps.primaryColor,
+                ).toPureBlack(themeProps.pureBlack).surfaceContainer,
+                appBarTheme: const AppBarTheme(
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                  scrolledUnderElevation: 0,
+                  surfaceTintColor: Colors.transparent,
+                ),
                 colorScheme: _getAppColorScheme(
                   brightness: Brightness.dark,
                   primaryColor: themeProps.primaryColor,

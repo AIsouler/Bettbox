@@ -21,15 +21,26 @@ import 'package:bett_box/widgets/sheet.dart';
 import 'package:bett_box/widgets/text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/svg.dart';
 
 bool _isExtractingCustomOptions = false;
 const Duration _kMinLoadingDuration = Duration(seconds: 1);
 const Duration _kCachedMinLoadingDuration = Duration(milliseconds: 500);
 
-(Map<String, bool>, Map<String, String>) _processScriptData(
-  Map<String, dynamic> data,
-  Script script,
-) {
+bool _isValidIconUrl(String? url) {
+  if (url == null || url.isEmpty) return false;
+  final lower = url.toLowerCase();
+  return lower.startsWith('http://') ||
+      lower.startsWith('https://') ||
+      lower.startsWith('data:image/');
+}
+
+({
+  Map<String, bool> options,
+  Map<String, String> icons,
+  Set<String> policyGroupOptions,
+})
+_processScriptData(Map<String, dynamic> data, Script script) {
   final rawOptions = data['options'];
   final rawIcons = data['icons'];
 
@@ -55,7 +66,21 @@ const Duration _kCachedMinLoadingDuration = Duration(milliseconds: 500);
       }
     });
   }
-  return (options, icons);
+
+  final rawPolicyGroupOptions = data['policyGroupOptions'];
+  final policyGroupOptions = <String>{};
+  if (rawPolicyGroupOptions is List) {
+    for (final item in rawPolicyGroupOptions) {
+      if (item != null) {
+        policyGroupOptions.add(item.toString());
+      }
+    }
+  }
+  return (
+    options: options,
+    icons: icons,
+    policyGroupOptions: policyGroupOptions,
+  );
 }
 
 Future<void> showScriptCustomOptions(
@@ -78,7 +103,10 @@ Future<void> showScriptCustomOptions(
             await JavaScriptRuntimeManager.extractScriptOptions(
               script.content,
             );
-        final (options, icons) = _processScriptData(data, script);
+        final (:options, :icons, :policyGroupOptions) = _processScriptData(
+          data,
+          script,
+        );
         // 内置脚本不开放编辑、也没有自定义节点，链式代理这类开关开了只会让
         // 配置生成失败，不给显示（目录见 builtinScriptHiddenOptions）
         if (script.id == builtinScriptId) {
@@ -106,6 +134,7 @@ Future<void> showScriptCustomOptions(
               script: script,
               initialOptions: options,
               icons: icons,
+              policyGroupOptions: policyGroupOptions,
             );
           },
         );
@@ -203,106 +232,139 @@ class _ScriptsViewState extends ConsumerState<ScriptsView> {
         );
         return CommonScrollBar(
           controller: null,
-          child: ListView.builder(
-            padding: kMaterialListPadding.copyWith(bottom: 16 + 64),
-            itemCount: scripts.length,
-            itemBuilder: (_, index) {
-              final script = scripts[index];
-              final isBuiltin = script.id == builtinScriptId;
-              final isSelected =
-                  bundleInUse && isBuiltin ? true : script.id == currentId;
-              return Container(
-                padding: kTabLabelPadding,
-                margin: EdgeInsets.symmetric(vertical: 6),
-                child: CommonCard(
-                  type: CommonCardType.filled,
-                  radius: 16,
-                  child: ListItem(
-                    padding: const EdgeInsets.only(left: 12, right: 12),
-                    title: EmojiText(script.label),
-                    subtitle: bundleInUse && isBuiltin
-                        ? Text(appLocalizations.builtinScriptRequiredByBundle)
-                        : null,
-                    leading: isSelected && bundleInUse && isBuiltin
-                        // 合并配置强制启用内置脚本：保持启用配色，但不允许改动
-                        ? const LockedSwitch(value: true)
-                        : Switch(
-                            value: isSelected,
+          child: ListView(
+            padding: const EdgeInsets.all(16).copyWith(bottom: 16 + 64),
+            children: [
+              CommonCard(
+                type: CommonCardType.filled,
+                radius: 16,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    for (var i = 0; i < scripts.length; i++) ...[
+                      Builder(
+                        builder: (_) {
+                          final script = scripts[i];
+                          final isBuiltin = script.id == builtinScriptId;
+                          final isSelected = bundleInUse && isBuiltin
+                              ? true
+                              : script.id == currentId;
+                          return ListItem(
                             // 合并配置在用内置脚本，此时不允许切换成别的脚本
-                            onChanged: bundleInUse
+                            onTap: bundleInUse
                                 ? null
-                                : (value) {
-                                    if (value) {
-                                      ref
-                                          .read(scriptStateProvider.notifier)
-                                          .setId(script.id);
-                                    } else if (isSelected) {
-                                      ref
-                                          .read(scriptStateProvider.notifier)
-                                          .setId(script.id);
-                                    }
+                                : () {
+                                    ref
+                                        .read(scriptStateProvider.notifier)
+                                        .setId(script.id);
                                   },
-                          ),
-                    trailing: CommonPopupBox(
-                      targetBuilder: (open) {
-                        return IconButton(
-                          onPressed: () {
-                            open();
-                          },
-                          tooltip: appLocalizations.more,
-                          icon: Icon(Icons.more_vert),
-                        );
-                      },
-                      popup: CommonPopupMenu(
-                        items: [
-                          // 内置脚本随包分发，只能从上游同步、不能编辑（合并依赖它固定的输出），
-                          // 也不能删除；自定义开关照常可改
-                          if (!isBuiltin)
-                            PopupMenuItemData(
-                              icon: Icons.edit,
-                              label: appLocalizations.edit,
-                              onPressed: () {
-                                _handleToEditor(script: script);
-                              },
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
                             ),
-                          if (script.isCompatibleWithBettbox)
-                            PopupMenuItemData(
-                              icon: Icons.tune,
-                              label: appLocalizations.custom,
-                              onPressed: () {
-                                _handleCustomOptions(script);
+                            title: EmojiText(script.label),
+                            subtitle: bundleInUse && isBuiltin
+                                ? Text(
+                                    appLocalizations
+                                        .builtinScriptRequiredByBundle,
+                                  )
+                                : null,
+                            leading: isSelected && bundleInUse && isBuiltin
+                                // 合并配置强制启用内置脚本：保持启用配色，但不允许改动
+                                ? const LockedSwitch(value: true)
+                                : Switch(
+                                    value: isSelected,
+                                    onChanged: bundleInUse
+                                        ? null
+                                        : (value) {
+                                            if (value) {
+                                              ref
+                                                  .read(
+                                                    scriptStateProvider
+                                                        .notifier,
+                                                  )
+                                                  .setId(script.id);
+                                            } else if (isSelected) {
+                                              ref
+                                                  .read(
+                                                    scriptStateProvider
+                                                        .notifier,
+                                                  )
+                                                  .setId(script.id);
+                                            }
+                                          },
+                                  ),
+                            trailing: CommonPopupBox(
+                              targetBuilder: (open) {
+                                return IconButton(
+                                  onPressed: () {
+                                    open();
+                                  },
+                                  tooltip: appLocalizations.more,
+                                  icon: const Icon(Icons.more_vert),
+                                );
                               },
+                              popup: CommonPopupMenu(
+                                items: [
+                                  // 内置脚本随包分发，只能从上游同步、不能编辑（合并依赖它固定的输出），
+                                  // 也不能删除；自定义开关照常可改
+                                  if (!isBuiltin)
+                                    PopupMenuItemData(
+                                      icon: Icons.edit,
+                                      label: appLocalizations.edit,
+                                      onPressed: () {
+                                        _handleToEditor(script: script);
+                                      },
+                                    ),
+                                  if (script.isCompatibleWithBettbox)
+                                    PopupMenuItemData(
+                                      icon: Icons.tune,
+                                      label: appLocalizations.custom,
+                                      onPressed: () {
+                                        _handleCustomOptions(script);
+                                      },
+                                    ),
+                                  if (script.url != null &&
+                                      script.url!.isNotEmpty)
+                                    PopupMenuItemData(
+                                      icon: Icons.sync,
+                                      label: appLocalizations.sync,
+                                      onPressed: () {
+                                        _handleSyncScript(script.id);
+                                      },
+                                    ),
+                                  PopupMenuItemData(
+                                    icon: Icons.file_copy_outlined,
+                                    label: appLocalizations.exportFile,
+                                    onPressed: () {
+                                      _handleExportFile(script);
+                                    },
+                                  ),
+                                  if (!isBuiltin)
+                                    PopupMenuItemData(
+                                      icon: Icons.delete,
+                                      label: appLocalizations.delete,
+                                      onPressed: () {
+                                        _handleDelScript(script.label);
+                                      },
+                                    ),
+                                ],
+                              ),
                             ),
-                          if (script.url != null && script.url!.isNotEmpty)
-                            PopupMenuItemData(
-                              icon: Icons.sync,
-                              label: appLocalizations.sync,
-                              onPressed: () {
-                                _handleSyncScript(script.id);
-                              },
-                            ),
-                          PopupMenuItemData(
-                            icon: Icons.file_copy_outlined,
-                            label: appLocalizations.exportFile,
-                            onPressed: () {
-                              _handleExportFile(script);
-                            },
-                          ),
-                          if (!isBuiltin)
-                            PopupMenuItemData(
-                              icon: Icons.delete,
-                              label: appLocalizations.delete,
-                              onPressed: () {
-                                _handleDelScript(script.label);
-                              },
-                            ),
-                        ],
+                          );
+                        },
                       ),
-                    ),
-                  ),
+                      if (i != scripts.length - 1)
+                        const Divider(
+                          height: 1,
+                          indent: 16,
+                          endIndent: 16,
+                        ),
+                    ],
+                  ],
                 ),
-              );
-            },
+              ),
+            ],
           ),
         );
       },
@@ -595,12 +657,14 @@ class _ScriptCustomOptionsSheet extends ConsumerStatefulWidget {
   final Script script;
   final Map<String, bool> initialOptions;
   final Map<String, String> icons;
+  final Set<String> policyGroupOptions;
 
   const _ScriptCustomOptionsSheet({
     required this.type,
     required this.script,
     required this.initialOptions,
     required this.icons,
+    required this.policyGroupOptions,
   });
 
   @override
@@ -622,7 +686,7 @@ class __ScriptCustomOptionsSheetState
 
   bool get _hasUnsavedChanges => _dirty;
 
-  Future<void> _handleSave() async {
+  Future<void> _handleSave({bool popSheet = true}) async {
     if (_isSaving) return;
     final scripts = ref.read(scriptStateProvider).scripts;
     final index = scripts.indexWhere((item) => item.id == widget.script.id);
@@ -649,9 +713,33 @@ class __ScriptCustomOptionsSheetState
     } finally {
       if (mounted) {
         setState(() => _isSaving = false);
-        Navigator.of(context).pop();
+        if (popSheet) {
+          Navigator.of(context).pop();
+        }
       }
     }
+  }
+
+  Future<void> _handleSaveOtherOptions(Map<String, bool> values) async {
+    setState(() {
+      _options.addAll(values);
+      _dirty = true;
+    });
+    await _handleSave(popSheet: false);
+  }
+
+  Future<void> _handleOpenOtherOptions(List<String> keys) async {
+    await showExtend(
+      context,
+      builder: (_, type) {
+        return _ScriptOtherOptionsSheet(
+          type: type,
+          values: {for (final key in keys) key: _options[key] ?? true},
+          icons: widget.icons,
+          onSave: _handleSaveOtherOptions,
+        );
+      },
+    );
   }
 
   void _onOptionChanged(String key, bool value) {
@@ -664,40 +752,31 @@ class __ScriptCustomOptionsSheetState
   Future<bool> _confirmDiscard() async {
     if (_isSaving) return false;
     if (!_hasUnsavedChanges) return true;
-    final res = await globalState.showCommonDialog<bool>(
-      child: CommonDialog(
-        title: appLocalizations.saveChanges,
-        actions: [
-          TextButton(
-            onPressed: () => globalState.navigatorKey.currentState?.pop(false),
-            child: Text(appLocalizations.cancel),
-          ),
-          FilledButton(
-            onPressed: () =>
-                globalState.navigatorKey.currentState?.pop(true),
-            child: Text(appLocalizations.save),
-          ),
-        ],
-      ),
-    );
-    if (res == true) {
-      await _handleSave();
-      return false;
-    }
-    return res == false;
+    return _showSaveChangesDialog(onSave: _handleSave);
   }
 
-  bool _isValidIconUrl(String? url) {
-    if (url == null || url.isEmpty) return false;
-    final lower = url.toLowerCase();
-    return lower.startsWith('http://') ||
-        lower.startsWith('https://') ||
-        lower.startsWith('data:image/');
+  ({List<String> groups, List<String> others, bool split}) _splitOptions() {
+    final groups = <String>[];
+    final others = <String>[];
+    for (final key in _options.keys) {
+      if (widget.policyGroupOptions.contains(key)) {
+        groups.add(key);
+      } else {
+        others.add(key);
+      }
+    }
+    return (
+      groups: groups,
+      others: others,
+      split: groups.isNotEmpty && others.isNotEmpty,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final keys = _options.keys.toList();
+    final (:groups, :others, :split) = _splitOptions();
+    final displayKeys = split ? groups : keys;
     return CommonPopScope(
       onPop: _confirmDiscard,
       child: AbsorbPointer(
@@ -725,36 +804,33 @@ class __ScriptCustomOptionsSheetState
                     : RepaintBoundary(
                         child: ListView.builder(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-                          itemCount: keys.length,
+                          itemCount: displayKeys.length + (split ? 1 : 0),
                           itemBuilder: (_, index) {
-                            final key = keys[index];
-                            final val = _options[key] ?? true;
-                            final iconUrl = widget.icons[key];
-                            return RepaintBoundary(
-                              child: Container(
-                                margin: const EdgeInsets.symmetric(vertical: 4),
-                                child: CommonCard(
-                                  type: CommonCardType.filled,
-                                  child: ListTile(
-                                    contentPadding:
-                                        const EdgeInsets.only(left: 16, right: 16),
-                                    leading: _isValidIconUrl(iconUrl)
-                                        ? CommonTargetIcon(src: iconUrl!, size: 24)
-                                        : const Icon(Icons.alt_route),
-                                    title: Text(key),
-                                    trailing: Switch(
-                                      value: val,
-                                      onChanged: (v) {
-                                        _onOptionChanged(key, v);
-                                      },
-                                    ),
-                                  ),
+                            if (split && index == displayKeys.length) {
+                              return RepaintBoundary(
+                                child: _ScriptNavTile(
+                                  label: appLocalizations.scriptOtherOptions,
+                                  assetIcon: 'assets/images/settings.svg',
+                                  onTap: () {
+                                    _handleOpenOtherOptions(others);
+                                  },
                                 ),
+                              );
+                            }
+                            final key = displayKeys[index];
+                            return RepaintBoundary(
+                              child: _ScriptOptionTile(
+                                label: key,
+                                value: _options[key] ?? true,
+                                iconUrl: widget.icons[key],
+                                onChanged: (v) {
+                                  _onOptionChanged(key, v);
+                                },
                               ),
                             );
                           },
                         ),
-                    ),
+                      ),
               ),
             ],
           ),
@@ -762,6 +838,210 @@ class __ScriptCustomOptionsSheetState
       ),
     );
   }
+}
+
+class _ScriptOtherOptionsSheet extends StatefulWidget {
+  final SheetType type;
+  final Map<String, bool> values;
+  final Map<String, String> icons;
+  final Future<void> Function(Map<String, bool> values) onSave;
+
+  const _ScriptOtherOptionsSheet({
+    required this.type,
+    required this.values,
+    required this.icons,
+    required this.onSave,
+  });
+
+  @override
+  State<_ScriptOtherOptionsSheet> createState() =>
+      _ScriptOtherOptionsSheetState();
+}
+
+class _ScriptOtherOptionsSheetState extends State<_ScriptOtherOptionsSheet> {
+  late Map<String, bool> _options;
+  bool _dirty = false;
+  bool _isSaving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _options = Map<String, bool>.from(widget.values);
+  }
+
+  Future<void> _handleSave() async {
+    if (_isSaving || !_dirty) return;
+    setState(() => _isSaving = true);
+    try {
+      await widget.onSave(Map<String, bool>.from(_options));
+      _dirty = false;
+    } finally {
+      if (mounted) {
+        setState(() => _isSaving = false);
+        Navigator.of(context).pop();
+      }
+    }
+  }
+
+  Future<bool> _confirmDiscard() async {
+    if (_isSaving) return false;
+    if (!_dirty) return true;
+    return _showSaveChangesDialog(onSave: _handleSave);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final keys = _options.keys.toList();
+    return CommonPopScope(
+      onPop: _confirmDiscard,
+      child: AbsorbPointer(
+        absorbing: _isSaving,
+        child: AdaptiveSheetScaffold(
+          type: widget.type,
+          title: appLocalizations.scriptOtherOptions,
+          actions: [
+            IconButton(
+              onPressed: (_dirty && !_isSaving) ? _handleSave : null,
+              icon: const Icon(Icons.save),
+              tooltip: appLocalizations.save,
+            ),
+          ],
+          body: Column(
+            children: [
+              if (_isSaving)
+                LinearProgressIndicator(
+                  minHeight: 2,
+                  color: context.colorScheme.primary,
+                ),
+              Expanded(
+                child: keys.isEmpty
+                    ? NullStatus(label: appLocalizations.noStatusAvailable)
+                    : RepaintBoundary(
+                        child: ListView.builder(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 16,
+                          ),
+                          itemCount: keys.length,
+                          itemBuilder: (_, index) {
+                            final key = keys[index];
+                            return RepaintBoundary(
+                              child: _ScriptOptionTile(
+                                label: key,
+                                value: _options[key] ?? true,
+                                iconUrl: widget.icons[key],
+                                onChanged: (v) {
+                                  setState(() {
+                                    _options[key] = v;
+                                    _dirty = true;
+                                  });
+                                },
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ScriptOptionTile extends StatelessWidget {
+  final String label;
+  final bool value;
+  final String? iconUrl;
+  final ValueChanged<bool> onChanged;
+
+  const _ScriptOptionTile({
+    required this.label,
+    required this.value,
+    required this.onChanged,
+    this.iconUrl,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      child: CommonCard(
+        type: CommonCardType.filled,
+        child: ListTile(
+          contentPadding: const EdgeInsets.only(left: 16, right: 16),
+          leading: _isValidIconUrl(iconUrl)
+              ? CommonTargetIcon(src: iconUrl!, size: 24)
+              : const Icon(Icons.alt_route),
+          title: Text(label),
+          trailing: Switch(value: value, onChanged: onChanged),
+        ),
+      ),
+    );
+  }
+}
+
+class _ScriptNavTile extends StatelessWidget {
+  final String label;
+  final String assetIcon;
+  final VoidCallback onTap;
+
+  const _ScriptNavTile({
+    required this.label,
+    required this.assetIcon,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      child: CommonCard(
+        type: CommonCardType.filled,
+        child: ListTile(
+          contentPadding: const EdgeInsets.only(left: 16, right: 16),
+          leading: SvgPicture.asset(
+            assetIcon,
+            width: 24,
+            height: 24,
+            colorFilter: ColorFilter.mode(
+              context.colorScheme.onSurfaceVariant,
+              BlendMode.srcIn,
+            ),
+          ),
+          title: Text(label),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: onTap,
+        ),
+      ),
+    );
+  }
+}
+
+Future<bool> _showSaveChangesDialog({
+  required Future<void> Function() onSave,
+}) async {
+  final res = await globalState.showCommonDialog<bool>(
+    child: CommonDialog(
+      title: appLocalizations.saveChanges,
+      actions: [
+        TextButton(
+          onPressed: () => globalState.navigatorKey.currentState?.pop(false),
+          child: Text(appLocalizations.cancel),
+        ),
+        FilledButton(
+          onPressed: () => globalState.navigatorKey.currentState?.pop(true),
+          child: Text(appLocalizations.save),
+        ),
+      ],
+    ),
+  );
+  if (res == true) {
+    await onSave();
+    return false;
+  }
+  return res == false;
 }
 
 Future<void> showGroupSwitchOptions(
@@ -1060,3 +1340,4 @@ class _GroupSwitchOptionsSheetState
     );
   }
 }
+

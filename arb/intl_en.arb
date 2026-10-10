@@ -72,6 +72,8 @@
   "dozeSuspendDesc": "Sync with system Doze mode",
   "storeFix": "Store Fix",
   "storeFixDesc": "Fix Play Store download issues",
+  "loopbackProtection": "Loopback Protection",
+  "loopbackProtectionDesc": "Block loopback traffic from network errors",
   "disableQuic": "Disable QUIC",
   "disableQuicDesc": "Disable QUIC to resolve specific network issues",
   "notificationHighPriority": "High Priority",
@@ -606,8 +608,8 @@
   "saveChanges": "Save changes?",
   "generalDesc": "Modify global settings",
   "findProcessModeDesc": "Enable process matching",
-  "navBarHapticFeedback": "Haptic Feedback",
-  "navBarHapticFeedbackDesc": "Vibrate on navigation tab switch",
+  "navBarHapticFeedback": "Animation Feedback",
+  "navBarHapticFeedbackDesc": "Bottom navigation bar animation and haptic feedback",
   "saveTip": "Are you sure you want to save?",
   "colorSchemes": "Color Schemes",
   "palette": "Palette",
@@ -690,6 +692,7 @@
   "openDashboard": "Open Zashboard",
   "custom": "Custom",
   "customScriptOptions": "Custom Rule Switch",
+  "scriptOtherOptions": "Other Settings",
   "wakelock": "Wakelock",
   "wakelockDescription": "Keeps the screen on and app active in the background without requiring special CPU wakelock permissions.",
   "tunEnableRequireAdmin": "Enabling the TUN virtual network adapter requires Administrator or ROOT privileges.",
@@ -801,6 +804,18 @@
   "addUser": "Add User",
   "editUser": "Edit User",
   "userAuthEmpty": "No authentication configured, LAN connections do not require credentials",
-  "usernameCannotContainColon": "Username cannot contain colons"
+  "usernameCannotContainColon": "Username cannot contain colons",
+  "intranetAndGateway": "LAN & Gateway",
+  "networkType": "Network Type",
+  "defaultGateway": "Gateway",
+  "lanSharing": "LAN Sharing",
+  "sharedAddress": "Shared Address",
+  "dnsResolution": "DNS Resolution",
+  "systemDns": "DNS",
+  "enabled": "Enabled",
+  "disabled": "Disabled",
+  "openRouterAdmin": "Open Gateway"
 }
+
+
 

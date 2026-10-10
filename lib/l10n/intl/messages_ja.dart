@@ -322,6 +322,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "darkIconDesc": MessageLookupByLibrary.simpleMessage("アプリアイコンをダーク系に切り替え"),
     "dashboard": MessageLookupByLibrary.simpleMessage("ホーム"),
     "days": m7,
+    "defaultGateway": MessageLookupByLibrary.simpleMessage("ゲートウェイ"),
     "defaultNameserver": MessageLookupByLibrary.simpleMessage("デフォルトDNSサーバー"),
     "defaultNameserverDesc": MessageLookupByLibrary.simpleMessage(
       "DNSサーバー自体の解決に使用",
@@ -368,6 +369,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "disableQuicDesc": MessageLookupByLibrary.simpleMessage(
       "特定の通信問題を解決するためQUICを無効化",
     ),
+    "disabled": MessageLookupByLibrary.simpleMessage("無効"),
     "disclaimer": MessageLookupByLibrary.simpleMessage("免責事項"),
     "disclaimerDesc": MessageLookupByLibrary.simpleMessage(
       "本アプリはオープンソースの無料ソフトウェアであり、個人的な学習・研究目的でのみ提供されています。プロキシ事業者の行為は本アプリと一切関係ありません。",
@@ -382,6 +384,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "DNSクエリを内部DNSモジュールに引き込み",
     ),
     "dnsMode": MessageLookupByLibrary.simpleMessage("DNSモード"),
+    "dnsResolution": MessageLookupByLibrary.simpleMessage("DNS解決"),
     "doYouWantToPass": MessageLookupByLibrary.simpleMessage("許可しますか："),
     "domain": MessageLookupByLibrary.simpleMessage("組織 / ドメイン"),
     "doubleBounce": MessageLookupByLibrary.simpleMessage("ダブルバウンス"),
@@ -404,6 +407,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "enableTraySpeedDesc": MessageLookupByLibrary.simpleMessage(
       "メニューバーにアップロード/ダウンロード速度を表示",
     ),
+    "enabled": MessageLookupByLibrary.simpleMessage("有効"),
     "endpointIndependentNat": MessageLookupByLibrary.simpleMessage("NAT強化"),
     "endpointIndependentNatConfirmDesc": MessageLookupByLibrary.simpleMessage(
       "Endpoint-Independent NATを有効にするとパフォーマンスがわずかに低下する場合があります。必要な場合のみ設定してください",
@@ -559,6 +563,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "intelligentSelected": MessageLookupByLibrary.simpleMessage("スマート選択"),
     "internet": MessageLookupByLibrary.simpleMessage("インターネット"),
     "interval": MessageLookupByLibrary.simpleMessage("間隔"),
+    "intranetAndGateway": MessageLookupByLibrary.simpleMessage("LANとゲートウェイ"),
     "intranetIP": MessageLookupByLibrary.simpleMessage("ローカル IP"),
     "invalidIpFormat": MessageLookupByLibrary.simpleMessage("無効なIPまたはCIDR形式"),
     "ipAddress": MessageLookupByLibrary.simpleMessage("IP アドレス"),
@@ -578,6 +583,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Dock にアプリアイコンを表示",
     ),
     "key": MessageLookupByLibrary.simpleMessage("キー"),
+    "lanSharing": MessageLookupByLibrary.simpleMessage("LAN共有"),
     "language": MessageLookupByLibrary.simpleMessage("言語"),
     "lastEdit": MessageLookupByLibrary.simpleMessage("前回の編集"),
     "layout": MessageLookupByLibrary.simpleMessage("レイアウト"),
@@ -601,6 +607,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "logsTest": MessageLookupByLibrary.simpleMessage("ログテスト"),
     "loopback": MessageLookupByLibrary.simpleMessage("ループバック解除ツール"),
     "loopbackDesc": MessageLookupByLibrary.simpleMessage("UWPアプリのループバック制限を解除"),
+    "loopbackProtection": MessageLookupByLibrary.simpleMessage("ループバック保護"),
+    "loopbackProtectionDesc": MessageLookupByLibrary.simpleMessage(
+      "ネットワークエラーによるループバックを遮断",
+    ),
     "loose": MessageLookupByLibrary.simpleMessage("ルーズ"),
     "manualRefreshIp": MessageLookupByLibrary.simpleMessage("IPを再取得"),
     "maximize": MessageLookupByLibrary.simpleMessage("最大化"),
@@ -658,9 +668,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "nameserverPolicyDesc": MessageLookupByLibrary.simpleMessage(
       "特定ドメイン用のDNSポリシーを指定",
     ),
-    "navBarHapticFeedback": MessageLookupByLibrary.simpleMessage("触覚フィードバック"),
+    "navBarHapticFeedback": MessageLookupByLibrary.simpleMessage(
+      "アニメーションフィードバック",
+    ),
     "navBarHapticFeedbackDesc": MessageLookupByLibrary.simpleMessage(
-      "ボトムナビゲーション切り替え時の振動フィードバック",
+      "ボトムナビゲーションのアニメーションおよび振動フィードバック",
     ),
     "navConnections": MessageLookupByLibrary.simpleMessage("接続"),
     "navTools": MessageLookupByLibrary.simpleMessage("ツール"),
@@ -683,7 +695,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "networkSpeedNotificationDesc": MessageLookupByLibrary.simpleMessage(
       "通知バーに通信速度とサブスク情報を表示",
     ),
-    "networkType": MessageLookupByLibrary.simpleMessage("ネットワーク種別"),
+    "networkType": MessageLookupByLibrary.simpleMessage("ネットワークの種類"),
     "neutralScheme": MessageLookupByLibrary.simpleMessage("ニュートラル"),
     "noAnimation": MessageLookupByLibrary.simpleMessage("デフォルト"),
     "noBackupFileFound": MessageLookupByLibrary.simpleMessage(
@@ -742,6 +754,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "プロキシ経由の通信量のみカウント",
     ),
     "openDashboard": MessageLookupByLibrary.simpleMessage("Zashboardを開く"),
+    "openRouterAdmin": MessageLookupByLibrary.simpleMessage("ゲートウェイを開く"),
     "openSettings": MessageLookupByLibrary.simpleMessage("設定を開く"),
     "operatorOrAsn": MessageLookupByLibrary.simpleMessage("組織 / ASN"),
     "options": MessageLookupByLibrary.simpleMessage("オプション"),
@@ -955,6 +968,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "saveTip": MessageLookupByLibrary.simpleMessage("保存してもよろしいですか？"),
     "script": MessageLookupByLibrary.simpleMessage("スクリプト"),
     "scriptDesc": MessageLookupByLibrary.simpleMessage("グローバルオーバーライドスクリプト設定"),
+    "scriptOtherOptions": MessageLookupByLibrary.simpleMessage("その他の設定"),
     "search": MessageLookupByLibrary.simpleMessage("検索"),
     "seconds": MessageLookupByLibrary.simpleMessage("秒"),
     "secretCopied": MessageLookupByLibrary.simpleMessage(
@@ -969,6 +983,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "serviceReady": MessageLookupByLibrary.simpleMessage("サービス準備完了"),
     "serviceRunning": MessageLookupByLibrary.simpleMessage("サービス稼働中"),
     "settings": MessageLookupByLibrary.simpleMessage("設定"),
+    "sharedAddress": MessageLookupByLibrary.simpleMessage("共有アドレス"),
     "show": MessageLookupByLibrary.simpleMessage("表示"),
     "showHiddenItems": MessageLookupByLibrary.simpleMessage("非表示項目を表示"),
     "showMenu": MessageLookupByLibrary.simpleMessage("メニューを開く"),
@@ -1050,6 +1065,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "syncFailed": MessageLookupByLibrary.simpleMessage("同期失敗"),
     "system": MessageLookupByLibrary.simpleMessage("システム"),
     "systemApp": MessageLookupByLibrary.simpleMessage("システムアプリ"),
+    "systemDns": MessageLookupByLibrary.simpleMessage("DNS"),
     "systemFont": MessageLookupByLibrary.simpleMessage("システムフォント"),
     "systemProxy": MessageLookupByLibrary.simpleMessage("システムプロキシ"),
     "systemProxyDesc": MessageLookupByLibrary.simpleMessage("システムプロキシの設定"),

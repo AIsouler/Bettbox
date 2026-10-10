@@ -72,6 +72,8 @@
   "dozeSuspendDesc": "시스템 Doze 절전 모드와 동기화",
   "storeFix": "스토어 복구",
   "storeFixDesc": "Google Play 스토어 다운로드 오류 복구",
+  "loopbackProtection": "루프백 보호",
+  "loopbackProtectionDesc": "네트워크 오류로 인한 루프백 차단",
   "disableQuic": "QUIC 비활성화",
   "disableQuicDesc": "특정 네트워크 문제를 해결하기 위해 QUIC 비활성화",
   "notificationHighPriority": "높은 우선순위",
@@ -606,8 +608,8 @@
   "saveChanges": "변경사항을 저장하시겠습니까?",
   "generalDesc": "글로벌 일반 설정 변경",
   "findProcessModeDesc": "활성화 시 프로세스 매칭 검색 가능",
-  "navBarHapticFeedback": "진동 피드백",
-  "navBarHapticFeedbackDesc": "하단 탭 전환 시 진동 피드백",
+  "navBarHapticFeedback": "애니메이션 피드백",
+  "navBarHapticFeedbackDesc": "하단 탭 전환 애니메이션 및 진동 피드백",
   "saveTip": "저장하시겠습니까?",
   "colorSchemes": "색상 팔레트",
   "palette": "팔레트",
@@ -691,6 +693,7 @@
   "openDashboard": "Zashboard 열기",
   "custom": "사용자 지정",
   "customScriptOptions": "커스텀 규칙",
+  "scriptOtherOptions": "기타 설정",
   "wakelock": "화면 켜짐 고정",
   "wakelockDescription": "화면 자동 꺼짐을 방지하는 스크린 웨이크록을 활성화합니다. 백그라운드 작업을 유지할 때 유용합니다.",
   "tunEnableRequireAdmin": "TUN 가상 어댑터 기능을 사용하려면 관리자(ROOT) 권한이 필요합니다",
@@ -802,6 +805,18 @@
   "addUser": "사용자 추가",
   "editUser": "사용자 편집",
   "userAuthEmpty": "인증 사용자가 설정되지 않았습니다. LAN 연결에는 자격 증명이 필요하지 않습니다",
-  "usernameCannotContainColon": "사용자 이름에는 콜론(:)을 포함할 수 없습니다"
+  "usernameCannotContainColon": "사용자 이름에는 콜론(:)을 포함할 수 없습니다",
+  "intranetAndGateway": "LAN 및 게이트웨이",
+  "networkType": "네트워크 유형",
+  "defaultGateway": "게이트웨이",
+  "lanSharing": "LAN 공유",
+  "sharedAddress": "공유 주소",
+  "dnsResolution": "DNS 확인",
+  "systemDns": "DNS",
+  "enabled": "사용 중",
+  "disabled": "사용 안 함",
+  "openRouterAdmin": "게이트웨이 열기"
 }
+
+
 

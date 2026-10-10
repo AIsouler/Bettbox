@@ -18,7 +18,6 @@ const defaultBypassDomain = [
   'localhost',
   '127.*',
   '[::1]',
-  '::1',
   '*.local',
   '10.*',
   '172.16.*',
@@ -278,6 +277,7 @@ abstract class VpnProps with _$VpnProps {
     @Default('') String smartAutoStopNetworks,
     @Default(false) bool storeFix,
     @Default(false) bool networkFix,
+    @Default(true) bool loopbackProtection,
     @Default(false) bool disableQuic,
     @Default(false) bool highPriorityNotification,
     @Default(false) bool networkSpeedNotification,
@@ -301,11 +301,25 @@ abstract class VpnProps with _$VpnProps {
   }
 }
 
+List<String> bypassDomainSafeFromJson(List<dynamic>? bypassDomain) {
+  try {
+    return bypassDomain
+            ?.map((e) => e.toString())
+            .where((e) => e != '::1')
+            .toList() ??
+        defaultBypassDomain;
+  } catch (_) {
+    return defaultBypassDomain;
+  }
+}
+
 @freezed
 abstract class NetworkProps with _$NetworkProps {
   const factory NetworkProps({
     @Default(true) bool systemProxy,
-    @Default(defaultBypassDomain) List<String> bypassDomain,
+    @Default(defaultBypassDomain)
+    @JsonKey(fromJson: bypassDomainSafeFromJson)
+    List<String> bypassDomain,
     @Default(true) bool bypassPrivateRoute,
     @Default([]) List<String> bypassPrivateRouteAddress,
     @Default(true) bool autoSetSystemDns,

@@ -72,6 +72,8 @@
   "dozeSuspendDesc": "OSのDozeスリープモードに同期",
   "storeFix": "ストア修復",
   "storeFixDesc": "Google Playストアのダウンロード問題を修復",
+  "loopbackProtection": "ループバック保護",
+  "loopbackProtectionDesc": "ネットワークエラーによるループバックを遮断",
   "disableQuic": "QUIC無効化",
   "disableQuicDesc": "特定の通信問題を解決するためQUICを無効化",
   "notificationHighPriority": "高優先度",
@@ -606,8 +608,8 @@
   "saveChanges": "変更を保存しますか？",
   "generalDesc": "全般設定を変更",
   "findProcessModeDesc": "プロセス名をマッチングして検索",
-  "navBarHapticFeedback": "触覚フィードバック",
-  "navBarHapticFeedbackDesc": "ボトムナビゲーション切り替え時の振動フィードバック",
+  "navBarHapticFeedback": "アニメーションフィードバック",
+  "navBarHapticFeedbackDesc": "ボトムナビゲーションのアニメーションおよび振動フィードバック",
   "saveTip": "保存してもよろしいですか？",
   "colorSchemes": "カラーパレット",
   "palette": "パレット",
@@ -691,6 +693,7 @@
   "openDashboard": "Zashboardを開く",
   "custom": "カスタム",
   "customScriptOptions": "カスタムルール",
+  "scriptOtherOptions": "その他の設定",
   "wakelock": "画面常時点灯",
   "wakelockDescription": "画面の自動消灯を防ぐ画面ウェイクロックを有効にします（CPUウェイクは使用しません）。バックグラウンド処理を維持したい場合に便利です。",
   "tunEnableRequireAdmin": "TUN仮想NIC機能の有効化には管理者（ROOT）権限が必要です",
@@ -802,6 +805,18 @@
   "addUser": "ユーザーを追加",
   "editUser": "ユーザーを編集",
   "userAuthEmpty": "認証ユーザーが設定されていません。LAN接続には資格情報が不要です",
-  "usernameCannotContainColon": "ユーザー名にコロン（:）を含めることはできません"
+  "usernameCannotContainColon": "ユーザー名にコロン（:）を含めることはできません",
+  "intranetAndGateway": "LANとゲートウェイ",
+  "networkType": "ネットワークの種類",
+  "defaultGateway": "ゲートウェイ",
+  "lanSharing": "LAN共有",
+  "sharedAddress": "共有アドレス",
+  "dnsResolution": "DNS解決",
+  "systemDns": "DNS",
+  "enabled": "有効",
+  "disabled": "無効",
+  "openRouterAdmin": "ゲートウェイを開く"
 }
+
+
 

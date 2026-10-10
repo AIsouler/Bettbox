@@ -654,6 +654,26 @@ class AppLocalizations {
     );
   }
 
+  /// `Loopback Protection`
+  String get loopbackProtection {
+    return Intl.message(
+      'Loopback Protection',
+      name: 'loopbackProtection',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Block loopback traffic from network errors`
+  String get loopbackProtectionDesc {
+    return Intl.message(
+      'Block loopback traffic from network errors',
+      name: 'loopbackProtectionDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Disable QUIC`
   String get disableQuic {
     return Intl.message(
@@ -5019,20 +5039,20 @@ class AppLocalizations {
     );
   }
 
-  /// `Haptic Feedback`
+  /// `Animation Feedback`
   String get navBarHapticFeedback {
     return Intl.message(
-      'Haptic Feedback',
+      'Animation Feedback',
       name: 'navBarHapticFeedback',
       desc: '',
       args: [],
     );
   }
 
-  /// `Vibrate on navigation tab switch`
+  /// `Bottom navigation bar animation and haptic feedback`
   String get navBarHapticFeedbackDesc {
     return Intl.message(
-      'Vibrate on navigation tab switch',
+      'Bottom navigation bar animation and haptic feedback',
       name: 'navBarHapticFeedbackDesc',
       desc: '',
       args: [],
@@ -5679,6 +5699,16 @@ class AppLocalizations {
     return Intl.message(
       'Custom Rule Switch',
       name: 'customScriptOptions',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Other Settings`
+  String get scriptOtherOptions {
+    return Intl.message(
+      'Other Settings',
+      name: 'scriptOtherOptions',
       desc: '',
       args: [],
     );
@@ -6569,6 +6599,71 @@ class AppLocalizations {
     return Intl.message(
       'Username cannot contain colons',
       name: 'usernameCannotContainColon',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `LAN & Gateway`
+  String get intranetAndGateway {
+    return Intl.message(
+      'LAN & Gateway',
+      name: 'intranetAndGateway',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Gateway`
+  String get defaultGateway {
+    return Intl.message('Gateway', name: 'defaultGateway', desc: '', args: []);
+  }
+
+  /// `LAN Sharing`
+  String get lanSharing {
+    return Intl.message('LAN Sharing', name: 'lanSharing', desc: '', args: []);
+  }
+
+  /// `Shared Address`
+  String get sharedAddress {
+    return Intl.message(
+      'Shared Address',
+      name: 'sharedAddress',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `DNS Resolution`
+  String get dnsResolution {
+    return Intl.message(
+      'DNS Resolution',
+      name: 'dnsResolution',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `DNS`
+  String get systemDns {
+    return Intl.message('DNS', name: 'systemDns', desc: '', args: []);
+  }
+
+  /// `Enabled`
+  String get enabled {
+    return Intl.message('Enabled', name: 'enabled', desc: '', args: []);
+  }
+
+  /// `Disabled`
+  String get disabled {
+    return Intl.message('Disabled', name: 'disabled', desc: '', args: []);
+  }
+
+  /// `Open Gateway`
+  String get openRouterAdmin {
+    return Intl.message(
+      'Open Gateway',
+      name: 'openRouterAdmin',
       desc: '',
       args: [],
     );

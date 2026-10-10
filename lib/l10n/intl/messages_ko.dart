@@ -330,6 +330,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "darkIconDesc": MessageLookupByLibrary.simpleMessage("앱 아이콘을 어두운 색계열로 전환"),
     "dashboard": MessageLookupByLibrary.simpleMessage("홈"),
     "days": m7,
+    "defaultGateway": MessageLookupByLibrary.simpleMessage("게이트웨이"),
     "defaultNameserver": MessageLookupByLibrary.simpleMessage("기본 네임서버"),
     "defaultNameserverDesc": MessageLookupByLibrary.simpleMessage(
       "DNS 서버 자체 해동에 사용",
@@ -376,6 +377,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "disableQuicDesc": MessageLookupByLibrary.simpleMessage(
       "특정 네트워크 문제를 해결하기 위해 QUIC 비활성화",
     ),
+    "disabled": MessageLookupByLibrary.simpleMessage("사용 안 함"),
     "disclaimer": MessageLookupByLibrary.simpleMessage("면책 조항"),
     "disclaimerDesc": MessageLookupByLibrary.simpleMessage(
       "본 소프트웨어는 오픈 소스 무료 소프트웨어이며, 학습 및 테스트 목적으로만 제공됩니다. 프록시 제공업체의 행위는 본 소프트웨어와 무관합니다.",
@@ -390,6 +392,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "DNS 쿼리를 내부 DNS 모듈로 유입",
     ),
     "dnsMode": MessageLookupByLibrary.simpleMessage("DNS 모드"),
+    "dnsResolution": MessageLookupByLibrary.simpleMessage("DNS 확인"),
     "doYouWantToPass": MessageLookupByLibrary.simpleMessage("다음 요청을 허용하시겠습니까:"),
     "domain": MessageLookupByLibrary.simpleMessage("조직 / 도메인"),
     "doubleBounce": MessageLookupByLibrary.simpleMessage("더블 바운스"),
@@ -412,6 +415,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "enableTraySpeedDesc": MessageLookupByLibrary.simpleMessage(
       "메뉴 막대에 업로드 및 다운로드 속도 표시",
     ),
+    "enabled": MessageLookupByLibrary.simpleMessage("사용 중"),
     "endpointIndependentNat": MessageLookupByLibrary.simpleMessage("NAT 향상"),
     "endpointIndependentNatConfirmDesc": MessageLookupByLibrary.simpleMessage(
       "Endpoint-Independent NAT를 활성화하면 성능이 약간 저하될 수 있습니다. 필요한 경우에만 설정하세요",
@@ -567,6 +571,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "intelligentSelected": MessageLookupByLibrary.simpleMessage("스마트 선택"),
     "internet": MessageLookupByLibrary.simpleMessage("인터넷"),
     "interval": MessageLookupByLibrary.simpleMessage("간격"),
+    "intranetAndGateway": MessageLookupByLibrary.simpleMessage("LAN 및 게이트웨이"),
     "intranetIP": MessageLookupByLibrary.simpleMessage("내부 IP"),
     "invalidIpFormat": MessageLookupByLibrary.simpleMessage(
       "유효하지 않은 IP 또는 CIDR 형식입니다",
@@ -586,6 +591,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "keepDockIcon": MessageLookupByLibrary.simpleMessage("Dock에 고정"),
     "keepDockIconDesc": MessageLookupByLibrary.simpleMessage("Dock에 앱 아이콘 유지"),
     "key": MessageLookupByLibrary.simpleMessage("키"),
+    "lanSharing": MessageLookupByLibrary.simpleMessage("LAN 공유"),
     "language": MessageLookupByLibrary.simpleMessage("언어"),
     "lastEdit": MessageLookupByLibrary.simpleMessage("마지막 수정"),
     "layout": MessageLookupByLibrary.simpleMessage("레이아웃"),
@@ -609,6 +615,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "logsTest": MessageLookupByLibrary.simpleMessage("로그 테스트"),
     "loopback": MessageLookupByLibrary.simpleMessage("루프백 해제 도구"),
     "loopbackDesc": MessageLookupByLibrary.simpleMessage("UWP 앱 루프백 제한 해제"),
+    "loopbackProtection": MessageLookupByLibrary.simpleMessage("루프백 보호"),
+    "loopbackProtectionDesc": MessageLookupByLibrary.simpleMessage(
+      "네트워크 오류로 인한 루프백 차단",
+    ),
     "loose": MessageLookupByLibrary.simpleMessage("여유있게"),
     "manualRefreshIp": MessageLookupByLibrary.simpleMessage("IP 다시 가져오기"),
     "maximize": MessageLookupByLibrary.simpleMessage("최대화"),
@@ -664,9 +674,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "nameserverPolicyDesc": MessageLookupByLibrary.simpleMessage(
       "특정 도메인용 DNS 정책 지정",
     ),
-    "navBarHapticFeedback": MessageLookupByLibrary.simpleMessage("진동 피드백"),
+    "navBarHapticFeedback": MessageLookupByLibrary.simpleMessage("애니메이션 피드백"),
     "navBarHapticFeedbackDesc": MessageLookupByLibrary.simpleMessage(
-      "하단 탭 전환 시 진동 피드백",
+      "하단 탭 전환 애니메이션 및 진동 피드백",
     ),
     "navConnections": MessageLookupByLibrary.simpleMessage("연결"),
     "navTools": MessageLookupByLibrary.simpleMessage("도구"),
@@ -750,6 +760,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "프록시를 통과하는 트래픽만 계산",
     ),
     "openDashboard": MessageLookupByLibrary.simpleMessage("Zashboard 열기"),
+    "openRouterAdmin": MessageLookupByLibrary.simpleMessage("게이트웨이 열기"),
     "openSettings": MessageLookupByLibrary.simpleMessage("설정 열기"),
     "operatorOrAsn": MessageLookupByLibrary.simpleMessage("소속 / ASN"),
     "options": MessageLookupByLibrary.simpleMessage("옵션"),
@@ -961,6 +972,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "saveTip": MessageLookupByLibrary.simpleMessage("저장하시겠습니까?"),
     "script": MessageLookupByLibrary.simpleMessage("스크립트"),
     "scriptDesc": MessageLookupByLibrary.simpleMessage("글로벌 오버라이드 스크립트 설정"),
+    "scriptOtherOptions": MessageLookupByLibrary.simpleMessage("기타 설정"),
     "search": MessageLookupByLibrary.simpleMessage("검색"),
     "seconds": MessageLookupByLibrary.simpleMessage("초"),
     "secretCopied": MessageLookupByLibrary.simpleMessage("비밀번호가 클립보드에 복사되었습니다"),
@@ -971,6 +983,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "serviceReady": MessageLookupByLibrary.simpleMessage("서비스 준비 완료"),
     "serviceRunning": MessageLookupByLibrary.simpleMessage("서비스 실행 중"),
     "settings": MessageLookupByLibrary.simpleMessage("설정"),
+    "sharedAddress": MessageLookupByLibrary.simpleMessage("공유 주소"),
     "show": MessageLookupByLibrary.simpleMessage("표시"),
     "showHiddenItems": MessageLookupByLibrary.simpleMessage("숨겨진 항목 표시"),
     "showMenu": MessageLookupByLibrary.simpleMessage("메뉴 열기"),
@@ -1050,6 +1063,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "syncFailed": MessageLookupByLibrary.simpleMessage("동기화 실패"),
     "system": MessageLookupByLibrary.simpleMessage("시스템"),
     "systemApp": MessageLookupByLibrary.simpleMessage("시스템 앱"),
+    "systemDns": MessageLookupByLibrary.simpleMessage("DNS"),
     "systemFont": MessageLookupByLibrary.simpleMessage("시스템 글꼴"),
     "systemProxy": MessageLookupByLibrary.simpleMessage("시스템 프록시"),
     "systemProxyDesc": MessageLookupByLibrary.simpleMessage("시스템 프록시 설정"),

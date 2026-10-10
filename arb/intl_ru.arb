@@ -72,6 +72,8 @@
   "dozeSuspendDesc": "Синхронизация с режимом сна Android",
   "storeFix": "Исправление Google Play",
   "storeFixDesc": "Исправляет проблемы загрузки Google Play",
+  "loopbackProtection": "Защита от закольцовки",
+  "loopbackProtectionDesc": "Блокировать закольцованный трафик из-за ошибок сети",
   "disableQuic": "Отключить QUIC",
   "disableQuicDesc": "Отключить QUIC для решения сетевых проблем",
   "notificationHighPriority": "Высокий приоритет",
@@ -607,8 +609,8 @@
   "generalDesc": "Изменить глобальные настройки",
   "findProcessModeDesc": "Включить определение процессов",
   "ua": "User-Agent",
-  "navBarHapticFeedback": "Тактильная отдача",
-  "navBarHapticFeedbackDesc": "Вибрация при переключении нижней панели навигации",
+  "navBarHapticFeedback": "Анимация и отклик",
+  "navBarHapticFeedbackDesc": "Анимация нижней панели навигации и тактильный отклик",
   "saveTip": "Сохранить изменения?",
   "colorSchemes": "Цветовые схемы",
   "palette": "Палитра",
@@ -690,6 +692,7 @@
   "noStatusAvailable": "Статус недоступен",
   "custom": "Пользовательский",
   "customScriptOptions": "Свои правила",
+  "scriptOtherOptions": "Другие настройки",
   "wakelock": "Блокировка сна",
   "wakelockDescription": "Эта функция не требует специальных разрешений, так как использует только блокировку пробуждения экрана, а не CPU. Приложение остаётся активным в фоне, экран не гаснет автоматически, что полезно в некоторых сценариях.",
   "tunEnableRequireAdmin": "Для включения режима TUN требуются права администратора или ROOT.",
@@ -804,5 +807,17 @@
   "addUser": "Добавить пользователя",
   "editUser": "Редактировать пользователя",
   "userAuthEmpty": "Пользователи аутентификации не настроены, подключение по LAN не требует учетных данных",
-  "usernameCannotContainColon": "Имя пользователя не может содержать двоеточие"
+  "usernameCannotContainColon": "Имя пользователя не может содержать двоеточие",
+  "intranetAndGateway": "LAN и шлюз",
+  "networkType": "Тип сети",
+  "defaultGateway": "Шлюз",
+  "lanSharing": "Общий доступ в LAN",
+  "sharedAddress": "Общий адрес",
+  "dnsResolution": "Разрешение DNS",
+  "systemDns": "DNS",
+  "enabled": "Включено",
+  "disabled": "Отключено",
+  "openRouterAdmin": "Открыть шлюз"
 }
+
+

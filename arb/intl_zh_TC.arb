@@ -72,6 +72,8 @@
   "dozeSuspendDesc": "開啟後同步系統 Doze 休眠模式",
   "storeFix": "商店修復",
   "storeFixDesc": "修復 Google Play 商店下載異常",
+  "loopbackProtection": "迴環保護",
+  "loopbackProtectionDesc": "阻斷網路錯誤引起的迴環流量",
   "disableQuic": "禁用QUIC",
   "disableQuicDesc": "停用 QUIC 以解決特定網路問題",
   "notificationHighPriority": "高優先級",
@@ -606,8 +608,8 @@
   "saveChanges": "是否儲存更改？",
   "generalDesc": "修改全域一般設定",
   "findProcessModeDesc": "開啟後可以匹配尋找處理程序",
-  "navBarHapticFeedback": "觸覺回饋",
-  "navBarHapticFeedbackDesc": "底部導覽列切換震動回饋",
+  "navBarHapticFeedback": "動畫回饋",
+  "navBarHapticFeedbackDesc": "底部導覽列動畫及震動回饋",
   "saveTip": "確定要儲存嗎？",
   "colorSchemes": "配色方案",
   "palette": "調色盤",
@@ -691,6 +693,7 @@
   "openDashboard": "打開 Zashboard",
   "custom": "自訂",
   "customScriptOptions": "自訂規則開關",
+  "scriptOtherOptions": "其他設定",
   "wakelock": "亮螢幕鎖",
   "wakelockDescription": "本功能不需要任何特殊權限，因為它僅啟用螢幕喚醒鎖，而不是任何 CPU 喚醒鎖，應用會在後台保持必要的活躍，且螢幕不會自動熄滅，這在一些場景下會很有用",
   "tunEnableRequireAdmin": "啟用 TUN 虛擬網卡功能需要管理員或 Root 權限",
@@ -802,6 +805,18 @@
   "addUser": "新增用戶",
   "editUser": "編輯用戶",
   "userAuthEmpty": "未設定驗證用戶，局域網連線無需憑據",
-  "usernameCannotContainColon": "使用者名稱不能包含冒號"
+  "usernameCannotContainColon": "使用者名稱不能包含冒號",
+  "intranetAndGateway": "內網與閘道",
+  "networkType": "網路類型",
+  "defaultGateway": "閘道",
+  "lanSharing": "區域網路共享",
+  "sharedAddress": "共享位址",
+  "dnsResolution": "DNS 解析",
+  "systemDns": "DNS",
+  "enabled": "已開啟",
+  "disabled": "已關閉",
+  "openRouterAdmin": "開啟後台閘道"
 }
+
+
 
