@@ -20,7 +20,7 @@ require (
 	github.com/bodgit/windows v1.0.1 // indirect
 	github.com/coder/websocket v1.8.12 // indirect
 	github.com/coreos/go-iptables v0.8.0 // indirect
-	github.com/dlclark/regexp2 v1.12.0 // indirect
+	github.com/dlclark/regexp2 v1.12.0
 	github.com/dunglas/httpsfv v1.0.2 // indirect
 	github.com/easytier/easytier/easytier-go v0.0.0-20260911153346-e0bdb516b6dc // indirect
 	github.com/enfein/mieru/v3 v3.38.0 // indirect
@@ -79,7 +79,7 @@ require (
 	github.com/metacubex/quic-go v0.61.1-0.20260727080200-2548683b76f4 // indirect
 	github.com/metacubex/randv2 v0.2.0 // indirect
 	github.com/metacubex/restls-client-go v0.1.9 // indirect
-	github.com/metacubex/sevenzip v1.6.4 // indirect
+	github.com/metacubex/sevenzip v1.6.4
 	github.com/metacubex/sing v0.5.8 // indirect
 	github.com/metacubex/sing-mux v0.3.12 // indirect
 	github.com/metacubex/sing-quic v0.0.0-20260904234848-1c242664697a // indirect

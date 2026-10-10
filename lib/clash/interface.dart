@@ -18,7 +18,19 @@ mixin ClashInterface {
 
   Future<bool> forceGc({bool forceFreeOSMemory = false});
 
-  FutureOr<String> validateConfig(String data, {String? ageSecretKey});
+  FutureOr<String> validateConfig(
+    String data, {
+    String? ageSecretKey,
+    SetupParams? setup,
+  });
+
+  Future<Result> getRuntimeConfig(SetupParams setupParams);
+
+  Future<Result> exportConfig(
+    String path,
+    String output, {
+    String? ageSecretKey,
+  });
 
   FutureOr<String> decryptAgeConfig(String data, String ageSecretKey);
 
@@ -32,9 +44,9 @@ mixin ClashInterface {
 
   FutureOr<String> updateConfig(UpdateParams updateParams);
 
-  FutureOr<String> setupConfig(SetupParams setupParams);
+  FutureOr<SetupResult> setupConfig(SetupParams setupParams);
 
-  FutureOr<Map> getProxies();
+  FutureOr<String> getProxies();
 
   FutureOr<String> changeProxy(ChangeProxyParams changeProxyParams);
 
@@ -132,6 +144,8 @@ abstract class ClashHandlerInterface with ClashInterface {
           completer?.complete(true);
           return;
         case ActionMethod.getConfig:
+        case ActionMethod.getRuntimeConfig:
+        case ActionMethod.exportConfig:
         case ActionMethod.convertAgeSecretKeyToPublicKey:
           completer?.complete(result.toResult);
           return;
@@ -266,14 +280,47 @@ abstract class ClashHandlerInterface with ClashInterface {
   }
 
   @override
-  FutureOr<String> validateConfig(String data, {String? ageSecretKey}) {
+  FutureOr<String> validateConfig(
+    String data, {
+    String? ageSecretKey,
+    SetupParams? setup,
+  }) {
     final params = {
       'data': data,
       'age-secret-key': ageSecretKey ?? '',
+      'setup': ?setup,
     };
     return invoke<String>(
       method: ActionMethod.validateConfig,
       data: json.encode(params),
+    );
+  }
+
+  @override
+  Future<Result> getRuntimeConfig(SetupParams setupParams) {
+    return invoke<Result>(
+      method: ActionMethod.getRuntimeConfig,
+      data: json.encode(setupParams),
+      timeout: const Duration(seconds: 60),
+      defaultValue: Result.success(''),
+    );
+  }
+
+  @override
+  Future<Result> exportConfig(
+    String path,
+    String output, {
+    String? ageSecretKey,
+  }) {
+    return invoke<Result>(
+      method: ActionMethod.exportConfig,
+      data: json.encode({
+        'path': path,
+        'age-secret-key': ageSecretKey ?? '',
+        'output': output,
+      }),
+      timeout: const Duration(seconds: 60),
+      defaultValue: Result.error('exportConfig timeout'),
     );
   }
 
@@ -314,14 +361,15 @@ abstract class ClashHandlerInterface with ClashInterface {
   }
 
   @override
-  Future<String> setupConfig(SetupParams setupParams) async {
-    final data = await Isolate.run(() => json.encode(setupParams));
-    return await invoke<String>(
+  Future<SetupResult> setupConfig(SetupParams setupParams) async {
+    final params = await Isolate.run(() => json.encode(setupParams));
+    final data = await invoke<dynamic>(
       method: ActionMethod.setupConfig,
-      data: data,
+      data: params,
       timeout: const Duration(seconds: 15),
       onTimeout: () => throw TimeoutException('setupConfig timeout'),
     );
+    return SetupResult.fromData(data);
   }
 
   @override
@@ -330,8 +378,8 @@ abstract class ClashHandlerInterface with ClashInterface {
   }
 
   @override
-  Future<Map> getProxies() {
-    return invoke<Map>(
+  Future<String> getProxies() {
+    return invoke<String>(
       method: ActionMethod.getProxies,
       timeout: Duration(seconds: 5),
     );

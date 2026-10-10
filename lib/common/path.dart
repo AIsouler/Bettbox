@@ -194,10 +194,6 @@ class AppPath {
     return directory.path;
   }
 
-  Future<String> get configFilePath async {
-    return join(await homeDirPath, 'config.yaml');
-  }
-
   Future<String> get lockFilePath async {
     final directory = await dataDir.future;
     return join(directory.path, '${AppIdentity.dataDirName}.lock');
@@ -259,6 +255,12 @@ class AppPath {
 
   Future<String> get tempPath async {
     final directory = await tempDir.future;
+    return directory.path;
+  }
+
+  Future<String> get relayPath async {
+    final directory = Directory(join(await homeDirPath, 'relay'));
+    await directory.create(recursive: true);
     return directory.path;
   }
 

@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:bett_box/clash/clash.dart';
 import 'package:bett_box/common/common.dart';
 import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/models/models.dart';
@@ -1138,17 +1137,8 @@ class _GroupSwitchOptionsSheetState
       );
 
       final patchConfig = ref.read(patchClashConfigProvider);
-      final rawConfig = await globalState.patchRawConfig(
+      final message = await globalState.validatePatchedConfig(
         patchConfig: patchConfig,
-      );
-
-      final configForValidation = Map<String, dynamic>.from(rawConfig);
-      if (configForValidation.containsKey('rule')) {
-        configForValidation['rules'] = configForValidation.remove('rule');
-      }
-
-      final message = await clashCore.validateConfig(
-        json.encode(configForValidation),
       );
 
       if (message.isNotEmpty) {

@@ -187,6 +187,28 @@ class ClashLibHandler {
     return completer.future;
   }
 
+  Future<void> exportConfig(
+    String id,
+    String output, {
+    String? ageSecretKey,
+  }) async {
+    final action = Action(
+      id: '${ActionMethod.exportConfig.name}#${utils.id}',
+      method: ActionMethod.exportConfig,
+      data: json.encode({
+        'path': await appPath.getProfilePath(id),
+        'age-secret-key': ageSecretKey ?? '',
+        'output': output,
+      }),
+    );
+    final result = ActionResult.fromJson(
+      json.decode(await invokeAction(json.encode(action))),
+    ).toResult;
+    if (result.isError) {
+      throw result.message;
+    }
+  }
+
   void attachMessagePort(int messagePort) {
     clashFFI.attachMessagePort(messagePort);
   }
@@ -275,16 +297,20 @@ class ClashLibHandler {
     });
   }
 
-  Future<String> quickStart(
+  Future<SetupResult> quickStart(
     InitParams initParams,
     SetupParams setupParams,
     CoreState state,
   ) {
-    final completer = Completer<String>();
+    final completer = Completer<SetupResult>();
     final receiver = ReceivePort();
     receiver.listen((message) {
       if (!completer.isCompleted) {
-        completer.complete(message);
+        dynamic data = message;
+        try {
+          data = json.decode(message);
+        } catch (_) {}
+        completer.complete(SetupResult.fromData(data));
         receiver.close();
       }
     });

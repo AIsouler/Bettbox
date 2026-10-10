@@ -4,6 +4,7 @@
 // ignore_for_file: unused_import, unused_element, unnecessary_import, duplicate_ignore, invalid_use_of_internal_member, annotate_overrides, non_constant_identifier_names, curly_braces_in_flow_control_structures, prefer_const_literals_to_create_immutables, unused_field
 
 import 'api/editor.dart';
+import 'api/script.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:ffi' as ffi;
@@ -65,10 +66,31 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<RustFoldRange> dco_decode_list_rust_fold_range(dynamic raw);
 
   @protected
+  List<ScriptLog> dco_decode_list_script_log(dynamic raw);
+
+  @protected
+  String? dco_decode_opt_String(dynamic raw);
+
+  @protected
   BigInt? dco_decode_opt_box_autoadd_usize(dynamic raw);
 
   @protected
   RustFoldRange dco_decode_rust_fold_range(dynamic raw);
+
+  @protected
+  ScriptError dco_decode_script_error(dynamic raw);
+
+  @protected
+  ScriptErrorKind dco_decode_script_error_kind(dynamic raw);
+
+  @protected
+  ScriptLog dco_decode_script_log(dynamic raw);
+
+  @protected
+  ScriptOutput dco_decode_script_output(dynamic raw);
+
+  @protected
+  int dco_decode_u_32(dynamic raw);
 
   @protected
   int dco_decode_u_8(dynamic raw);
@@ -124,10 +146,31 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  List<ScriptLog> sse_decode_list_script_log(SseDeserializer deserializer);
+
+  @protected
+  String? sse_decode_opt_String(SseDeserializer deserializer);
+
+  @protected
   BigInt? sse_decode_opt_box_autoadd_usize(SseDeserializer deserializer);
 
   @protected
   RustFoldRange sse_decode_rust_fold_range(SseDeserializer deserializer);
+
+  @protected
+  ScriptError sse_decode_script_error(SseDeserializer deserializer);
+
+  @protected
+  ScriptErrorKind sse_decode_script_error_kind(SseDeserializer deserializer);
+
+  @protected
+  ScriptLog sse_decode_script_log(SseDeserializer deserializer);
+
+  @protected
+  ScriptOutput sse_decode_script_output(SseDeserializer deserializer);
+
+  @protected
+  int sse_decode_u_32(SseDeserializer deserializer);
 
   @protected
   int sse_decode_u_8(SseDeserializer deserializer);
@@ -196,10 +239,37 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_script_log(
+    List<ScriptLog> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_String(String? self, SseSerializer serializer);
+
+  @protected
   void sse_encode_opt_box_autoadd_usize(BigInt? self, SseSerializer serializer);
 
   @protected
   void sse_encode_rust_fold_range(RustFoldRange self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_script_error(ScriptError self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_script_error_kind(
+    ScriptErrorKind self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_script_log(ScriptLog self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_script_output(ScriptOutput self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_u_32(int self, SseSerializer serializer);
 
   @protected
   void sse_encode_u_8(int self, SseSerializer serializer);

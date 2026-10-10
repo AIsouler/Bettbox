@@ -232,11 +232,10 @@ class ProfileItem extends StatelessWidget {
     await globalState.appController.safeRun(
       () async {
         final patchConfig = globalState.config.patchClashConfig;
-        final runtimeConfig = await globalState.patchRawConfig(
+        final content = await globalState.getRuntimeConfigContent(
           patchConfig: patchConfig,
           profile: profile,
         );
-        final content = await encodeYamlTask(runtimeConfig);
         if (!context.mounted) {
           return;
         }

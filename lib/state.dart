@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
 
@@ -29,6 +30,8 @@ import 'controller.dart';
 import 'models/models.dart';
 
 typedef UpdateTasks = List<FutureOr Function()>;
+
+final _volatileScriptPattern = RegExp(r'\bDate\b|Math\s*\.\s*random');
 
 class GlobalState {
   static GlobalState? _instance;
@@ -668,573 +671,301 @@ class GlobalState {
     );
   }
 
-  Future<SetupParams> getSetupParams({required ClashConfig pathConfig}) async {
-    final clashConfig = await patchRawConfig(patchConfig: pathConfig);
-    await _writeRunningConfig(clashConfig);
-    return SetupParams(
-      selectedMap: config.currentProfile?.selectedMap ?? {},
-      testUrl: config.appSetting.testUrl,
-      overrideTestUrl: config.overrideTestUrl,
-    );
+  Future<SetupParams> getSetupParams({required ClashConfig pathConfig}) {
+    return buildSetupParams(patchConfig: pathConfig);
   }
 
-  Future<void> _writeRunningConfig(Map<String, dynamic> clashConfig) async {
-    final content = await encodeCompactYamlTask(clashConfig);
-    final configPath = await appPath.configFilePath;
-    final tempFile =
-        File('$configPath.${DateTime.now().microsecondsSinceEpoch}.tmp');
-    await tempFile.parent.create(recursive: true);
-    try {
-      await tempFile.writeAsString(content, flush: true);
-      var success = false;
-      for (var attempt = 0; attempt < 3; attempt++) {
-        try {
-          await tempFile.rename(configPath);
-          success = true;
-          break;
-        } catch (_) {
-          try {
-            await tempFile.copy(configPath);
-            success = true;
-            break;
-          } catch (_) {
-            if (attempt < 2) {
-              await Future.delayed(Duration(milliseconds: 50 * (attempt + 1)));
-            }
-          }
-        }
-      }
-      if (!success) {
-        throw FileSystemException(
-          'Failed to write running config after retries',
-          configPath,
-        );
-      }
-    } finally {
-      if (await tempFile.exists()) {
-        try {
-          await tempFile.delete();
-        } catch (_) {}
-      }
-    }
-  }
-
-  Future<Map<String, dynamic>> patchRawConfig({
+  Future<SetupParams> buildSetupParams({
     required ClashConfig patchConfig,
     Profile? profile,
   }) async {
     final targetProfile = profile ?? config.currentProfile;
+    final params = SetupParams(
+      selectedMap: targetProfile?.selectedMap ?? {},
+      testUrl: config.appSetting.testUrl,
+      overrideTestUrl: config.overrideTestUrl,
+    );
     if (targetProfile == null) {
-      return <String, dynamic>{};
+      return params;
     }
-    final profileId = targetProfile.id;
-    final configMap = await getProfileConfig(profileId);
-    final rawConfig = await handleEvaluate(configMap, profile: targetProfile);
-    final originalProxyGroups = rawConfig['proxy-groups'];
-
-    final realPatchConfig = patchConfig.copyWith(
-      dns: patchConfig.dns.copyWith(
-        fakeIpRangeV6: patchConfig.dns.effectiveFakeIpRangeV6(
-          ipv6Enabled: patchConfig.ipv6,
-        ),
-      ),
-      tun: patchConfig.tun.getRealTun(
-        config.networkProps.bypassPrivateRoute,
-        fakeIpRange: patchConfig.dns.fakeIpRange,
-        fakeIpRangeV6: patchConfig.dns.effectiveFakeIpRangeV6(
-          ipv6Enabled: patchConfig.ipv6,
-        ),
-        bypassPrivateRouteAddress:
-            config.networkProps.realBypassPrivateRouteAddress,
+    return params.copyWith(
+      profilePath: await appPath.getProfilePath(targetProfile.id),
+      ageSecretKey: targetProfile.ageSecretKey ?? '',
+      scriptedConfig: await _writeScriptedConfig(targetProfile),
+      patch: await buildPatchParams(
+        patchConfig: patchConfig,
+        profile: targetProfile,
       ),
     );
-    rawConfig['external-controller'] = realPatchConfig.allowLan
-        ? realPatchConfig.externalController.value.replaceAll(
-            '127.0.0.1',
-            '0.0.0.0',
-          )
-        : realPatchConfig.externalController.value;
-    if (realPatchConfig.externalController == ExternalControllerStatus.open) {
-      final secret = realPatchConfig.secret;
-      if (secret != null && secret.isNotEmpty) {
-        rawConfig['secret'] = secret;
-      }
+  }
+
+  Future<SetupParams?> buildValidateParams(Profile profile) async {
+    final currentProfileId = config.currentProfileId;
+    final scriptActive =
+        config.scriptProps.currentScript != null && profile.useScriptOverride;
+    if (isService ||
+        scriptActive ||
+        (currentProfileId != null && currentProfileId != profile.id)) {
+      return null;
     }
-    rawConfig['external-ui'] = await appPath.uiPath;
-    rawConfig['external-ui-url'] =
-        'https://github.com/Zephyruso/zashboard/releases/latest/download/dist.zip';
-    rawConfig.remove('external-ui-name');
-    if (rawConfig['interface-name'] == null) {
-      rawConfig['interface-name'] = '';
+    final patchConfig = config.patchClashConfig;
+    return buildSetupParams(
+      patchConfig: patchConfig.copyWith.tun(
+        enable: patchConfig.tun.enable && appState.realTunEnable,
+      ),
+      profile: profile,
+    );
+  }
+
+  Future<String> getRuntimeConfigContent({
+    required ClashConfig patchConfig,
+    Profile? profile,
+  }) async {
+    return clashCore.getRuntimeConfig(
+      await buildSetupParams(patchConfig: patchConfig, profile: profile),
+    );
+  }
+
+  Future<String> validatePatchedConfig({
+    required ClashConfig patchConfig,
+  }) async {
+    return await clashCore.validateConfig(
+      '',
+      setup: await buildSetupParams(patchConfig: patchConfig),
+    );
+  }
+
+  Future<String> _writeScriptedConfig(Profile profile) async {
+    if (config.scriptProps.currentScript == null ||
+        !profile.useScriptOverride) {
+      return '';
     }
-    rawConfig['tcp-concurrent'] = realPatchConfig.tcpConcurrent;
-    rawConfig['unified-delay'] = realPatchConfig.unifiedDelay;
-    rawConfig['ipv6'] = realPatchConfig.ipv6;
-    rawConfig['log-level'] = realPatchConfig.logLevel.name;
-    rawConfig['port'] = 0;
-    rawConfig['socks-port'] = 0;
-    rawConfig['keep-alive-interval'] = realPatchConfig.keepAliveInterval;
-    rawConfig['mixed-port'] = realPatchConfig.mixedPort;
-    rawConfig['port'] = realPatchConfig.port;
-    rawConfig['socks-port'] = realPatchConfig.socksPort;
-    rawConfig['redir-port'] = realPatchConfig.redirPort;
-    rawConfig['tproxy-port'] = realPatchConfig.tproxyPort;
-    rawConfig['find-process-mode'] = realPatchConfig.findProcessMode.name;
-    rawConfig['allow-lan'] = realPatchConfig.allowLan;
-    if (realPatchConfig.authentication.isNotEmpty) {
-      rawConfig['authentication'] = realPatchConfig.authentication;
-      if (realPatchConfig.skipAuthPrefixes.isNotEmpty) {
-        rawConfig['skip-auth-prefixes'] = realPatchConfig.skipAuthPrefixes;
-      } else {
-        rawConfig.remove('skip-auth-prefixes');
-      }
-    } else {
-      rawConfig.remove('authentication');
-      rawConfig.remove('skip-auth-prefixes');
-    }
-    rawConfig['mode'] = realPatchConfig.mode.name;
-    if (rawConfig['tun'] == null) {
-      rawConfig['tun'] = <String, dynamic>{};
-    }
-    rawConfig['tun']['enable'] = realPatchConfig.tun.enable;
-    rawConfig['tun']['device'] = realPatchConfig.tun.device;
-    final dnsHijack = realPatchConfig.tun.dnsHijack;
-    rawConfig['tun']['dns-hijack'] = dnsHijack.isEmpty
-        ? const ['any:53']
-        : dnsHijack;
-    rawConfig['tun']['stack'] = realPatchConfig.tun.stack.name;
-    rawConfig['tun']['congestion-controller'] =
-        realPatchConfig.tun.congestionController.name;
-    rawConfig['tun']['route-address'] = realPatchConfig.tun.routeAddress;
-    rawConfig['tun']['route-exclude-address'] =
-        realPatchConfig.tun.routeExcludeAddress;
-    rawConfig['tun']['auto-route'] = !system.isAndroid;
-    rawConfig['tun']['auto-detect-interface'] = !system.isAndroid;
-    rawConfig['tun']['auto-redirect'] = system.isLinux;
-    rawConfig['tun']['strict-route'] = realPatchConfig.tun.strictRoute;
-    rawConfig['tun']['endpoint-independent-nat'] =
-        realPatchConfig.tun.endpointIndependentNat;
-    rawConfig['tun']['disable-icmp-forwarding'] =
-        realPatchConfig.tun.disableIcmpForwarding;
-    rawConfig['tun']['mtu'] = realPatchConfig.tun.mtu;
-    rawConfig['geodata-loader'] = 'memconservative';
-    rawConfig['geodata-mode'] = false;
-    if (rawConfig['sniffer']?['sniff'] != null) {
-      for (final value in (rawConfig['sniffer']?['sniff'] as Map).values) {
-        if (value['ports'] != null && value['ports'] is List) {
-          value['ports'] =
-              value['ports']?.map((item) => item.toString()).toList() ?? [];
+    final stamp = DateTime.now().microsecondsSinceEpoch;
+    final relayPath = await appPath.relayPath;
+    final separator = Platform.pathSeparator;
+    final file = File('$relayPath${separator}scripted-$stamp.json');
+    return _scriptEvaluateLock.synchronized(() async {
+      final currentScript = config.scriptProps.currentScript;
+      if (currentScript == null) return '';
+      unawaited(_sweepRelay(relayPath));
+      final cache = File('$relayPath${separator}cache-${profile.id}.json');
+      final cacheKey = File('$relayPath${separator}cache-${profile.id}.key');
+      final key = await _scriptedCacheKey(profile, currentScript);
+      final exported = File('$relayPath${separator}profile-$stamp.json');
+      try {
+        if (key != null &&
+            await cache.exists() &&
+            await cacheKey.exists() &&
+            await cacheKey.readAsString() == key) {
+          await cache.copy(file.path);
+          return file.path;
+        }
+        await _exportProfileConfig(profile, exported.path);
+        await JavaScriptRuntimeManager.evaluateScriptFile(
+          scriptContent: currentScript.content,
+          inputPath: exported.path,
+          outputPath: file.path,
+          customOptions: currentScript.customOptions,
+        );
+        if (key != null) {
+          if (await cacheKey.exists()) {
+            await cacheKey.delete();
+          }
+          await file.copy(cache.path);
+          await cacheKey.writeAsString(key, flush: true);
+        }
+        return file.path;
+      } catch (e) {
+        commonPrint.log('Script execution failed: $e');
+        showNotifier('${appLocalizations.profileParseErrorDesc}: $e');
+        return '';
+      } finally {
+        if (await exported.exists()) {
+          try {
+            await exported.delete();
+          } catch (_) {}
         }
       }
-    }
-    if (rawConfig['profile'] == null) {
-      rawConfig['profile'] = <String, dynamic>{};
-    }
-    if (rawConfig['proxy-providers'] != null) {
-      final proxyProviders = rawConfig['proxy-providers'] as Map;
-      for (final key in proxyProviders.keys) {
-        final proxyProvider = proxyProviders[key];
-        if (proxyProvider['type'] != 'http') {
+    });
+  }
+
+  Future<void> _sweepRelay(String relayPath) async {
+    final expire = DateTime.now().subtract(const Duration(minutes: 10));
+    try {
+      await for (final entity in Directory(relayPath).list()) {
+        if (entity is! File ||
+            entity.uri.pathSegments.last.startsWith('cache-') ||
+            (await entity.stat()).modified.isAfter(expire)) {
           continue;
         }
-        if (proxyProvider['url'] != null) {
-          proxyProvider['path'] = await appPath.getProvidersFilePath(
-            targetProfile.id,
-            'proxies',
-            proxyProvider['url'],
-          );
-        }
+        await entity.delete();
       }
-    }
+    } catch (_) {}
+  }
 
-    if (rawConfig['rule-providers'] != null) {
-      final ruleProviders = rawConfig['rule-providers'] as Map;
-      for (final key in ruleProviders.keys) {
-        final ruleProvider = ruleProviders[key];
-        if (ruleProvider['type'] != 'http') {
-          continue;
-        }
-        if (ruleProvider['url'] != null) {
-          ruleProvider['path'] = await appPath.getProvidersFilePath(
-            targetProfile.id,
-            'rules',
-            ruleProvider['url'],
-          );
-        }
-      }
+  Future<String?> _scriptedCacheKey(Profile profile, Script script) async {
+    if (_volatileScriptPattern.hasMatch(script.content)) {
+      return null;
     }
+    final profileFile = File(await appPath.getProfilePath(profile.id));
+    if (!await profileFile.exists()) {
+      return null;
+    }
+    final stat = await profileFile.stat();
+    return [
+      packageInfo.version,
+      packageInfo.buildNumber,
+      stat.modified.microsecondsSinceEpoch,
+      stat.size,
+      profile.ageSecretKey ?? '',
+      script.content.toMd5(),
+      json.encode(script.customOptions ?? const <String, bool>{}),
+    ].join('\n').toMd5();
+  }
 
-    if (rawConfig['profile']['store-selected'] == null) {
-      rawConfig['profile']['store-selected'] = true;
-    }
-    if (rawConfig['profile']['store-fake-ip'] == null) {
-      rawConfig['profile']['store-fake-ip'] = true;
-    }
-    rawConfig['geox-url'] = realPatchConfig.geoXUrl.toJson();
-    rawConfig['global-ua'] = realPatchConfig.globalUa;
-    if (rawConfig['hosts'] == null) {
-      rawConfig['hosts'] = <String, dynamic>{};
-    }
-    for (final host in realPatchConfig.hosts.entries) {
-      if (!system.isAndroid && host.key == 'services.googleapis.cn') {
-        continue;
-      }
-      rawConfig['hosts'][host.key] = host.value.splitByMultipleSeparators;
-    }
-
-    rawConfig['hosts']['dns.msftncsi.com'] = [
-      '131.107.255.255',
-      'fd3e:4f5a:5b81::1',
-    ];
-
-    if (rawConfig['dns'] == null) {
-      rawConfig['dns'] = <String, dynamic>{};
-    }
-    final isEnableDns = rawConfig['dns']['enable'] == true;
-    final overrideDns = globalState.config.overrideDns;
-    if (overrideDns || !isEnableDns) {
-      final originalDns = rawConfig['dns'] is Map
-          ? (rawConfig['dns'] as Map).cast<String, dynamic>()
-          : null;
-      final originalHosts = rawConfig['hosts'] is Map
-          ? (rawConfig['hosts'] as Map).cast<String, dynamic>()
-          : null;
-      final dns = switch (!isEnableDns) {
-        true => realPatchConfig.dns.copyWith(
-          nameserver: [...realPatchConfig.dns.nameserver, 'system://'],
-        ),
-        false => realPatchConfig.dns,
-      };
-      rawConfig['dns'] = dns.toJson();
-      rawConfig['dns']['nameserver-policy'] = <String, dynamic>{};
-      for (final entry in dns.nameserverPolicy.entries) {
-        rawConfig['dns']['nameserver-policy'][entry.key] =
-            entry.value.splitByMultipleSeparators;
-      }
-      applyDnsNodeOverride(
-        rawConfig,
-        originalDns: originalDns,
-        originalHosts: originalHosts,
+  Future<void> _exportProfileConfig(Profile profile, String output) async {
+    final handler = clashLibHandler;
+    if (handler != null) {
+      return handler.exportConfig(
+        profile.id,
+        output,
+        ageSecretKey: profile.ageSecretKey,
       );
     }
+    return clashCore.exportConfig(
+      profile.id,
+      output,
+      ageSecretKey: profile.ageSecretKey,
+    );
+  }
 
-    if (rawConfig['dns'] != null &&
-        rawConfig['dns']['fallback-filter'] != null) {
-      if (rawConfig['dns']['fallback-filter'] is Map) {
-        (rawConfig['dns']['fallback-filter'] as Map).remove('geosite');
-      }
-    }
-
-    if (system.isAndroid && rawConfig['dns']['listen'] != null) {
-      final listen = rawConfig['dns']['listen'] as String;
-      if (listen.endsWith(':53')) {
-        rawConfig['dns']['listen'] = listen.replaceAll(':53', ':10053');
-      }
-      final noProviders =
-          rawConfig['proxy-providers'] == null &&
-          rawConfig['rule-providers'] == null;
-      final proxyServerNameserver = rawConfig['dns']['proxy-server-nameserver'];
-      final hasLocalProxyServerNameserver = switch (proxyServerNameserver) {
-        List list => list.any((e) => e.toString().startsWith('127.0.0.1')),
-        String str => str.startsWith('127.0.0.1'),
-        _ => false,
-      };
-      if (noProviders &&
-          hasLocalProxyServerNameserver &&
-          listen.startsWith('0.0.0.0')) {
-        rawConfig['dns']['listen'] =
-            '127.0.0.1${listen.substring('0.0.0.0'.length)}';
-      }
-    }
-
-    if (rawConfig['ntp'] == null) {
-      rawConfig['ntp'] = {};
-    }
-    final overrideNtp = globalState.config.overrideNtp;
-    if (overrideNtp) {
-      final ntp = realPatchConfig.ntp;
-      rawConfig['ntp'] = ntp.toJson();
-    }
-    if (system.isAndroid) {
-      rawConfig['ntp']['write-to-system'] = false;
-    }
-    if (rawConfig['sniffer'] == null) {
-      rawConfig['sniffer'] = {};
-    }
-    final overrideSniffer = globalState.config.overrideSniffer;
-    if (overrideSniffer) {
-      final sniffer = realPatchConfig.sniffer;
-      rawConfig['sniffer'] = sniffer.toJson();
-    }
-    final guiTunnels = realPatchConfig.tunnels;
-    if (guiTunnels.isNotEmpty) {
-      final existingTunnels = rawConfig['tunnels'] as List? ?? [];
-      final allTunnels = [
-        ...existingTunnels,
-        ...guiTunnels.map((t) => t.toClashJson()),
-      ];
-      rawConfig['tunnels'] = allTunnels;
-    }
-    if (rawConfig['experimental'] == null) {
-      rawConfig['experimental'] = {};
-    }
-    final overrideExperimental = globalState.config.overrideExperimental;
-    if (overrideExperimental) {
-      final experimental = realPatchConfig.experimental;
-      rawConfig['experimental'] = experimental.toJson();
-    }
-
-    final nodeExcludeFilter = globalState.config.nodeExcludeFilter;
-    final healthCheckTimeout = globalState.config.healthCheckTimeout;
-    if ((nodeExcludeFilter.isNotEmpty || healthCheckTimeout != 5000) &&
-        rawConfig['proxy-groups'] is List) {
-      RegExp? filterRegex;
-      if (nodeExcludeFilter.isNotEmpty) {
-        try {
-          filterRegex = RegExp(nodeExcludeFilter);
-        } catch (_) {}
-      }
-
-      final proxyGroups = rawConfig['proxy-groups'] as List;
-
-      final Set<String> protectedNames = {
-        'DIRECT',
-        'REJECT',
-        'REJECT-DROP',
-        'COMPATIBLE',
-        'PASS',
-      };
-      for (final g in proxyGroups) {
-        if (g is Map && g['name'] is String) {
-          protectedNames.add(g['name'] as String);
-        }
-      }
-
-      for (final group in proxyGroups) {
-        if (group is! Map) continue;
-
-        if (filterRegex != null && group['use'] != null) {
-          final existing = group['exclude-filter'];
-          if (existing is String && existing.isNotEmpty) {
-            group['exclude-filter'] = '$existing|$nodeExcludeFilter';
-          } else {
-            group['exclude-filter'] = nodeExcludeFilter;
-          }
-        }
-
-        if (filterRegex != null && group['proxies'] is List) {
-          final proxiesList = group['proxies'] as List;
-          final filtered = proxiesList.where((item) {
-            if (item is! String || protectedNames.contains(item)) return true;
-            return !filterRegex!.hasMatch(item);
-          }).toList();
-
-          if (filtered.isEmpty &&
-              (group['use'] == null ||
-                  (group['use'] is List && group['use'].isEmpty))) {
-            filtered.add('DIRECT');
-          }
-          group['proxies'] = filtered;
-        }
-
-        if (healthCheckTimeout != 5000) {
-          group['timeout'] ??= healthCheckTimeout;
-        }
-      }
-
-      if (filterRegex != null && rawConfig['proxy-providers'] is Map) {
-        final proxyProviders = rawConfig['proxy-providers'] as Map;
-        for (final provider in proxyProviders.values) {
-          if (provider is! Map) continue;
-          final existing = provider['exclude-filter'];
-          if (existing is String && existing.isNotEmpty) {
-            provider['exclude-filter'] = '$existing|$nodeExcludeFilter';
-          } else {
-            provider['exclude-filter'] = nodeExcludeFilter;
-          }
-        }
-      }
-    }
-
-    if (rawConfig['proxy-groups'] is List) {
-      final proxyGroups = rawConfig['proxy-groups'] as List;
-      for (final group in proxyGroups) {
-        if (group is! Map) continue;
-        final tolerance = group['tolerance'];
-        if (tolerance != null) {
-          if (tolerance is double) {
-            group['tolerance'] = tolerance.toInt();
-          } else if (tolerance is String) {
-            group['tolerance'] = int.tryParse(tolerance) ?? tolerance;
-          }
-        }
-      }
-    }
-
-    var rules = [];
-    if (rawConfig['rules'] != null) {
-      rules = rawConfig['rules'];
-      rawConfig.remove('rules');
-    } else if (rawConfig['rule'] != null) {
-      rules = rawConfig['rule'];
-      rawConfig.remove('rule');
-    }
+  Future<Map<String, dynamic>> buildPatchParams({
+    required ClashConfig patchConfig,
+    required Profile profile,
+  }) async {
+    final fakeIpRangeV6 = patchConfig.dns.effectiveFakeIpRangeV6(
+      ipv6Enabled: patchConfig.ipv6,
+    );
+    final dns = patchConfig.dns.copyWith(fakeIpRangeV6: fakeIpRangeV6);
+    final tun = patchConfig.tun.getRealTun(
+      config.networkProps.bypassPrivateRoute,
+      fakeIpRange: patchConfig.dns.fakeIpRange,
+      fakeIpRangeV6: fakeIpRangeV6,
+      bypassPrivateRouteAddress:
+          config.networkProps.realBypassPrivateRouteAddress,
+    );
+    final externalController = patchConfig.externalController;
+    final secret = patchConfig.secret;
+    final hasAuthentication = patchConfig.authentication.isNotEmpty;
+    final general = <String, dynamic>{
+      'external-controller': patchConfig.allowLan
+          ? externalController.value.replaceAll('127.0.0.1', '0.0.0.0')
+          : externalController.value,
+      if (externalController == ExternalControllerStatus.open &&
+          secret != null &&
+          secret.isNotEmpty)
+        'secret': secret,
+      'external-ui': await appPath.uiPath,
+      'external-ui-url':
+          'https://github.com/Zephyruso/zashboard/releases/latest/download/dist.zip',
+      'external-ui-name': '',
+      'tcp-concurrent': patchConfig.tcpConcurrent,
+      'unified-delay': patchConfig.unifiedDelay,
+      'ipv6': patchConfig.ipv6,
+      'log-level': patchConfig.logLevel.name,
+      'keep-alive-interval': patchConfig.keepAliveInterval,
+      'mixed-port': patchConfig.mixedPort,
+      'port': patchConfig.port,
+      'socks-port': patchConfig.socksPort,
+      'redir-port': patchConfig.redirPort,
+      'tproxy-port': patchConfig.tproxyPort,
+      'find-process-mode': patchConfig.findProcessMode.name,
+      'allow-lan': patchConfig.allowLan,
+      'authentication': patchConfig.authentication,
+      'skip-auth-prefixes':
+          hasAuthentication && patchConfig.skipAuthPrefixes.isNotEmpty
+          ? patchConfig.skipAuthPrefixes
+          : null,
+      'mode': patchConfig.mode.name,
+      'tun': {
+        'enable': tun.enable,
+        'device': tun.device,
+        'dns-hijack': tun.dnsHijack.isEmpty ? const ['any:53'] : tun.dnsHijack,
+        'stack': tun.stack.name,
+        'congestion-controller': tun.congestionController.name,
+        'route-address': tun.routeAddress,
+        'route-exclude-address': tun.routeExcludeAddress,
+        'auto-route': !system.isAndroid,
+        'auto-detect-interface': !system.isAndroid,
+        'auto-redirect': system.isLinux,
+        'strict-route': tun.strictRoute,
+        'endpoint-independent-nat': tun.endpointIndependentNat,
+        'disable-icmp-forwarding': tun.disableIcmpForwarding,
+        'mtu': tun.mtu,
+      },
+      'geodata-loader': 'memconservative',
+      'geodata-mode': false,
+      'global-ua': patchConfig.globalUa,
+    };
 
     final scriptActive =
-        config.scriptProps.currentScript != null &&
-        targetProfile.useScriptOverride;
+        config.scriptProps.currentScript != null && profile.useScriptOverride;
+    final overrideData = profile.overrideData;
+    final isRussian =
+        config.appSetting.locale?.toLowerCase().startsWith('ru') ?? false;
 
-    final overrideData = targetProfile.overrideData;
-    if (overrideData.enable && !scriptActive) {
-      if (overrideData.rule.type == OverrideRuleType.override) {
-        rules = overrideData.runningRule;
-      } else {
-        rules = [...overrideData.runningRule, ...rules];
-      }
-    }
-
-    if (config.vpnProps.disableQuic) {
-      final isRussian =
-          config.appSetting.locale?.toLowerCase().startsWith('ru') ?? false;
-      final quicRules = config.vpnProps.excludeChina && !isRussian
+    return {
+      'general': general,
+      'geox-url': patchConfig.geoXUrl.toJson(),
+      'hosts': [
+        for (final host in patchConfig.hosts.entries)
+          if (system.isAndroid || host.key != 'services.googleapis.cn')
+            {'key': host.key, 'value': host.value.splitByMultipleSeparators},
+        {
+          'key': 'dns.msftncsi.com',
+          'value': ['131.107.255.255', 'fd3e:4f5a:5b81::1'],
+        },
+      ],
+      'override-dns': config.overrideDns,
+      'dns': {
+        ...dns.toJson(),
+        'nameserver-policy': {
+          for (final entry in dns.nameserverPolicy.entries)
+            entry.key: entry.value.splitByMultipleSeparators,
+        },
+      },
+      'ntp': config.overrideNtp ? patchConfig.ntp.toJson() : null,
+      'sniffer': config.overrideSniffer ? patchConfig.sniffer.toJson() : null,
+      'experimental': config.overrideExperimental
+          ? patchConfig.experimental.toJson()
+          : null,
+      'tunnels': patchConfig.tunnels.isEmpty
+          ? null
+          : patchConfig.tunnels.map((item) => item.toClashJson()).toList(),
+      'providers-path': await appPath.getProvidersDirPath(profile.id),
+      'node-exclude-filter': config.nodeExcludeFilter,
+      'health-check-timeout': config.healthCheckTimeout,
+      'override-rules': overrideData.enable && !scriptActive
+          ? {
+              'override': overrideData.rule.type == OverrideRuleType.override,
+              'rules': overrideData.runningRule,
+            }
+          : null,
+      'prepend-rules': config.vpnProps.disableQuic
           ? [
-              'AND,((NETWORK,UDP),(DST-PORT,443),(NOT,((OR,((GEOSITE,geolocation-cn),(GEOIP,CN,no-resolve)))))),REJECT',
+              config.vpnProps.excludeChina && !isRussian
+                  ? 'AND,((NETWORK,UDP),(DST-PORT,443),(NOT,((OR,((GEOSITE,geolocation-cn),(GEOIP,CN,no-resolve)))))),REJECT'
+                  : 'AND,((NETWORK,UDP),(DST-PORT,443)),REJECT',
             ]
-          : ['AND,((NETWORK,UDP),(DST-PORT,443)),REJECT'];
-      rules = [...quicRules, ...rules];
-    }
-
-    if (rawConfig['proxy-groups'] == null && originalProxyGroups != null) {
-      rawConfig['proxy-groups'] = originalProxyGroups;
-    }
-
-    final globalClientFingerprint = rawConfig['global-client-fingerprint'];
-    if (rawConfig['proxies'] is List) {
-      final proxiesList = rawConfig['proxies'] as List;
-      for (final proxy in proxiesList) {
-        if (proxy is! Map) continue;
-
-        final type = proxy['type']?.toString().toLowerCase();
-        final isTls = proxy['tls'] == true;
-
-        bool supportClientFingerprint = false;
-        if (type == 'trojan' || type == 'anytls') {
-          supportClientFingerprint = true;
-        } else if ((type == 'vmess' || type == 'vless') && isTls) {
-          supportClientFingerprint = true;
-        }
-
-        if (supportClientFingerprint) {
-          if (globalClientFingerprint != null &&
-              proxy['client-fingerprint'] == null) {
-            proxy['client-fingerprint'] = globalClientFingerprint;
-          }
-        }
-
-        final realityOpts = proxy['reality-opts'];
-        if (realityOpts is Map) {
-          final shortId = realityOpts['short-id'];
-          if (shortId is int) {
-            realityOpts['short-id'] = shortId.toString();
-          }
-        }
-      }
-    }
-
-    if (targetProfile.groupSwitches.isNotEmpty &&
-        !scriptActive &&
-        rawConfig['proxy-groups'] is List) {
-      final disabledGroups = targetProfile.groupSwitches.entries
-          .where((e) => !e.value)
-          .map((e) => e.key)
-          .toSet();
-      if (disabledGroups.isNotEmpty) {
-        final proxyGroups = rawConfig['proxy-groups'] as List;
-        proxyGroups.removeWhere((g) {
-          if (g is Map && g['name'] is String) {
-            return disabledGroups.contains(g['name']);
-          }
-          return false;
-        });
-        for (int i = 0; i < rules.length; i++) {
-          if (rules[i] is String) {
-            final parsed = ParsedRule.parseString(rules[i] as String);
-            if (parsed.ruleTarget != null &&
-                disabledGroups.contains(parsed.ruleTarget)) {
-              rules[i] = parsed.copyWith(ruleTarget: 'PASS').value;
-            }
-          }
-        }
-      }
-    }
-
-    if (targetProfile.selectedMap['GLOBAL'] == null &&
-        rawConfig['proxy-groups'] is List) {
-      final proxyGroups = rawConfig['proxy-groups'] as List;
-      final groupNames = proxyGroups
-          .whereType<Map>()
-          .map((g) => g['name']?.toString())
-          .whereType<String>()
-          .where((name) => name != 'GLOBAL' && name != 'DIRECT' && name != 'REJECT')
-          .toSet();
-
-      String? firstValidGroup;
-      for (final g in proxyGroups) {
-        if (g is Map && g['name'] is String) {
-          final name = g['name'] as String;
-          if (groupNames.contains(name)) {
-            firstValidGroup = name;
-            break;
-          }
-        }
-      }
-
-      String? matchTarget;
-      if (firstValidGroup == null) {
-        for (final rule in rules) {
-          if (rule is String) {
-            final parsed = ParsedRule.parseString(rule);
-            if (parsed.ruleAction == RuleAction.MATCH &&
-                parsed.ruleTarget != null &&
-                parsed.ruleTarget!.isNotEmpty &&
-                parsed.ruleTarget != 'DIRECT' &&
-                parsed.ruleTarget != 'REJECT') {
-              if (groupNames.contains(parsed.ruleTarget)) {
-                matchTarget = parsed.ruleTarget;
-                break;
-              }
-            }
-          }
-        }
-      }
-
-      final defaultTarget = firstValidGroup ?? matchTarget;
-      if (defaultTarget != null) {
-        final updatedSelectedMap = Map<String, String>.from(targetProfile.selectedMap)
-          ..['GLOBAL'] = defaultTarget;
-        final updatedProfile = targetProfile.copyWith(selectedMap: updatedSelectedMap);
-        if (_appController != null) {
-          _appController!.setProfile(updatedProfile);
-        } else {
-          final profiles = List<Profile>.from(config.profiles);
-          final idx = profiles.indexWhere((p) => p.id == updatedProfile.id);
-          if (idx != -1) {
-            profiles[idx] = updatedProfile;
-            config = config.copyWith(profiles: profiles);
-          }
-        }
-      }
-    }
-
-    if (rawConfig['proxy-groups'] is List) {
-      (rawConfig['proxy-groups'] as List).removeWhere(
-        (g) => g is Map && g['name'] == 'GLOBAL',
-      );
-    }
-
-    rawConfig.remove('rule');
-    rawConfig['rules'] = rules;
-    return rawConfig;
+          : const [],
+      'disabled-groups': scriptActive
+          ? const []
+          : [
+              for (final entry in profile.groupSwitches.entries)
+                if (!entry.value) entry.key,
+            ],
+      'select-global': profile.selectedMap['GLOBAL'] == null,
+    };
   }
 
   Future<Map<String, dynamic>> getProfileConfig(String profileId) async {
@@ -1247,34 +978,6 @@ class GlobalState {
     configMap['rules'] = configMap['rule'];
     configMap.remove('rule');
     return configMap;
-  }
-
-  Future<Map<String, dynamic>> handleEvaluate(
-    Map<String, dynamic> config, {
-    Profile? profile,
-  }) async {
-    return _scriptEvaluateLock.synchronized(() async {
-      final currentScript = globalState.config.scriptProps.currentScript;
-      if (currentScript == null) return config;
-
-      if (profile != null && !profile.useScriptOverride) return config;
-
-      config['proxy-providers'] ??= <String, dynamic>{};
-
-      try {
-        return await JavaScriptRuntimeManager.evaluateScript(
-          currentScript.content,
-          config,
-          customOptions: currentScript.customOptions,
-        );
-      } catch (e) {
-        commonPrint.log('Script execution failed: $e');
-        globalState.showNotifier(
-          '${appLocalizations.profileParseErrorDesc}: $e',
-        );
-        return config;
-      }
-    });
   }
 }
 

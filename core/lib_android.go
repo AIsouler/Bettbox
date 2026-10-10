@@ -252,7 +252,8 @@ func quickStart(initParamsChar *C.char, paramsChar *C.char, stateParamsChar *C.c
 			bridge.SendToPort(i, "init error")
 		}
 		handleSetState(stateParams)
-		bridge.SendToPort(i, handleSetupConfig(bytes))
+		result, _ := json.Marshal(handleSetupConfig(bytes))
+		bridge.SendToPort(i, string(result))
 	}()
 }
 

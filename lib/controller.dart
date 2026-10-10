@@ -355,11 +355,13 @@ class AppController {
     final params = await globalState.getSetupParams(
       pathConfig: realPatchConfig,
     );
-    final message = await clashCore.setupConfig(params);
+    final result = await clashCore.setupConfig(params);
+    final message = result.message;
     if (message.isNotEmpty) {
       commonPrint.log('[Core] Setup config failed: $message');
       throw message;
     }
+    _applyGlobalSelection(result.global);
     if (system.isDesktop) {
       final prefs = await preferences.sharedPreferencesCompleter.future;
       await prefs?.setBool('is_tun_running', realTunEnable);
@@ -369,6 +371,18 @@ class AppController {
     );
     _setupGeneration = _coreGeneration;
     return true;
+  }
+
+  void _applyGlobalSelection(String global) {
+    final profile = _ref.read(currentProfileProvider);
+    if (global.isEmpty ||
+        profile == null ||
+        profile.selectedMap['GLOBAL'] != null) {
+      return;
+    }
+    setProfile(
+      profile.copyWith(selectedMap: {...profile.selectedMap, 'GLOBAL': global}),
+    );
   }
 
   Future<bool?> _quickSetupConfig({bool? enableTun}) async {
@@ -1675,11 +1689,18 @@ class AppController {
   Future<void> clearEffect(String profileId) async {
     final profilePath = await appPath.getProfilePath(profileId);
     final providersDirPath = await appPath.getProvidersDirPath(profileId);
+    final relayPath = await appPath.relayPath;
     await Isolate.run(() async {
       final profileFile = File(profilePath);
       final isExists = await profileFile.exists();
       if (isExists) {
         await profileFile.delete(recursive: true);
+      }
+      for (final extension in const ['json', 'key']) {
+        final cacheFile = File(join(relayPath, 'cache-$profileId.$extension'));
+        if (await cacheFile.exists()) {
+          await cacheFile.delete();
+        }
       }
       final providersFileDir = Directory(providersDirPath);
       final providersFileIsExists = await providersFileDir.exists();

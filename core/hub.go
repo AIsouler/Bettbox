@@ -6,6 +6,7 @@ import (
 	"core/state"
 	"encoding/json"
 	"fmt"
+	"math"
 	"net"
 	"os"
 	"regexp"
@@ -125,6 +126,16 @@ func patchYamlShortID(data []byte) []byte {
 }
 
 func handleValidateConfig(params *ValidateConfigParams) string {
+	if params.Setup != nil {
+		prepared, err := prepareSetup(params.Setup)
+		if err != nil {
+			return err.Error()
+		}
+		if constant.DefaultTestURL == params.Setup.TestURL {
+			storePreparedSetup(prepared)
+		}
+		return ""
+	}
 	ageMutex.Lock()
 	defer ageMutex.Unlock()
 
@@ -152,13 +163,131 @@ func handleDecryptAgeConfig(params *DecryptAgeConfigParams) string {
 	return string(decrypted)
 }
 
-func handleGetProxies() map[string]constant.Proxy {
+type proxiesPayload struct {
+	Names  []string                   `json:"names"`
+	Types  []string                   `json:"types"`
+	Groups map[string]json.RawMessage `json:"groups"`
+}
+
+type groupPayload struct {
+	Name    string  `json:"name"`
+	Type    string  `json:"type"`
+	Now     *string `json:"now,omitempty"`
+	TestUrl *string `json:"testUrl,omitempty"`
+	Hidden  bool    `json:"hidden"`
+	Icon    string  `json:"icon"`
+	All     []any   `json:"all"`
+}
+
+type groupShape struct {
+	testUrl *string
+	hasNow  bool
+}
+
+var (
+	groupShapeLock sync.Mutex
+	groupShapes    = map[*adapter.Proxy]groupShape{}
+)
+
+func resetGroupShapes() {
+	groupShapeLock.Lock()
+	groupShapes = map[*adapter.Proxy]groupShape{}
+	groupShapeLock.Unlock()
+}
+
+func groupShapeOf(outbound *adapter.Proxy) (groupShape, error) {
+	groupShapeLock.Lock()
+	defer groupShapeLock.Unlock()
+	if shape, exist := groupShapes[outbound]; exist {
+		return shape, nil
+	}
+	inner, err := outbound.ProxyAdapter.MarshalJSON()
+	if err != nil {
+		return groupShape{}, err
+	}
+	fields := struct {
+		TestUrl *string `json:"testUrl"`
+		Now     *string `json:"now"`
+	}{}
+	if err := json.Unmarshal(inner, &fields); err != nil {
+		return groupShape{}, err
+	}
+	shape := groupShape{testUrl: fields.TestUrl, hasNow: fields.Now != nil}
+	groupShapes[outbound] = shape
+	return shape, nil
+}
+
+func marshalGroup(outbound *adapter.Proxy, group outboundgroup.ProxyGroup, indexes map[string]int) (json.RawMessage, error) {
+	shape, err := groupShapeOf(outbound)
+	if err != nil {
+		return nil, err
+	}
+	members := group.Proxies()
+	payload := groupPayload{
+		Name:    outbound.Name(),
+		Type:    outbound.Type().String(),
+		TestUrl: shape.testUrl,
+		Hidden:  group.Hidden(),
+		Icon:    group.Icon(),
+		All:     make([]any, len(members)),
+	}
+	if shape.hasNow {
+		now := group.Now()
+		payload.Now = &now
+	}
+	for i, member := range members {
+		name := member.Name()
+		if index, exist := indexes[name]; exist {
+			payload.All[i] = index
+		} else {
+			payload.All[i] = name
+		}
+	}
+	return json.Marshal(payload)
+}
+
+func marshalProxies(proxies map[string]constant.Proxy) ([]byte, error) {
+	payload := proxiesPayload{
+		Names:  make([]string, 0, len(proxies)),
+		Types:  make([]string, 0, len(proxies)),
+		Groups: map[string]json.RawMessage{},
+	}
+	indexes := make(map[string]int, len(proxies))
+	for name, proxy := range proxies {
+		indexes[name] = len(payload.Names)
+		payload.Names = append(payload.Names, name)
+		payload.Types = append(payload.Types, proxy.Type().String())
+	}
+	for name, proxy := range proxies {
+		outbound, ok := proxy.(*adapter.Proxy)
+		if !ok {
+			continue
+		}
+		group, isGroup := outbound.ProxyAdapter.(outboundgroup.ProxyGroup)
+		if !isGroup {
+			continue
+		}
+		data, err := marshalGroup(outbound, group, indexes)
+		if err != nil {
+			return nil, err
+		}
+		payload.Groups[name] = data
+	}
+	return json.Marshal(payload)
+}
+
+func handleGetProxies() string {
 	runLock.Lock()
 	defer runLock.Unlock()
 	if !isInit {
-		return make(map[string]constant.Proxy)
+		return ""
 	}
-	return tunnel.Proxies()
+	bytes, err := marshalProxies(tunnel.Proxies())
+	if err != nil {
+		log.Errorln("[APP] marshal proxies error: %v", err)
+		return ""
+	}
+	return string(bytes)
 }
 
 func handleChangeProxy(data string, fn func(string string)) {
@@ -706,24 +835,130 @@ func handleSetState(params string) {
 }
 
 func handleGetConfig(params *GetConfigParams) (*config.RawConfig, error) {
+	return readProfile(params.Path, params.AgeSecretKey)
+}
+
+func handleExportConfig(params *ExportConfigParams) error {
+	rawCfg, err := readProfile(params.Path, params.AgeSecretKey)
+	if err != nil {
+		return err
+	}
+	bytes, err := json.Marshal(rawCfg)
+	if err != nil {
+		return err
+	}
+	if err := os.WriteFile(params.Output, bytes, 0o600); err != nil {
+		return err
+	}
+	_ = os.Chown(params.Output, os.Getuid(), os.Getgid())
+	return nil
+}
+
+func readProfile(path string, ageSecretKey string) (*config.RawConfig, error) {
+	bytes, err := readFile(path)
+	if err != nil {
+		return nil, err
+	}
+	return parseProfile(bytes, ageSecretKey)
+}
+
+func parseProfile(bytes []byte, ageSecretKey string) (*config.RawConfig, error) {
 	ageMutex.Lock()
 	defer ageMutex.Unlock()
 
-	if params.AgeSecretKey != "" {
-		age.SetGlobalSecretKeys(params.AgeSecretKey)
+	if ageSecretKey != "" {
+		age.SetGlobalSecretKeys(ageSecretKey)
 		defer age.SetGlobalSecretKeys()
 	}
+	return config.UnmarshalRawConfig(patchYamlShortID(bytes))
+}
 
-	bytes, err := readFile(params.Path)
-	if err != nil {
-		return nil, err
+func loadPatchedConfig(params *SetupParams) (*config.RawConfig, string, error) {
+	var rawCfg *config.RawConfig
+	var err error
+	if params.ScriptedConfig != "" {
+		defer os.Remove(params.ScriptedConfig)
+		var bytes []byte
+		bytes, err = readFile(params.ScriptedConfig)
+		if err != nil {
+			return nil, "", err
+		}
+		rawCfg, err = decodeScriptedConfig(bytes)
+	} else {
+		rawCfg, err = readProfile(params.ProfilePath, params.AgeSecretKey)
 	}
-	bytes = patchYamlShortID(bytes)
-	prof, err := config.UnmarshalRawConfig(bytes)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
-	return prof, nil
+	if params.Patch == nil {
+		return rawCfg, "", nil
+	}
+	global, err := applyPatch(rawCfg, params.Patch)
+	if err != nil {
+		return nil, "", err
+	}
+	return rawCfg, global, nil
+}
+
+func decodeScriptedConfig(data []byte) (*config.RawConfig, error) {
+	rawCfg := config.DefaultRawConfig()
+	scripted := struct {
+		*config.RawConfig
+		Rules []string `json:"rules"`
+	}{RawConfig: rawCfg}
+	if err := json.Unmarshal(data, &scripted); err != nil {
+		return config.UnmarshalRawConfig(data)
+	}
+	if scripted.Rules != nil {
+		rawCfg.Rule = scripted.Rules
+	}
+	for _, item := range rawCfg.Proxy {
+		normalizeJsonNumbers(item)
+	}
+	for _, item := range rawCfg.ProxyGroup {
+		normalizeJsonNumbers(item)
+	}
+	for _, item := range rawCfg.Listeners {
+		normalizeJsonNumbers(item)
+	}
+	for _, item := range rawCfg.ProxyProvider {
+		normalizeJsonNumbers(item)
+	}
+	for _, item := range rawCfg.RuleProvider {
+		normalizeJsonNumbers(item)
+	}
+	normalizeJsonNumbers(rawCfg.Hosts)
+	return rawCfg, nil
+}
+
+func normalizeJsonNumbers(value any) any {
+	switch typed := value.(type) {
+	case float64:
+		if typed == math.Trunc(typed) && math.Abs(typed) < 1<<53 {
+			return int(typed)
+		}
+	case map[string]any:
+		for key, item := range typed {
+			typed[key] = normalizeJsonNumbers(item)
+		}
+	case []any:
+		for index, item := range typed {
+			typed[index] = normalizeJsonNumbers(item)
+		}
+	}
+	return value
+}
+
+func handleGetRuntimeConfig(params *SetupParams) (string, error) {
+	rawCfg, _, err := loadPatchedConfig(params)
+	if err != nil {
+		return "", err
+	}
+	bytes, err := yaml.Marshal(rawCfg)
+	if err != nil {
+		return "", err
+	}
+	return string(bytes), nil
 }
 
 func handleFlushFakeIP() bool {
@@ -758,24 +993,23 @@ func handleUpdateConfig(bytes []byte) string {
 	return ""
 }
 
-func handleSetupConfig(bytes []byte) string {
+func handleSetupConfig(bytes []byte) *SetupResult {
 	var params = defaultSetupParams()
 	err := UnmarshalJson(bytes, params)
 	if err != nil {
 		log.Errorln("unmarshalRawConfig error %v", err)
-		_ = setupConfig(defaultSetupParams())
-		return err.Error()
+		return &SetupResult{Message: err.Error()}
 	}
 	clearSuspendedHealthChecks()
 	clearSuspendedWireGuard()
 	suspendModeLock.Lock()
 	currentSuspendMode = 0
 	suspendModeLock.Unlock()
-	err = setupConfig(params)
+	global, err := setupConfig(params)
 	if err != nil {
-		return err.Error()
+		return &SetupResult{Message: err.Error()}
 	}
-	return ""
+	return &SetupResult{Global: global}
 }
 
 var (

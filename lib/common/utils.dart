@@ -1249,17 +1249,11 @@ class Utils {
   }
 
   String patchYamlConfig(String content) {
-    final sanitized = content.replaceAllMapped(
-      RegExp(r'^[ \t]+', multiLine: true),
+    if (!content.contains('\t')) return content;
+    return content.replaceAllMapped(
+      RegExp(r'^[ \t]*\t[ \t]*', multiLine: true),
       (match) => match.group(0)!.replaceAll('\t', '  '),
     );
-    final shortIdExp = RegExp(
-      r'(?<=\bshort-id\s*:\s*)(?!["\x27{\[\s])([0-9a-fA-F]+)(?=\s*(?:$|[,\s#\}]))',
-      multiLine: true,
-    );
-    return sanitized.replaceAllMapped(shortIdExp, (match) {
-      return '"${match.group(1)}"';
-    });
   }
 
   String patchValidateConfig(String content) {

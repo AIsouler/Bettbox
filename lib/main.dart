@@ -9,7 +9,6 @@ import 'package:bett_box/plugins/clipboard_ext.dart';
 import 'package:bett_box/plugins/tile.dart';
 import 'package:bett_box/plugins/vpn.dart';
 import 'package:bett_box/state.dart';
-import 'package:code_forge/code_forge.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
@@ -83,11 +82,7 @@ Future<void> _sendControlCommand(String command) async {
 }
 
 Future<void> _runApp() async {
-  try {
-    await RustLib.init();
-  } catch (e) {
-    commonPrint.log('Failed to initialize code_forge RustLib: $e');
-  }
+  await ensureRustLib();
 
   if (system.isAndroid) {
     try {
@@ -223,9 +218,10 @@ Future<void> _service(List<String> flags) async {
           params,
           globalState.getCoreState(),
         );
-        debugPrint(res);
-        if (res.isNotEmpty) {
-          commonPrint.log('QuickStart failed with error: $res');
+        final message = res.message;
+        debugPrint(message);
+        if (message.isNotEmpty) {
+          commonPrint.log('QuickStart failed with error: $message');
           await vpn?.stop();
           return;
         }

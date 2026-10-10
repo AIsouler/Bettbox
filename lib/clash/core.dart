@@ -9,8 +9,101 @@ import 'package:bett_box/common/common.dart';
 import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/models/models.dart';
 import 'package:bett_box/state.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart';
+
+@visibleForTesting
+List<Group> buildGroups(String proxiesRaw, List<ExternalProvider> providers) {
+  final decoded = json.decode(proxiesRaw);
+  if (decoded is! Map) return [];
+  final names = (decoded['names'] as List? ?? const []).cast<String>();
+  final types = (decoded['types'] as List? ?? const []).cast<String>();
+  final allProxies = <String, dynamic>{
+    for (var i = 0; i < names.length; i++)
+      names[i]: <String, dynamic>{'name': names[i], 'type': types[i]},
+  };
+  for (final entry in (decoded['groups'] as Map? ?? const {}).entries) {
+    final group = Map<String, dynamic>.from(entry.value as Map);
+    group['all'] = [
+      for (final member in (group['all'] ?? const []) as List)
+        member is int ? names[member] : member,
+    ];
+    allProxies[entry.key as String] = group;
+  }
+  for (final provider in providers) {
+    if (provider.proxies != null) {
+      for (final proxy in provider.proxies!) {
+        if (proxy is Map) {
+          final proxyMap = Map<String, dynamic>.from(proxy);
+          final name = proxyMap['name'];
+          if (name != null) {
+            allProxies[name] = proxyMap;
+            final suffix = '[${provider.name}]';
+            if (!name.endsWith(suffix)) {
+              allProxies['$name$suffix'] = proxyMap;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  final globalProxy = allProxies[UsedProxy.GLOBAL.name];
+  final groupNames = <String>[];
+  final seenGroupNames = <String>{};
+
+  if (globalProxy != null) {
+    groupNames.add(UsedProxy.GLOBAL.name);
+    seenGroupNames.add(UsedProxy.GLOBAL.name);
+
+    final allList = globalProxy['all'] as List?;
+    if (allList != null) {
+      for (final item in allList) {
+        final name = item.toString();
+        final proxy = allProxies[name];
+        if (proxy is Map &&
+            GroupTypeExtension.valueList.contains(proxy['type'])) {
+          if (seenGroupNames.add(name)) {
+            groupNames.add(name);
+          }
+        }
+      }
+    }
+  }
+
+  for (final entry in allProxies.entries) {
+    final proxy = entry.value;
+    if (proxy is Map && GroupTypeExtension.valueList.contains(proxy['type'])) {
+      final name = entry.key;
+      if (seenGroupNames.add(name)) {
+        groupNames.add(name);
+      }
+    }
+  }
+
+  final members = <Object?, Proxy>{};
+  final groups = <Group>[];
+  for (final groupName in groupNames) {
+    final proxyData = allProxies[groupName];
+    if (proxyData is! Map) continue;
+    final all = <Proxy>[];
+    for (final name in (proxyData['all'] ?? const []) as List) {
+      final data = allProxies[name];
+      if (data is! Map) continue;
+      all.add(
+        members[name] ??= Proxy.fromJson(Map<String, dynamic>.from(data)),
+      );
+    }
+    groups.add(
+      Group.fromJson({
+        ...proxyData.cast<String, dynamic>(),
+        'all': const <dynamic>[],
+      }).copyWith(all: all),
+    );
+  }
+  return groups;
+}
 
 class ClashCore {
   static ClashCore? _instance;
@@ -39,7 +132,7 @@ class ClashCore {
     if (!await homeDir.exists()) {
       await homeDir.create(recursive: true);
     }
-    const geoFileNameList = [mmdbFileName, geoSiteFileName, asnFileName, bundleMRSFileName];
+    const geoFileNameList = [mmdbFileName, geoSiteFileName, asnFileName];
     try {
       for (final geoFileName in geoFileNameList) {
         final geoFile = File(join(homePath, geoFileName));
@@ -47,8 +140,47 @@ class ClashCore {
         final data = await rootBundle.load('assets/data/$geoFileName');
         await geoFile.writeAsBytes(data.buffer.asUint8List(), flush: true);
       }
+      await syncBundleMRS(homePath);
     } catch (e) {
       exit(0);
+    }
+    try {
+      final legacyConfigFile = File(join(homePath, 'config.yaml'));
+      if (await legacyConfigFile.exists()) {
+        await legacyConfigFile.delete();
+      }
+    } catch (_) {}
+  }
+
+  @visibleForTesting
+  static Future<void> syncBundleMRS(String homePath) async {
+    final bundleFile = File(join(homePath, bundleMRSFileName));
+    final versionFile = File(join(homePath, '$bundleMRSFileName.version'));
+    final packageInfo = globalState.packageInfo;
+    final version = '${packageInfo.version}+${packageInfo.buildNumber}';
+    final exists = await bundleFile.exists();
+    if (exists &&
+        await versionFile.exists() &&
+        await versionFile.readAsString() == version) {
+      return;
+    }
+    final tempFile = File(
+      '${bundleFile.path}.${DateTime.now().microsecondsSinceEpoch}.tmp',
+    );
+    try {
+      final data = await rootBundle.load('assets/data/$bundleMRSFileName');
+      await tempFile.writeAsBytes(data.buffer.asUint8List(), flush: true);
+      await tempFile.rename(bundleFile.path);
+      await versionFile.writeAsString(version, flush: true);
+    } catch (e) {
+      if (!exists) rethrow;
+      commonPrint.log('Failed to refresh $bundleMRSFileName: $e');
+    } finally {
+      if (await tempFile.exists()) {
+        try {
+          await tempFile.delete();
+        } catch (_) {}
+      }
     }
   }
 
@@ -70,8 +202,39 @@ class ClashCore {
 
   FutureOr<bool> get isInit => clashInterface.isInit;
 
-  FutureOr<String> validateConfig(String data, {String? ageSecretKey}) {
-    return clashInterface.validateConfig(data, ageSecretKey: ageSecretKey);
+  FutureOr<String> validateConfig(
+    String data, {
+    String? ageSecretKey,
+    SetupParams? setup,
+  }) {
+    return clashInterface.validateConfig(
+      data,
+      ageSecretKey: ageSecretKey,
+      setup: setup,
+    );
+  }
+
+  Future<String> getRuntimeConfig(SetupParams setupParams) async {
+    final res = await clashInterface.getRuntimeConfig(setupParams);
+    if (res.isError) {
+      throw res.message;
+    }
+    return res.data?.toString() ?? '';
+  }
+
+  Future<void> exportConfig(
+    String id,
+    String output, {
+    String? ageSecretKey,
+  }) async {
+    final res = await clashInterface.exportConfig(
+      await appPath.getProfilePath(id),
+      output,
+      ageSecretKey: ageSecretKey,
+    );
+    if (res.isError) {
+      throw res.message;
+    }
   }
 
   FutureOr<String> decryptAgeConfig(String data, String ageSecretKey) {
@@ -82,88 +245,19 @@ class ClashCore {
     return await clashInterface.updateConfig(updateParams);
   }
 
-  Future<String> setupConfig(SetupParams setupParams) async {
+  Future<SetupResult> setupConfig(SetupParams setupParams) async {
     return await clashInterface.setupConfig(setupParams);
   }
 
   Future<List<Group>> getProxiesGroups({
     List<ExternalProvider>? preloadedProviders,
   }) async {
-    final proxies = await clashInterface.getProxies();
-    if (proxies.isEmpty) return [];
+    final proxiesRaw = await clashInterface.getProxies();
+    if (proxiesRaw.isEmpty) return [];
 
     final providers = preloadedProviders ?? await getExternalProviders();
 
-    return Isolate.run<List<Group>>(() {
-      final allProxies = Map<String, dynamic>.from(proxies);
-      for (final provider in providers) {
-        if (provider.proxies != null) {
-          for (final proxy in provider.proxies!) {
-            if (proxy is Map) {
-              final proxyMap = Map<String, dynamic>.from(proxy);
-              final name = proxyMap['name'];
-              if (name != null) {
-                allProxies[name] = proxyMap;
-                final suffix = '[${provider.name}]';
-                if (!name.endsWith(suffix)) {
-                  allProxies['$name$suffix'] = proxyMap;
-                }
-              }
-            }
-          }
-        }
-      }
-
-      final globalProxy = allProxies[UsedProxy.GLOBAL.name];
-      final groupNames = <String>[];
-      final seenGroupNames = <String>{};
-
-      if (globalProxy != null) {
-        groupNames.add(UsedProxy.GLOBAL.name);
-        seenGroupNames.add(UsedProxy.GLOBAL.name);
-
-        final allList = globalProxy['all'] as List?;
-        if (allList != null) {
-          for (final item in allList) {
-            final name = item.toString();
-            final proxy = allProxies[name];
-            if (proxy is Map &&
-                GroupTypeExtension.valueList.contains(proxy['type'])) {
-              if (seenGroupNames.add(name)) {
-                groupNames.add(name);
-              }
-            }
-          }
-        }
-      }
-
-      for (final entry in allProxies.entries) {
-        final proxy = entry.value;
-        if (proxy is Map &&
-            GroupTypeExtension.valueList.contains(proxy['type'])) {
-          final name = entry.key;
-          if (seenGroupNames.add(name)) {
-            groupNames.add(name);
-          }
-        }
-      }
-      final groupsRaw = groupNames.map((groupName) {
-        final proxyData = allProxies[groupName] as Map?;
-        if (proxyData == null) return null;
-        final group = Map<String, dynamic>.from(
-          proxyData.cast<String, dynamic>(),
-        );
-        group['all'] = ((group['all'] ?? []) as List)
-            .map((name) {
-              final p = allProxies[name];
-              return p is Map ? Map<String, dynamic>.from(p) : null;
-            })
-            .whereType<Map<String, dynamic>>()
-            .toList();
-        return group;
-      }).whereType<Map<String, dynamic>>().toList();
-      return groupsRaw.map((e) => Group.fromJson(e)).toList();
-    });
+    return Isolate.run<List<Group>>(() => buildGroups(proxiesRaw, providers));
   }
 
   FutureOr<String> changeProxy(ChangeProxyParams changeProxyParams) async {

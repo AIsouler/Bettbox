@@ -6,6 +6,8 @@ import 'dart:typed_data';
 import 'package:bett_box/clash/core.dart';
 import 'package:bett_box/common/common.dart';
 import 'package:bett_box/enum/enum.dart';
+import 'package:bett_box/models/core.dart';
+import 'package:bett_box/state.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import 'clash_config.dart';
@@ -184,6 +186,35 @@ extension ProfileExtension on Profile {
     return file;
   }
 
+  Future<void> _writeFile(String content, {SetupParams? setup}) async {
+    final path = await appPath.getProfilePath(id);
+    final tempFile = File('$path.${DateTime.now().microsecondsSinceEpoch}.tmp');
+    await tempFile.parent.create(recursive: true);
+    try {
+      await tempFile.writeAsString(content, flush: true);
+      if (setup != null) {
+        final message = await clashCore.validateConfig(
+          '',
+          setup: setup.copyWith(profilePath: tempFile.path),
+        );
+        if (message.isNotEmpty) {
+          throw message;
+        }
+      }
+      try {
+        await tempFile.rename(path);
+      } catch (_) {
+        await tempFile.copy(path);
+      }
+    } finally {
+      if (await tempFile.exists()) {
+        try {
+          await tempFile.delete();
+        } catch (_) {}
+      }
+    }
+  }
+
   Future<int> get profileLastModified async {
     final file = await getFile();
     return (await file.lastModified()).microsecondsSinceEpoch;
@@ -211,6 +242,11 @@ extension ProfileExtension on Profile {
       } catch (_) {}
     }
     content = utils.patchYamlConfig(content);
+    final setup = validate ? await globalState.buildValidateParams(this) : null;
+    if (setup != null) {
+      await _writeFile(content, setup: setup);
+      return copyWith(lastUpdateDate: DateTime.now());
+    }
     if (validate) {
       final message =
           await clashCore.validateConfig(content, ageSecretKey: ageSecretKey);
@@ -229,8 +265,7 @@ extension ProfileExtension on Profile {
         }
       }
     }
-    final file = await getFile();
-    await file.writeAsString(content);
+    await _writeFile(content);
     return copyWith(lastUpdateDate: DateTime.now());
   }
 
@@ -246,6 +281,11 @@ extension ProfileExtension on Profile {
       } catch (_) {}
     }
     content = utils.patchYamlConfig(content);
+    final setup = await globalState.buildValidateParams(this);
+    if (setup != null) {
+      await _writeFile(content, setup: setup);
+      return copyWith(lastUpdateDate: DateTime.now());
+    }
     final message =
         await clashCore.validateConfig(content, ageSecretKey: ageSecretKey);
     if (message.isNotEmpty) {
@@ -262,8 +302,7 @@ extension ProfileExtension on Profile {
         throw message;
       }
     }
-    final file = await getFile();
-    await file.writeAsString(content);
+    await _writeFile(content);
     return copyWith(lastUpdateDate: DateTime.now());
   }
 }
