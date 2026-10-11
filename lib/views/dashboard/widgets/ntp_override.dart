@@ -11,7 +11,7 @@ class NtpOverride extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: getWidgetHeight(1),
+      height: getWidgetHeight(context, 1),
       child: CommonCard(
         info: Info(label: 'NTP', iconData: Icons.access_time),
         onPressed: () {

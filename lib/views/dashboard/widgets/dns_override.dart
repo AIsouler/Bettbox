@@ -44,7 +44,7 @@ class DnsOverride extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: getWidgetHeight(1),
+      height: getWidgetHeight(context, 1),
       child: CommonCard(
         info: Info(label: 'DNS', iconData: Icons.dns),
         onPressed: () {

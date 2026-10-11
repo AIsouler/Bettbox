@@ -62,11 +62,11 @@ class NetworkSpeedSmall extends ConsumerWidget {
             fontFeatures: const [FontFeature.tabularFigures()],
           )
         : context.textTheme.titleSmall
-            ?.adjustSize(-2)
-            .copyWith(fontFeatures: const [FontFeature.tabularFigures()]);
+              ?.adjustSize(-2)
+              .copyWith(fontFeatures: const [FontFeature.tabularFigures()]);
     return RepaintBoundary(
       child: SizedBox(
-        height: getWidgetHeight(1),
+        height: getWidgetHeight(context, 1),
         child: ValueListenableBuilder<int>(
           valueListenable: dashboardRefreshManager.tick1s,
           builder: (_, _, _) {

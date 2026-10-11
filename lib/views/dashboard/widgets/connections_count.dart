@@ -59,9 +59,12 @@ class _ConnectionsCountState extends State<ConnectionsCount> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: getWidgetHeight(1),
+      height: getWidgetHeight(context, 1),
       child: CommonCard(
-        info: Info(iconData: Icons.ballot, label: appLocalizations.connection),
+        info: Info(
+          iconData: Icons.cable_rounded,
+          label: appLocalizations.connection,
+        ),
         onPressed: () {
           showExtend(
             context,

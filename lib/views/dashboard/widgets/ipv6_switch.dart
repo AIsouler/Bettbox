@@ -11,7 +11,7 @@ class Ipv6Switch extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: getWidgetHeight(1),
+      height: getWidgetHeight(context, 1),
       child: CommonCard(
         info: Info(label: 'IPv6', iconData: Icons.filter_6_rounded),
         onPressed: () {

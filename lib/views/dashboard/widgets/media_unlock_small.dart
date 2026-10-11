@@ -63,12 +63,16 @@ class _MediaUnlockSmallState extends ConsumerState<MediaUnlockSmall> {
     bool isItemTesting = false,
     required bool colorfulIcons,
   }) {
-    final isTesting = isItemTesting ||
+    final isTesting =
+        isItemTesting ||
         (isLoading &&
             (result == null || result.status == MediaUnlockStatus.testing));
     final status = isTesting
         ? MediaUnlockStatus.testing
-        : (result?.status ?? (isLoading ? MediaUnlockStatus.testing : MediaUnlockStatus.unknown));
+        : (result?.status ??
+              (isLoading
+                  ? MediaUnlockStatus.testing
+                  : MediaUnlockStatus.unknown));
     final color = status.statusColor(context.colorScheme);
 
     final iconSize = platform.iconSize;
@@ -137,10 +141,13 @@ class _MediaUnlockSmallState extends ConsumerState<MediaUnlockSmall> {
                       child: SizedBox(
                         width: 10.ap,
                         height: 10.ap,
-                        child: SpinKitRing(
-                          color: context.colorScheme.primary,
-                          lineWidth: 1.5,
+                        child: SyncedLoading(
                           size: 10.ap,
+                          child: SpinKitRing(
+                            color: context.colorScheme.primary,
+                            lineWidth: 1.5,
+                            size: 10.ap,
+                          ),
                         ),
                       ),
                     )
@@ -169,11 +176,11 @@ class _MediaUnlockSmallState extends ConsumerState<MediaUnlockSmall> {
     );
     final displayedPlatforms =
         (pinned.isNotEmpty ? pinned : defaultPinnedMediaPlatforms)
-            .take(4)
+            .take(3)
             .toList();
 
     return SizedBox(
-      height: getWidgetHeight(2),
+      height: getWidgetHeight(context, 2),
       child: ValueListenableBuilder<MediaUnlockState>(
         valueListenable: mediaUnlockState.state,
         builder: (context, state, _) {
@@ -189,8 +196,9 @@ class _MediaUnlockSmallState extends ConsumerState<MediaUnlockSmall> {
           _lastDisplayedPlatforms = displayedPlatforms;
           _lastColorfulIcons = colorfulIcons;
 
-          final isWidgetLoading =
-              displayedPlatforms.any(state.testingPlatforms.contains);
+          final isWidgetLoading = displayedPlatforms.any(
+            state.testingPlatforms.contains,
+          );
           final card = CommonCard(
             onPressed: () {
               showExtend(
@@ -228,9 +236,9 @@ class _MediaUnlockSmallState extends ConsumerState<MediaUnlockSmall> {
                           onPressed: isWidgetLoading
                               ? null
                               : () => mediaUnlockState.checkPlatforms(
-                                    displayedPlatforms,
-                                    force: true,
-                                  ),
+                                  displayedPlatforms,
+                                  force: true,
+                                ),
                           icon: isWidgetLoading
                               ? RepaintBoundary(
                                   child: SizedBox(
@@ -275,8 +283,7 @@ class _MediaUnlockSmallState extends ConsumerState<MediaUnlockSmall> {
                             state.results[p],
                             state.isLoading,
                             context,
-                            isItemTesting:
-                                state.testingPlatforms.contains(p),
+                            isItemTesting: state.testingPlatforms.contains(p),
                             colorfulIcons: colorfulIcons,
                           ),
                       ],

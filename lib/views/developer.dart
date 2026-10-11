@@ -58,9 +58,7 @@ class DeveloperView extends ConsumerWidget {
             onTap: () async {
               final res = await globalState.showMessage(
                 title: appLocalizations.clearDataTipTitle,
-                message: TextSpan(
-                  text: appLocalizations.clearDataTipDesc,
-                ),
+                message: TextSpan(text: appLocalizations.clearDataTipDesc),
               );
               if (res != true) return;
               await globalState.appController.handleClear();

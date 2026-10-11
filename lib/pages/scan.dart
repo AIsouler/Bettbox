@@ -34,7 +34,11 @@ class _ScanPageState extends State<ScanPage> with WidgetsBindingObserver {
     _subscription = controller.barcodes.listen(_handleBarcode);
     // Check permission and start camera
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkCameraPermission();
+      if (!mounted) return;
+      context.afterRouteTransition(() {
+        if (!mounted) return;
+        _checkCameraPermission();
+      });
     });
   }
 
@@ -99,7 +103,7 @@ class _ScanPageState extends State<ScanPage> with WidgetsBindingObserver {
           await controller.start();
         } catch (e) {
           // Handle start error silently
-          commonPrint.log('Camera start error: $e');
+          commonPrint.warn('Camera start error: $e');
         }
       }
     }

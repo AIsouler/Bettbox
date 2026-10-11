@@ -219,11 +219,14 @@ class TunnelListView extends ConsumerWidget {
     );
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       body: tunnels.isEmpty
           ? Center(child: NullStatus(label: appLocalizations.noData))
-          : ListView(
-              padding: const EdgeInsets.only(top: 16),
-              children: [const TunnelListWidget()],
+          : ScrollEdgeRise(
+              builder: (_, rise) => ListView(
+                padding: EdgeInsets.only(top: 16 + rise),
+                children: [const TunnelListWidget()],
+              ),
             ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showTunnelDialog(context, ref, tunnels),

@@ -41,7 +41,7 @@ class NetworkSpeed extends ConsumerWidget {
     final color = context.colorScheme.onSurfaceVariant.opacity80;
     final primaryColor = Theme.of(context).colorScheme.primary;
     return SizedBox(
-      height: getWidgetHeight(2),
+      height: getWidgetHeight(context, 2),
       child: CommonCard(
         onPressed: () {
           globalState.openUrl('https://ptclspeed.speedtestcustom.com');
@@ -67,12 +67,10 @@ class NetworkSpeed extends ConsumerWidget {
                         right: 0,
                         bottom: 0,
                       ),
-                      child: RepaintBoundary(
-                        child: LineChart(
-                          gradient: true,
-                          color: primaryColor,
-                          points: points,
-                        ),
+                      child: LineChart(
+                        gradient: true,
+                        color: primaryColor,
+                        points: points,
                       ),
                     ),
                   ),

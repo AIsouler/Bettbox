@@ -778,9 +778,7 @@ class FallbackConcurrentItem extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final fallbackLazyQuery = ref.watch(
-      patchClashConfigProvider.select(
-        (state) => state.dns.fallbackLazyQuery,
-      ),
+      patchClashConfigProvider.select((state) => state.dns.fallbackLazyQuery),
     );
     final value = !fallbackLazyQuery;
     return ListItem.switchItem(

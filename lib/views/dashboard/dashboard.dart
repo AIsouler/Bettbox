@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:math';
+import 'dart:math' as math;
 
 import 'package:bett_box/state.dart';
 
@@ -36,6 +36,7 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
 
   void _requestStartSwitchFocus() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       _startSwitchKey.currentState?.requestFocus();
     });
   }
@@ -102,8 +103,7 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
           ),
         ),
       ),
-      if (showStartSwitch)
-        _DashboardStartSwitch(key: _startSwitchKey),
+      if (showStartSwitch) _DashboardStartSwitch(key: _startSwitchKey),
     ];
   }
 
@@ -158,6 +158,7 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
       return;
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       final dashboardWidgets = children
           .map((item) => DashboardWidget.getDashboardWidget(item))
           .toList();
@@ -180,8 +181,7 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
   @override
   Widget build(BuildContext context) {
     final dashboardState = ref.watch(dashboardStateProvider);
-    final columns = max(4 * ((dashboardState.viewWidth / 320).ceil()), 8);
-    final spacing = 16.ap;
+    final spacing = 12.mAp;
     final isMobileView = ref.watch(isMobileViewProvider);
     final children = [
       ...dashboardState.dashboardWidgets
@@ -191,6 +191,7 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
           .map((item) => item.widget),
     ];
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       _addedWidgetsNotifier.value = DashboardWidget.values
           .where(
             (item) =>
@@ -205,60 +206,102 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
           ref.watch(appSettingProvider.select((s) => s.dashboardTitle)) ??
           appLocalizations.dashboard,
       actions: _buildActions(),
-      body: Align(
-        alignment: Alignment.topCenter,
-        child: SingleChildScrollView(
-          padding: EdgeInsets.all(16).copyWith(
-            bottom:
-                16 +
-                (isMobileView ? getFloatingBottomBarReserveHeight(context) : 0),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildIsEdit((isEdit) {
-                if (isEdit) {
-                  return SystemBackBlock(
-                    child: CommonPopScope(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SuperGrid(
-                            key: key,
+      body: ScrollEdgeRise(
+        builder: (_, rise) => Align(
+          alignment: Alignment.topCenter,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final contentWidth = math.min(
+                constraints.maxWidth,
+                dashboardMaxGridWidth,
+              );
+              final int columns = isMobileView
+                  ? 8
+                  : DashboardGridBand.of(contentWidth).columns;
+              final verticalPadding =
+                  32.0 +
+                  (isMobileView
+                      ? getFloatingBottomBarReserveHeight(context)
+                      : 0);
+              final unitHeight = dashboardUnitHeight(
+                contentWidth,
+                availableHeight: constraints.hasBoundedHeight
+                    ? constraints.maxHeight - rise
+                    : null,
+                spacing: spacing,
+                verticalPadding: verticalPadding,
+              );
+
+              final dashboardContent = ConstrainedBox(
+                constraints: const BoxConstraints(
+                  maxWidth: dashboardMaxGridWidth,
+                ),
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.all(16).copyWith(
+                    top: 16 + rise,
+                    bottom:
+                        16 +
+                        (isMobileView
+                            ? getFloatingBottomBarReserveHeight(context)
+                            : 0),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _buildIsEdit((isEdit) {
+                        if (isEdit) {
+                          return SystemBackBlock(
+                            child: CommonPopScope(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  SuperGrid(
+                                    key: key,
+                                    crossAxisCount: columns,
+                                    crossAxisSpacing: spacing,
+                                    mainAxisSpacing: spacing,
+                                    children: [
+                                      ...dashboardState.dashboardWidgets
+                                          .where(
+                                            (item) => item.platforms.contains(
+                                              SupportPlatform.currentPlatform,
+                                            ),
+                                          )
+                                          .map((item) => item.widget),
+                                    ],
+                                    onUpdate: () {
+                                      _handleSave();
+                                    },
+                                  ),
+                                ],
+                              ),
+                              onPop: () {
+                                _handleUpdateIsEdit();
+                                return false;
+                              },
+                            ),
+                          );
+                        } else {
+                          return Grid(
                             crossAxisCount: columns,
                             crossAxisSpacing: spacing,
                             mainAxisSpacing: spacing,
-                            children: [
-                              ...dashboardState.dashboardWidgets
-                                  .where(
-                                    (item) => item.platforms.contains(
-                                      SupportPlatform.currentPlatform,
-                                    ),
-                                  )
-                                  .map((item) => item.widget),
-                            ],
-                            onUpdate: () {
-                              _handleSave();
-                            },
-                          ),
-                        ],
-                      ),
-                      onPop: () {
-                        _handleUpdateIsEdit();
-                        return false;
-                      },
-                    ),
-                  );
-                } else {
-                  return Grid(
-                    crossAxisCount: columns,
-                    crossAxisSpacing: spacing,
-                    mainAxisSpacing: spacing,
-                    children: [...children],
-                  );
-                }
-              }),
-            ],
+                            children: [...children],
+                          );
+                        }
+                      }),
+                    ],
+                  ),
+                ),
+              );
+
+              return DashboardWidgetMetrics(
+                unitHeight: unitHeight,
+                spacing: spacing,
+                columns: columns,
+                child: dashboardContent,
+              );
+            },
           ),
         ),
       ),
@@ -274,27 +317,33 @@ class _AddDashboardWidgetModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DeferredPointerHandler(
-      child: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
-        child: Grid(
-          crossAxisCount: 8,
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
-          children: items
-              .map(
-                (item) => item.wrap(
-                  builder: (child) {
-                    return _AddedContainer(
-                      onAdd: () {
-                        onAdd(item);
-                      },
-                      child: child,
-                    );
-                  },
-                ),
-              )
-              .toList(),
+    final spacing = 12.mAp;
+    return DashboardWidgetMetrics(
+      unitHeight: 84.0.ap,
+      spacing: spacing,
+      columns: 8,
+      child: DeferredPointerHandler(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Grid(
+            crossAxisCount: 8,
+            crossAxisSpacing: spacing,
+            mainAxisSpacing: spacing,
+            children: items
+                .map(
+                  (item) => item.wrap(
+                    builder: (child) {
+                      return _AddedContainer(
+                        onAdd: () {
+                          onAdd(item);
+                        },
+                        child: child,
+                      );
+                    },
+                  ),
+                )
+                .toList(),
+          ),
         ),
       ),
     );
@@ -463,8 +512,7 @@ class _DashboardStartSwitchState extends ConsumerState<_DashboardStartSwitch> {
   }
 
   void _onFocusChange() {
-    globalState.isDashboardStartSwitchFocused =
-        _focusNode?.hasFocus ?? false;
+    globalState.isDashboardStartSwitchFocused = _focusNode?.hasFocus ?? false;
   }
 
   void requestFocus() {
@@ -483,7 +531,7 @@ class _DashboardStartSwitchState extends ConsumerState<_DashboardStartSwitch> {
     try {
       await globalState.appController.updateStatus(newState);
     } catch (e) {
-      commonPrint.log('updateStatus failed: $e');
+      commonPrint.error('updateStatus failed: $e');
     } finally {
       if (mounted) {
         setState(() {
@@ -504,7 +552,11 @@ class _DashboardStartSwitchState extends ConsumerState<_DashboardStartSwitch> {
     final displayStart = isSmartStopped ? false : (_optimisticStart ?? isStart);
 
     final canPress =
-        state.isInit && state.hasProfile && !_isDisabled && !isRestarting && !isSmartStopped;
+        state.isInit &&
+        state.hasProfile &&
+        !_isDisabled &&
+        !isRestarting &&
+        !isSmartStopped;
 
     final theme = Theme.of(context);
 

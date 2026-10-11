@@ -325,8 +325,7 @@ class _PrimaryColorItemState extends ConsumerState<_PrimaryColorItem> {
                           ref
                               .read(themeSettingProvider.notifier)
                               .updateState(
-                                (state) =>
-                                    state.copyWith(primaryColor: color),
+                                (state) => state.copyWith(primaryColor: color),
                               );
                         },
                       ),
@@ -339,10 +338,7 @@ class _PrimaryColorItemState extends ConsumerState<_PrimaryColorItem> {
                   child: IconButton.filledTonal(
                     onPressed: _handleAdd,
                     iconSize: 32,
-                    icon: Icon(
-                      color: context.colorScheme.primary,
-                      Icons.add,
-                    ),
+                    icon: Icon(color: context.colorScheme.primary, Icons.add),
                   ),
                 ),
               ],
@@ -417,7 +413,6 @@ class _HarmonyFontItem extends ConsumerWidget {
     );
   }
 }
-
 
 class _DarkIconItem extends ConsumerWidget {
   const _DarkIconItem();
