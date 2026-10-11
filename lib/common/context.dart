@@ -7,10 +7,33 @@ extension BuildContextExtension on BuildContext {
     return findAncestorStateOfType<CommonScaffoldState>();
   }
 
-  Future<void>? showNotifier(String text,
-      {VoidCallback? onAction, String? actionLabel, bool showCountdown = false}) {
-    return findAncestorStateOfType<MessageManagerState>()
-        ?.message(text, onAction: onAction, actionLabel: actionLabel, showCountdown: showCountdown);
+  void afterRouteTransition(VoidCallback callback) {
+    final animation = ModalRoute.of(this)?.animation;
+    if (animation == null || animation.isCompleted) {
+      callback();
+      return;
+    }
+    void listener(AnimationStatus status) {
+      if (!status.isCompleted) return;
+      animation.removeStatusListener(listener);
+      callback();
+    }
+
+    animation.addStatusListener(listener);
+  }
+
+  Future<void>? showNotifier(
+    String text, {
+    VoidCallback? onAction,
+    String? actionLabel,
+    bool showCountdown = false,
+  }) {
+    return findAncestorStateOfType<MessageManagerState>()?.message(
+      text,
+      onAction: onAction,
+      actionLabel: actionLabel,
+      showCountdown: showCountdown,
+    );
   }
 
   void showSnackBar(String message, {SnackBarAction? action}) {

@@ -20,42 +20,51 @@ typedef String MessageIfAbsent(String messageStr, List<dynamic> args);
 class MessageLookup extends MessageLookupByLibrary {
   String get localeName => 'en';
 
-  static String m0(count) => "${Intl.plural(count, one: 'day', other: 'days')}";
+  static String m0(log) => "Analyze Bettbox (Mihomo) log: ${log}";
 
-  static String m1(label) => "Delete selected ${label}?";
+  static String m1(count) => "${Intl.plural(count, one: 'day', other: 'days')}";
 
-  static String m2(label) => "Delete current ${label}?";
+  static String m2(label) => "Delete selected ${label}?";
 
-  static String m3(label) => "${label} cannot be empty";
+  static String m3(label) => "Delete current ${label}?";
 
-  static String m4(label) => "${label} already exists";
+  static String m4(label) => "${label} cannot be empty";
 
-  static String m5(count) =>
+  static String m5(label) => "${label} already exists";
+
+  static String m6(count) =>
       "${Intl.plural(count, one: 'hour', other: 'hours')}";
 
-  static String m6(count) => "${count}";
+  static String m7(count) => "${count}";
 
-  static String m7(count) =>
+  static String m8(level) =>
+      "${level} mode is for network debugging; turn it off for daily use";
+
+  static String m9(count) =>
       "${Intl.plural(count, one: 'minute', other: 'minutes')}";
 
-  static String m8(count) =>
+  static String m10(count) =>
       "${Intl.plural(count, one: 'month', other: 'months')}";
 
-  static String m9(label) => "No ${label}";
+  static String m11(count) => "${count} new logs";
 
-  static String m10(label) => "${label} must be a number";
+  static String m12(label) => "No ${label}";
 
-  static String m11(label) =>
+  static String m13(label) => "${label} must be a number";
+
+  static String m14(label) => "Only ${label}";
+
+  static String m15(label) =>
       "${label} must be between 1024 and 49151, 0 to disable";
 
-  static String m12(statusCode) =>
+  static String m16(statusCode) =>
       "Failed to import profile. Please check your network status or try resetting the subscription link ( HTTP error code: ${statusCode} )";
 
-  static String m13(count) => "${count} items selected";
+  static String m17(count) => "${count} items selected";
 
-  static String m14(label) => "${label} must be a URL";
+  static String m18(label) => "${label} must be a URL";
 
-  static String m15(count) =>
+  static String m19(count) =>
       "${Intl.plural(count, one: 'year', other: 'years')}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
@@ -141,6 +150,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "alwaysShowTitleBarDesc": MessageLookupByLibrary.simpleMessage(
       "Always show the title bar buttons in the top-right corner",
     ),
+    "analyzeLogPrompt": m0,
     "app": MessageLookupByLibrary.simpleMessage("App"),
     "appAccessControl": MessageLookupByLibrary.simpleMessage(
       "App Access Control",
@@ -263,6 +273,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "clearDataTipTitle": MessageLookupByLibrary.simpleMessage(
       "Dangerous Operation",
     ),
+    "clearFilter": MessageLookupByLibrary.simpleMessage("Clear filters"),
     "clipboard": MessageLookupByLibrary.simpleMessage("Clipboard"),
     "clipboardDesc": MessageLookupByLibrary.simpleMessage(
       "Get profile link from clipboard",
@@ -275,6 +286,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "close": MessageLookupByLibrary.simpleMessage("Close"),
     "closeAll": MessageLookupByLibrary.simpleMessage("Close All"),
+    "collapse": MessageLookupByLibrary.simpleMessage("Collapse"),
     "color": MessageLookupByLibrary.simpleMessage("Color"),
     "colorSchemes": MessageLookupByLibrary.simpleMessage("Color Schemes"),
     "columns": MessageLookupByLibrary.simpleMessage("Columns"),
@@ -346,7 +358,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Manually switch dark app icon",
     ),
     "dashboard": MessageLookupByLibrary.simpleMessage("Home"),
-    "days": m0,
+    "days": m1,
     "defaultGateway": MessageLookupByLibrary.simpleMessage("Gateway"),
     "defaultNameserver": MessageLookupByLibrary.simpleMessage(
       "Default Nameserver",
@@ -363,8 +375,8 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "delaySort": MessageLookupByLibrary.simpleMessage("Sort by Delay"),
     "delete": MessageLookupByLibrary.simpleMessage("Delete"),
-    "deleteMultipTip": m1,
-    "deleteTip": m2,
+    "deleteMultipTip": m2,
+    "deleteTip": m3,
     "deleteTunnel": MessageLookupByLibrary.simpleMessage("Delete Forwarding"),
     "desc": MessageLookupByLibrary.simpleMessage(
       "Bettbox is based on the powerful and flexible Mihomo (Clash.Meta) proxy kernel, dedicated to a superior user experience. Our vision: Connecting Open Source and AI, Accelerating Innovation",
@@ -434,7 +446,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "edit": MessageLookupByLibrary.simpleMessage("Edit"),
     "editTunnel": MessageLookupByLibrary.simpleMessage("Edit Forwarding"),
     "editUser": MessageLookupByLibrary.simpleMessage("Edit User"),
-    "emptyTip": m3,
+    "emptyTip": m4,
     "enableCrashReport": MessageLookupByLibrary.simpleMessage(
       "Crash Analytics",
     ),
@@ -465,7 +477,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "excludeDesc": MessageLookupByLibrary.simpleMessage(
       "Hide app from recent tasks list",
     ),
-    "existsTip": m4,
+    "existsTip": m5,
     "exit": MessageLookupByLibrary.simpleMessage("Exit"),
     "expand": MessageLookupByLibrary.simpleMessage("Standard"),
     "experimental": MessageLookupByLibrary.simpleMessage("Experimental"),
@@ -608,7 +620,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Control app via keyboard",
     ),
     "hourGlass": MessageLookupByLibrary.simpleMessage("Hourglass"),
-    "hours": m5,
+    "hours": m6,
     "httpPortSniffer": MessageLookupByLibrary.simpleMessage(
       "HTTP Port Sniffing",
     ),
@@ -657,7 +669,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Allow IPv6 inbound",
     ),
     "isp": MessageLookupByLibrary.simpleMessage("ISP"),
-    "itemsCount": m6,
+    "itemsCount": m7,
     "just": MessageLookupByLibrary.simpleMessage("Just now"),
     "keepAliveIntervalDesc": MessageLookupByLibrary.simpleMessage(
       "TCP keep-alive interval",
@@ -688,6 +700,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "locate": MessageLookupByLibrary.simpleMessage("Locate"),
     "log": MessageLookupByLibrary.simpleMessage("Log"),
     "logLevel": MessageLookupByLibrary.simpleMessage("Log Level"),
+    "logLevelDebugHint": m8,
     "logcat": MessageLookupByLibrary.simpleMessage("Log Capture"),
     "logcatDesc": MessageLookupByLibrary.simpleMessage(
       "Show log capture entry",
@@ -722,7 +735,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "More Streaming Unlock Items",
     ),
     "mediaUnlockPinnedSettingsDesc": MessageLookupByLibrary.simpleMessage(
-      "Select up to 4 items to pin on the widget",
+      "Select up to 3 items to pin on the widget",
     ),
     "mediaUnlockRefreshByCategory": MessageLookupByLibrary.simpleMessage(
       "Partially refresh based on current category",
@@ -731,7 +744,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Auto refresh on node change",
     ),
     "mediaUnlockSelectLimit": MessageLookupByLibrary.simpleMessage(
-      "You can select up to 4 items",
+      "You can select up to 3 items",
     ),
     "mediaUnlocked": MessageLookupByLibrary.simpleMessage("Unlocked"),
     "memoryAndRuntime": MessageLookupByLibrary.simpleMessage(
@@ -751,11 +764,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "minimizeOnExitDesc": MessageLookupByLibrary.simpleMessage(
       "Override default exit behavior",
     ),
-    "minutes": m7,
+    "minutes": m9,
     "mixedPort": MessageLookupByLibrary.simpleMessage("Mixed Port"),
     "mode": MessageLookupByLibrary.simpleMessage("Mode"),
     "monochromeScheme": MessageLookupByLibrary.simpleMessage("Monochrome"),
-    "months": m8,
+    "months": m10,
     "more": MessageLookupByLibrary.simpleMessage("More"),
     "moreIpInfo": MessageLookupByLibrary.simpleMessage("More IP Information"),
     "name": MessageLookupByLibrary.simpleMessage("Name"),
@@ -803,6 +816,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "networkType": MessageLookupByLibrary.simpleMessage("Network Type"),
     "neutralScheme": MessageLookupByLibrary.simpleMessage("Neutral"),
+    "newLogsCount": m11,
     "noAnimation": MessageLookupByLibrary.simpleMessage("Default"),
     "noBackupFileFound": MessageLookupByLibrary.simpleMessage(
       "No backup file found",
@@ -811,6 +825,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "noHotKey": MessageLookupByLibrary.simpleMessage("No Hotkeys"),
     "noIcon": MessageLookupByLibrary.simpleMessage("No Icon"),
     "noInfo": MessageLookupByLibrary.simpleMessage("No Info"),
+    "noMatchedLogs": MessageLookupByLibrary.simpleMessage("No matching logs"),
     "noMoreInfoDesc": MessageLookupByLibrary.simpleMessage("No more info"),
     "noNetwork": MessageLookupByLibrary.simpleMessage("No Network"),
     "noNetworkApp": MessageLookupByLibrary.simpleMessage("No Network App"),
@@ -855,14 +870,15 @@ class MessageLookup extends MessageLookupByLibrary {
     "nullProfileDesc": MessageLookupByLibrary.simpleMessage(
       "No profile. Please add one.",
     ),
-    "nullTip": m9,
-    "numberTip": m10,
+    "nullTip": m12,
+    "numberTip": m13,
     "oneColumn": MessageLookupByLibrary.simpleMessage("1 Column"),
     "onlinePanel": MessageLookupByLibrary.simpleMessage("Online Panel"),
     "onlyIcon": MessageLookupByLibrary.simpleMessage("Icon Only"),
     "onlyOtherApps": MessageLookupByLibrary.simpleMessage(
       "Third-Party Apps Only",
     ),
+    "onlyShow": m14,
     "onlyStatisticsProxy": MessageLookupByLibrary.simpleMessage(
       "Proxy Traffic Only",
     ),
@@ -962,7 +978,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "portConflictTip": MessageLookupByLibrary.simpleMessage(
       "Please enter a different port",
     ),
-    "portTip": m11,
+    "portTip": m15,
     "pouringHourGlass": MessageLookupByLibrary.simpleMessage(
       "Pouring Hourglass",
     ),
@@ -987,7 +1003,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "profileHasUpdate": MessageLookupByLibrary.simpleMessage(
       "Profile modified. Disable auto-update?",
     ),
-    "profileImportFailed": m12,
+    "profileImportFailed": m16,
     "profileNameNullValidationDesc": MessageLookupByLibrary.simpleMessage(
       "Please enter a profile name",
     ),
@@ -1093,11 +1109,15 @@ class MessageLookup extends MessageLookupByLibrary {
     "replace": MessageLookupByLibrary.simpleMessage("Replace"),
     "replaceAll": MessageLookupByLibrary.simpleMessage("Replace All"),
     "request": MessageLookupByLibrary.simpleMessage("Request"),
-    "requests": MessageLookupByLibrary.simpleMessage("Requests"),
+    "requests": MessageLookupByLibrary.simpleMessage("Recent"),
     "requestsDesc": MessageLookupByLibrary.simpleMessage(
       "View recent request logs",
     ),
     "reset": MessageLookupByLibrary.simpleMessage("Reset"),
+    "resetIconCache": MessageLookupByLibrary.simpleMessage("Reset Icon Cache"),
+    "resetIconCacheDesc": MessageLookupByLibrary.simpleMessage(
+      "Reset the local icon cache? This is safe, the app will fetch icons from their remote links again automatically.",
+    ),
     "resetTip": MessageLookupByLibrary.simpleMessage(
       "Are you sure you want to reset?",
     ),
@@ -1157,7 +1177,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Select Backup Version",
     ),
     "selected": MessageLookupByLibrary.simpleMessage("Selected"),
-    "selectedCountTitle": m13,
+    "selectedCountTitle": m17,
     "serviceReady": MessageLookupByLibrary.simpleMessage("Service Ready"),
     "serviceRunning": MessageLookupByLibrary.simpleMessage("Service Running"),
     "settings": MessageLookupByLibrary.simpleMessage("Settings"),
@@ -1256,6 +1276,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "sync": MessageLookupByLibrary.simpleMessage("Sync"),
     "syncAll": MessageLookupByLibrary.simpleMessage("Sync All"),
+    "syncDelayAnimation": MessageLookupByLibrary.simpleMessage(
+      "Sync animation to other pages",
+    ),
     "syncFailed": MessageLookupByLibrary.simpleMessage("Sync Failed"),
     "system": MessageLookupByLibrary.simpleMessage("System"),
     "systemApp": MessageLookupByLibrary.simpleMessage("System App"),
@@ -1381,7 +1404,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "upload": MessageLookupByLibrary.simpleMessage("Upload"),
     "url": MessageLookupByLibrary.simpleMessage("URL"),
     "urlDesc": MessageLookupByLibrary.simpleMessage("Get profile via URL"),
-    "urlTip": m14,
+    "urlTip": m18,
     "useGlobalScriptOverride": MessageLookupByLibrary.simpleMessage(
       "Use Global Script Override",
     ),
@@ -1427,6 +1450,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "writeToSystemDesc": MessageLookupByLibrary.simpleMessage(
       "Requires administrator privileges",
     ),
-    "years": m15,
+    "years": m19,
   };
 }

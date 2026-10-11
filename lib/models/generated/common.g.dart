@@ -111,13 +111,13 @@ _Log _$LogFromJson(Map<String, dynamic> json) => _Log(
       $enumDecodeNullable(_$LogLevelEnumMap, json['LogLevel']) ??
       LogLevel.error,
   payload: json['Payload'] as String? ?? '',
-  dateTime: _logDateTime(json['dateTime']),
+  time: _logTime(json['time']),
 );
 
 Map<String, dynamic> _$LogToJson(_Log instance) => <String, dynamic>{
   'LogLevel': _$LogLevelEnumMap[instance.logLevel]!,
   'Payload': instance.payload,
-  'dateTime': instance.dateTime,
+  'time': instance.time.toIso8601String(),
 };
 
 const _$LogLevelEnumMap = {
@@ -141,6 +141,25 @@ Map<String, dynamic> _$DAVToJson(_DAV instance) => <String, dynamic>{
   'password': instance.password,
   'fileName': instance.fileName,
 };
+
+_NetworkInfo _$NetworkInfoFromJson(Map<String, dynamic> json) => _NetworkInfo(
+  type: json['type'] as String? ?? '',
+  interfaceName: json['interface'] as String? ?? '',
+  ip: json['ip'] as String? ?? '',
+  gateway: json['gateway'] as String? ?? '',
+  dns:
+      (json['dns'] as List<dynamic>?)?.map((e) => e as String).toList() ??
+      const [],
+);
+
+Map<String, dynamic> _$NetworkInfoToJson(_NetworkInfo instance) =>
+    <String, dynamic>{
+      'type': instance.type,
+      'interface': instance.interfaceName,
+      'ip': instance.ip,
+      'gateway': instance.gateway,
+      'dns': instance.dns,
+    };
 
 _VersionInfo _$VersionInfoFromJson(Map<String, dynamic> json) => _VersionInfo(
   clashName: json['clashName'] as String? ?? '',

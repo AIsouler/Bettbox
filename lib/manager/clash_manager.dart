@@ -22,6 +22,9 @@ class ClashManager extends ConsumerStatefulWidget {
 
 class _ClashContainerState extends ConsumerState<ClashManager>
     with AppMessageListener {
+  final List<TrackerInfo> _pendingRequests = [];
+  static const _flushDuration = Duration(milliseconds: 300);
+
   @override
   Widget build(BuildContext context) {
     return widget.child;
@@ -40,7 +43,7 @@ class _ClashContainerState extends ConsumerState<ClashManager>
                 hardRestart: system.isDesktop && profileChanged,
               )
               .catchError((Object error, StackTrace stackTrace) {
-                commonPrint.log('Profile change failed: $error');
+                commonPrint.error('Profile change failed: $error');
               }),
         );
       }
@@ -66,8 +69,16 @@ class _ClashContainerState extends ConsumerState<ClashManager>
     });
   }
 
+  void _flushRequests() {
+    if (!mounted || _pendingRequests.isEmpty) return;
+    final requests = List.of(_pendingRequests);
+    _pendingRequests.clear();
+    ref.read(requestsProvider.notifier).addRequests(requests);
+  }
+
   @override
   Future<void> dispose() async {
+    throttler.cancel(FunctionTag.requests);
     clashMessage.removeListener(this);
     super.dispose();
   }
@@ -84,7 +95,7 @@ class _ClashContainerState extends ConsumerState<ClashManager>
 
   @override
   void onLog(Log log) {
-    ref.read(logsProvider.notifier).addLog(log);
+    globalState.appController.addLog(log);
     if (log.logLevel == LogLevel.error) {
       globalState.showNotifier(log.payload);
     }
@@ -93,7 +104,12 @@ class _ClashContainerState extends ConsumerState<ClashManager>
 
   @override
   void onRequest(TrackerInfo trackerInfo) async {
-    ref.read(requestsProvider.notifier).addRequest(trackerInfo);
+    _pendingRequests.add(trackerInfo);
+    throttler.call(
+      FunctionTag.requests,
+      _flushRequests,
+      duration: _flushDuration,
+    );
     super.onRequest(trackerInfo);
   }
 

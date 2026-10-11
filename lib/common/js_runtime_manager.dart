@@ -91,10 +91,10 @@ class JavaScriptRuntimeManager {
         result.addAll(_deepCastMap(decoded));
       }
     } on rust.ScriptError catch (e) {
-      commonPrint.log('extractScriptOptions error: ${e.message}');
+      commonPrint.warn('extractScriptOptions error: ${e.message}');
       return <String, dynamic>{};
     } catch (e) {
-      commonPrint.log('extractScriptOptions error: $e');
+      commonPrint.warn('extractScriptOptions error: $e');
       return <String, dynamic>{};
     }
     _ScriptOptionsCache.put(scriptContent, result);

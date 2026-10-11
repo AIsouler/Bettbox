@@ -22,7 +22,7 @@ class Window {
       try {
         await windowExtManager.setDockIconVisible(false);
       } catch (e) {
-        commonPrint.log('Apply dock icon visibility failed: $e');
+        commonPrint.warn('Apply dock icon visibility failed: $e');
       }
     }
     WindowOptions windowOptions = WindowOptions(
@@ -63,10 +63,9 @@ class Window {
           });
         } catch (_) {}
         if (isPositionValid) {
-          await windowManager.setPosition(Offset(
-            physLeft / currentDpr,
-            physTop / currentDpr,
-          ));
+          await windowManager.setPosition(
+            Offset(physLeft / currentDpr, physTop / currentDpr),
+          );
         } else {
           await windowManager.setAlignment(Alignment.center);
         }
@@ -77,12 +76,14 @@ class Window {
     });
   }
 
-  void updateMacOSBrightness(Brightness brightness) {
-  }
+  void updateMacOSBrightness(Brightness brightness) {}
 
   Future<void> show() async {
     globalState.handleForeground();
     render?.resume();
+    if (await isMinimized) {
+      await windowManager.restore();
+    }
     await windowManager.show();
     await windowManager.focus();
     if (!system.isMacOS) {
@@ -105,7 +106,7 @@ class Window {
       await trayManager.destroy();
       commonPrint.log('The tray icon has been destroyed.');
     } catch (e) {
-      commonPrint.log('Failed to destroy the tray icon: $e');
+      commonPrint.warn('Failed to destroy the tray icon: $e');
     }
 
     exit(0);

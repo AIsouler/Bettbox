@@ -24,10 +24,13 @@ class HelperAuthManager {
     }
 
     if (Platform.isWindows) {
-      commonPrint.log('[HelperAuth] Trying to sync auth key from registry for service: $appHelperService');
+      commonPrint.log(
+        '[HelperAuth] Trying to sync auth key from registry for service: $appHelperService',
+      );
       RegistryKey? key;
       try {
-        final keyPath = 'SYSTEM\\CurrentControlSet\\Services\\$appHelperService';
+        final keyPath =
+            'SYSTEM\\CurrentControlSet\\Services\\$appHelperService';
         key = Registry.openPath(
           RegistryHive.localMachine,
           path: keyPath,
@@ -42,14 +45,16 @@ class HelperAuthManager {
                 _authKey = val;
                 final file = File(await appPath.helperAuthKeyPath);
                 await _persistAuthKey(file, _authKey!);
-                commonPrint.log('[HelperAuth] Successfully synced auth key from registry.');
+                commonPrint.log(
+                  '[HelperAuth] Successfully synced auth key from registry.',
+                );
                 return false;
               }
             }
           }
         }
       } catch (e) {
-        commonPrint.log('[HelperAuth] Failed to read registry: $e');
+        commonPrint.warn('[HelperAuth] Failed to read registry: $e');
       } finally {
         key?.close();
       }

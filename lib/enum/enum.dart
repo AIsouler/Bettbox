@@ -6,7 +6,6 @@ import 'package:bett_box/common/system.dart';
 import 'package:bett_box/common/app_localizations.dart';
 import 'package:bett_box/views/dashboard/widgets/widgets.dart';
 import 'package:bett_box/widgets/widgets.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
@@ -93,16 +92,10 @@ enum ViewMode { mobile, laptop, desktop }
 enum LogLevel { debug, info, warning, error, silent }
 
 extension LogLevelExt on LogLevel {
-  Color? get color {
-    return switch (this) {
-      LogLevel.silent => Colors.grey.shade700,
-      LogLevel.debug => Colors.grey.shade400,
-      LogLevel.info => null,
-      LogLevel.warning => const Color.fromARGB(230, 255, 166, 0),
-      LogLevel.error => Colors.redAccent,
-    };
-  }
+  String get label => '${name[0].toUpperCase()}${name.substring(1)}';
 }
+
+enum LogSource { core, app }
 
 enum TransportProtocol { udp, tcp }
 
@@ -124,7 +117,12 @@ enum AccessSortType { none, installTime, updateTime }
 
 enum ProfileType { file, url }
 
-enum ConnectionsSortType { defaultSort, realTimeSpeed, totalTraffic, creationTime }
+enum ConnectionsSortType {
+  defaultSort,
+  realTimeSpeed,
+  totalTraffic,
+  creationTime,
+}
 
 enum ResultType {
   @JsonValue(0)
@@ -400,7 +398,6 @@ extension PageLabelExtension on PageLabel {
     }
   }
 }
-
 
 enum RuleAction {
   DOMAIN('DOMAIN'),

@@ -6,6 +6,23 @@ part of '../app.dart';
 // RiverpodGenerator
 // **************************************************************************
 
+String _$filteredLogsHash() => r'fc6cbf6406f854f7e83ed6b87d6e6cb6b93ab886';
+
+/// See also [filteredLogs].
+@ProviderFor(filteredLogs)
+final filteredLogsProvider = AutoDisposeProvider<FilteredLogs>.internal(
+  filteredLogs,
+  name: r'filteredLogsProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$filteredLogsHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef FilteredLogsRef = AutoDisposeProviderRef<FilteredLogs>;
 String _$viewWidthHash() => r'a469c3414170a6616ff3264962e7f160b2edceca';
 
 /// See also [viewWidth].
@@ -90,7 +107,7 @@ final realTunEnableProvider =
     );
 
 typedef _$RealTunEnable = AutoDisposeNotifier<bool>;
-String _$logsHash() => r'5fdf38e57a0f051e1f13d467e11b2935902e4821';
+String _$logsHash() => r'fbedf36290e515bd258ddf264bb107ecc3241343';
 
 /// See also [Logs].
 @ProviderFor(Logs)
@@ -105,7 +122,23 @@ final logsProvider = AutoDisposeNotifierProvider<Logs, FixedList<Log>>.internal(
 );
 
 typedef _$Logs = AutoDisposeNotifier<FixedList<Log>>;
-String _$requestsHash() => r'c26fe81fcd832b6f960bda45401822ceb84a64a0';
+String _$logsFilterHash() => r'f3ecd349cd39c722215e217dc4cd084a3bbb12fb';
+
+/// See also [LogsFilter].
+@ProviderFor(LogsFilter)
+final logsFilterProvider =
+    AutoDisposeNotifierProvider<LogsFilter, LogsFilterState>.internal(
+      LogsFilter.new,
+      name: r'logsFilterProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$logsFilterHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+typedef _$LogsFilter = AutoDisposeNotifier<LogsFilterState>;
+String _$requestsHash() => r'cd1e176f202240ccf3ed6e59faaa650e57ec257e';
 
 /// See also [Requests].
 @ProviderFor(Requests)
@@ -201,21 +234,22 @@ final totalTrafficProvider =
     );
 
 typedef _$TotalTraffic = AutoDisposeNotifier<Traffic>;
-String _$localIpHash() => r'2dd4afdb29db4791ebd80d976f9ea31c62959199';
+String _$localNetworkHash() => r'152235671692c4d184a87d1242bfdd3cfbec5425';
 
-/// See also [LocalIp].
-@ProviderFor(LocalIp)
-final localIpProvider = AutoDisposeNotifierProvider<LocalIp, String?>.internal(
-  LocalIp.new,
-  name: r'localIpProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$localIpHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+/// See also [LocalNetwork].
+@ProviderFor(LocalNetwork)
+final localNetworkProvider =
+    AutoDisposeNotifierProvider<LocalNetwork, NetworkInfo?>.internal(
+      LocalNetwork.new,
+      name: r'localNetworkProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$localNetworkHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
-typedef _$LocalIp = AutoDisposeNotifier<String?>;
+typedef _$LocalNetwork = AutoDisposeNotifier<NetworkInfo?>;
 String _$runTimeHash() => r'9aab44f2234590a70cbf0ff7394e496c2c97c00e';
 
 /// See also [RunTime].
@@ -369,7 +403,7 @@ final groupsProvider =
     );
 
 typedef _$Groups = AutoDisposeNotifier<List<Group>>;
-String _$delayDataSourceHash() => r'1b94dcfdb9e1eb4c0b7ca69d933f2299d1f94ed5';
+String _$delayDataSourceHash() => r'77dd4b5227407f64671e11e897b003989a75ea63';
 
 /// See also [DelayDataSource].
 @ProviderFor(DelayDataSource)

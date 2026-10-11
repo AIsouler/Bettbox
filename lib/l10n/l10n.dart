@@ -2164,9 +2164,9 @@ class AppLocalizations {
     );
   }
 
-  /// `Requests`
+  /// `Recent`
   String get requests {
-    return Intl.message('Requests', name: 'requests', desc: '', args: []);
+    return Intl.message('Recent', name: 'requests', desc: '', args: []);
   }
 
   /// `View recent request logs`
@@ -2374,6 +2374,16 @@ class AppLocalizations {
     return Intl.message(
       'Customize animation during delay testing',
       name: 'delayAnimationDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sync animation to other pages`
+  String get syncDelayAnimation {
+    return Intl.message(
+      'Sync animation to other pages',
+      name: 'syncDelayAnimation',
       desc: '',
       args: [],
     );
@@ -4389,6 +4399,26 @@ class AppLocalizations {
     );
   }
 
+  /// `Reset Icon Cache`
+  String get resetIconCache {
+    return Intl.message(
+      'Reset Icon Cache',
+      name: 'resetIconCache',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Reset the local icon cache? This is safe, the app will fetch icons from their remote links again automatically.`
+  String get resetIconCacheDesc {
+    return Intl.message(
+      'Reset the local icon cache? This is safe, the app will fetch icons from their remote links again automatically.',
+      name: 'resetIconCacheDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `No Data`
   String get noData {
     return Intl.message('No Data', name: 'noData', desc: '', args: []);
@@ -6094,20 +6124,20 @@ class AppLocalizations {
     );
   }
 
-  /// `Select up to 4 items to pin on the widget`
+  /// `Select up to 3 items to pin on the widget`
   String get mediaUnlockPinnedSettingsDesc {
     return Intl.message(
-      'Select up to 4 items to pin on the widget',
+      'Select up to 3 items to pin on the widget',
       name: 'mediaUnlockPinnedSettingsDesc',
       desc: '',
       args: [],
     );
   }
 
-  /// `You can select up to 4 items`
+  /// `You can select up to 3 items`
   String get mediaUnlockSelectLimit {
     return Intl.message(
-      'You can select up to 4 items',
+      'You can select up to 3 items',
       name: 'mediaUnlockSelectLimit',
       desc: '',
       args: [],
@@ -6441,6 +6471,71 @@ class AppLocalizations {
       name: 'openRouterAdmin',
       desc: '',
       args: [],
+    );
+  }
+
+  /// `{count} new logs`
+  String newLogsCount(Object count) {
+    return Intl.message(
+      '$count new logs',
+      name: 'newLogsCount',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `No matching logs`
+  String get noMatchedLogs {
+    return Intl.message(
+      'No matching logs',
+      name: 'noMatchedLogs',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Clear filters`
+  String get clearFilter {
+    return Intl.message(
+      'Clear filters',
+      name: 'clearFilter',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Only {label}`
+  String onlyShow(Object label) {
+    return Intl.message(
+      'Only $label',
+      name: 'onlyShow',
+      desc: '',
+      args: [label],
+    );
+  }
+
+  /// `{level} mode is for network debugging; turn it off for daily use`
+  String logLevelDebugHint(Object level) {
+    return Intl.message(
+      '$level mode is for network debugging; turn it off for daily use',
+      name: 'logLevelDebugHint',
+      desc: '',
+      args: [level],
+    );
+  }
+
+  /// `Collapse`
+  String get collapse {
+    return Intl.message('Collapse', name: 'collapse', desc: '', args: []);
+  }
+
+  /// `Analyze Bettbox (Mihomo) log: {log}`
+  String analyzeLogPrompt(Object log) {
+    return Intl.message(
+      'Analyze Bettbox (Mihomo) log: $log',
+      name: 'analyzeLogPrompt',
+      desc: '',
+      args: [log],
     );
   }
 }

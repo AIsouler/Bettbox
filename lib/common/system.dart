@@ -122,7 +122,7 @@ class System {
           commonPrint.log('Cleared quarantine attribute from BettboxCore');
         } else {
           quarantineCleared = false;
-          commonPrint.log(
+          commonPrint.warn(
             'Failed to clear quarantine attribute: ${removeResult.stderr}',
           );
         }
@@ -203,7 +203,7 @@ class System {
           return AuthorizeCode.error;
         }
       } catch (e) {
-        commonPrint.log('pkexec failed: $e');
+        commonPrint.warn('pkexec failed: $e');
       }
 
       window?.show();
@@ -252,7 +252,7 @@ class System {
         windows?.setCurrentProcessPriority(enable);
         return;
       } catch (e) {
-        commonPrint.log('Failed to set current process priority: $e');
+        commonPrint.warn('Failed to set current process priority: $e');
       }
     }
 
@@ -338,7 +338,7 @@ class Windows {
           sizeOf<Uint32>(),
         );
         if (memoryResult == 0) {
-          commonPrint.log('Set current process memory priority failed');
+          commonPrint.warn('Set current process memory priority failed');
         } else {
           commonPrint.log('Set current process memory priority to normal');
         }
@@ -498,7 +498,7 @@ class Windows {
         final check = await Process.run('sc', ['query', appHelperService]);
         final output = check.stdout.toString();
         if (output.contains('STOPPED')) {
-          commonPrint.log('Helper service stopped/failed, skipping wait');
+          commonPrint.warn('Helper service stopped/failed, skipping wait');
           break;
         }
       }
@@ -647,7 +647,7 @@ class MacOS {
       serviceName,
     ]);
     if (result.exitCode != 0) {
-      commonPrint.log(
+      commonPrint.warn(
         'Failed to get macOS system DNS: ${result.stderr.toString().trim()}',
       );
       return null;
@@ -690,7 +690,7 @@ class MacOS {
       await temporaryFile.writeAsString(backup, flush: true);
       await temporaryFile.rename(backupFile.path);
     } catch (e) {
-      commonPrint.log('Failed to persist the original macOS system DNS: $e');
+      commonPrint.warn('Failed to persist the original macOS system DNS: $e');
       return;
     }
 
@@ -701,7 +701,7 @@ class MacOS {
       _hijackDns,
     ]);
     if (result.exitCode != 0) {
-      commonPrint.log(
+      commonPrint.warn(
         'Failed to set macOS system DNS: ${result.stderr.toString().trim()}',
       );
     }
@@ -733,7 +733,7 @@ class MacOS {
         if (servers.isEmpty) 'Empty',
       ]);
       if (result.exitCode != 0) {
-        commonPrint.log(
+        commonPrint.warn(
           'Failed to restore macOS system DNS: '
           '${result.stderr.toString().trim()}',
         );
@@ -742,7 +742,7 @@ class MacOS {
       await backupFile.delete();
       return true;
     } catch (e) {
-      commonPrint.log('Failed to read macOS system DNS backup: $e');
+      commonPrint.warn('Failed to read macOS system DNS backup: $e');
       return false;
     }
   }

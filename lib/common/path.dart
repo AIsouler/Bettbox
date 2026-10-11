@@ -78,7 +78,9 @@ class AppPath {
         : join(Platform.environment['HOME'] ?? '', '.local', 'share');
     return join(
       baseDir,
-      AppIdentity.isDev ? '${AppIdentity.packageId}.dev' : AppIdentity.packageId,
+      AppIdentity.isDev
+          ? '${AppIdentity.packageId}.dev'
+          : AppIdentity.packageId,
     );
   }
 
@@ -148,7 +150,7 @@ class AppPath {
       Process.runSync('chmod', ['0755', external.path]);
       stampFile.writeAsStringSync(currentStamp);
     } catch (e) {
-      commonPrint.log('Failed to sync AppImage core: $e');
+      commonPrint.warn('Failed to sync AppImage core: $e');
     }
   }
 

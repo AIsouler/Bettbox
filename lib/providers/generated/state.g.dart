@@ -258,7 +258,7 @@ final profilesSelectorStateProvider =
 // ignore: unused_element
 typedef ProfilesSelectorStateRef =
     AutoDisposeProviderRef<ProfilesSelectorState>;
-String _$filterGroupsStateHash() => r'31e2e642a456991cc2d103627efacb75d796791c';
+String _$filterGroupsStateHash() => r'b42583d60d0da5378a273af62c9c518248e29a6b';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -399,7 +399,144 @@ class _FilterGroupsStateProviderElement
   String get query => (origin as FilterGroupsStateProvider).query;
 }
 
-String _$proxiesListStateHash() => r'68f712bdbed5be9f9ba7709ec7c861e1d321f8fc';
+String _$delaySortSnapshotHash() => r'aa68a20accb2bba1a6cb016773fca451d2810f5f';
+
+/// See also [delaySortSnapshot].
+@ProviderFor(delaySortSnapshot)
+final delaySortSnapshotProvider = AutoDisposeProvider<DelayMap>.internal(
+  delaySortSnapshot,
+  name: r'delaySortSnapshotProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$delaySortSnapshotHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef DelaySortSnapshotRef = AutoDisposeProviderRef<DelayMap>;
+String _$sortedGroupsStateHash() => r'6f5bd90c6d11ff2d647b70127a76b7e6d5303d1e';
+
+/// See also [sortedGroupsState].
+@ProviderFor(sortedGroupsState)
+const sortedGroupsStateProvider = SortedGroupsStateFamily();
+
+/// See also [sortedGroupsState].
+class SortedGroupsStateFamily extends Family<GroupsState> {
+  /// See also [sortedGroupsState].
+  const SortedGroupsStateFamily();
+
+  /// See also [sortedGroupsState].
+  SortedGroupsStateProvider call(String query) {
+    return SortedGroupsStateProvider(query);
+  }
+
+  @override
+  SortedGroupsStateProvider getProviderOverride(
+    covariant SortedGroupsStateProvider provider,
+  ) {
+    return call(provider.query);
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'sortedGroupsStateProvider';
+}
+
+/// See also [sortedGroupsState].
+class SortedGroupsStateProvider extends AutoDisposeProvider<GroupsState> {
+  /// See also [sortedGroupsState].
+  SortedGroupsStateProvider(String query)
+    : this._internal(
+        (ref) => sortedGroupsState(ref as SortedGroupsStateRef, query),
+        from: sortedGroupsStateProvider,
+        name: r'sortedGroupsStateProvider',
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$sortedGroupsStateHash,
+        dependencies: SortedGroupsStateFamily._dependencies,
+        allTransitiveDependencies:
+            SortedGroupsStateFamily._allTransitiveDependencies,
+        query: query,
+      );
+
+  SortedGroupsStateProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.query,
+  }) : super.internal();
+
+  final String query;
+
+  @override
+  Override overrideWith(
+    GroupsState Function(SortedGroupsStateRef provider) create,
+  ) {
+    return ProviderOverride(
+      origin: this,
+      override: SortedGroupsStateProvider._internal(
+        (ref) => create(ref as SortedGroupsStateRef),
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        query: query,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeProviderElement<GroupsState> createElement() {
+    return _SortedGroupsStateProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is SortedGroupsStateProvider && other.query == query;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, query.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+mixin SortedGroupsStateRef on AutoDisposeProviderRef<GroupsState> {
+  /// The parameter `query` of this provider.
+  String get query;
+}
+
+class _SortedGroupsStateProviderElement
+    extends AutoDisposeProviderElement<GroupsState>
+    with SortedGroupsStateRef {
+  _SortedGroupsStateProviderElement(super.provider);
+
+  @override
+  String get query => (origin as SortedGroupsStateProvider).query;
+}
+
+String _$proxiesListStateHash() => r'8246b3165aa0f3a7cd199d42b9c1c1bb54330e1a';
 
 /// See also [proxiesListState].
 @ProviderFor(proxiesListState)
@@ -1216,7 +1353,7 @@ final getProxiesColumnsProvider = AutoDisposeProvider<int>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef GetProxiesColumnsRef = AutoDisposeProviderRef<int>;
-String _$getProxyCardStateHash() => r'0f131148cb5ed60c9c4c4f31fbe32f114ac346bb';
+String _$getProxyCardStateHash() => r'b6efd96f9310627f8b9426efd98429f60a5c3c66';
 
 /// See also [getProxyCardState].
 @ProviderFor(getProxyCardState)
@@ -2031,12 +2168,12 @@ class _GenColorSchemeProviderElement
   bool get ignoreConfig => (origin as GenColorSchemeProvider).ignoreConfig;
 }
 
-String _$needSetupHash() => r'3668e8dc9f40a9bea45c94321804eb3afa0e7c51';
+String _$needSetupHash() => r'e87e4e7586c3d9a8713647e6313508020f89900a';
 
 /// See also [needSetup].
 @ProviderFor(needSetup)
 final needSetupProvider =
-    AutoDisposeProvider<VM3<String?, String?, Dns?>>.internal(
+    AutoDisposeProvider<VM4<String?, String?, Dns?, List<String>?>>.internal(
       needSetup,
       name: r'needSetupProvider',
       debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
@@ -2048,7 +2185,8 @@ final needSetupProvider =
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-typedef NeedSetupRef = AutoDisposeProviderRef<VM3<String?, String?, Dns?>>;
+typedef NeedSetupRef =
+    AutoDisposeProviderRef<VM4<String?, String?, Dns?, List<String>?>>;
 String _$currentBrightnessHash() => r'ab56c47af4fcae773c8f9f81c91800c1e1890b70';
 
 /// See also [currentBrightness].
@@ -2085,6 +2223,156 @@ final autoSetSystemDnsStateProvider =
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef AutoSetSystemDnsStateRef = AutoDisposeProviderRef<VM2<bool, bool>>;
+String _$sortedGroupProxiesHash() =>
+    r'1bd3bcbd085a31091125c00dac75dba27f7bfd03';
+
+abstract class _$SortedGroupProxies
+    extends BuildlessAutoDisposeNotifier<List<Proxy>?> {
+  late final String query;
+  late final String groupName;
+
+  List<Proxy>? build(String query, String groupName);
+}
+
+/// See also [SortedGroupProxies].
+@ProviderFor(SortedGroupProxies)
+const sortedGroupProxiesProvider = SortedGroupProxiesFamily();
+
+/// See also [SortedGroupProxies].
+class SortedGroupProxiesFamily extends Family<List<Proxy>?> {
+  /// See also [SortedGroupProxies].
+  const SortedGroupProxiesFamily();
+
+  /// See also [SortedGroupProxies].
+  SortedGroupProxiesProvider call(String query, String groupName) {
+    return SortedGroupProxiesProvider(query, groupName);
+  }
+
+  @override
+  SortedGroupProxiesProvider getProviderOverride(
+    covariant SortedGroupProxiesProvider provider,
+  ) {
+    return call(provider.query, provider.groupName);
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'sortedGroupProxiesProvider';
+}
+
+/// See also [SortedGroupProxies].
+class SortedGroupProxiesProvider
+    extends AutoDisposeNotifierProviderImpl<SortedGroupProxies, List<Proxy>?> {
+  /// See also [SortedGroupProxies].
+  SortedGroupProxiesProvider(String query, String groupName)
+    : this._internal(
+        () => SortedGroupProxies()
+          ..query = query
+          ..groupName = groupName,
+        from: sortedGroupProxiesProvider,
+        name: r'sortedGroupProxiesProvider',
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$sortedGroupProxiesHash,
+        dependencies: SortedGroupProxiesFamily._dependencies,
+        allTransitiveDependencies:
+            SortedGroupProxiesFamily._allTransitiveDependencies,
+        query: query,
+        groupName: groupName,
+      );
+
+  SortedGroupProxiesProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.query,
+    required this.groupName,
+  }) : super.internal();
+
+  final String query;
+  final String groupName;
+
+  @override
+  List<Proxy>? runNotifierBuild(covariant SortedGroupProxies notifier) {
+    return notifier.build(query, groupName);
+  }
+
+  @override
+  Override overrideWith(SortedGroupProxies Function() create) {
+    return ProviderOverride(
+      origin: this,
+      override: SortedGroupProxiesProvider._internal(
+        () => create()
+          ..query = query
+          ..groupName = groupName,
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        query: query,
+        groupName: groupName,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeNotifierProviderElement<SortedGroupProxies, List<Proxy>?>
+  createElement() {
+    return _SortedGroupProxiesProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is SortedGroupProxiesProvider &&
+        other.query == query &&
+        other.groupName == groupName;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, query.hashCode);
+    hash = _SystemHash.combine(hash, groupName.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+mixin SortedGroupProxiesRef on AutoDisposeNotifierProviderRef<List<Proxy>?> {
+  /// The parameter `query` of this provider.
+  String get query;
+
+  /// The parameter `groupName` of this provider.
+  String get groupName;
+}
+
+class _SortedGroupProxiesProviderElement
+    extends AutoDisposeNotifierProviderElement<SortedGroupProxies, List<Proxy>?>
+    with SortedGroupProxiesRef {
+  _SortedGroupProxiesProviderElement(super.provider);
+
+  @override
+  String get query => (origin as SortedGroupProxiesProvider).query;
+  @override
+  String get groupName => (origin as SortedGroupProxiesProvider).groupName;
+}
+
 String _$profileOverrideStateHash() =>
     r'0a1657ff3b4657fcc481a4cdd1deda5b353bf845';
 

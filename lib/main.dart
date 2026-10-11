@@ -40,7 +40,7 @@ Future<void> main(List<String> args) async {
   if (system.isMacOS || appPath.isPortable) {
     final acquire = await singleInstanceLock.acquire();
     if (!acquire) {
-      commonPrint.log(
+      commonPrint.warn(
         'SingleInstanceLock: another instance detected or lock failed, exiting',
       );
       if (!appPath.isPortable) {
@@ -59,7 +59,7 @@ Future<void> main(List<String> args) async {
   try {
     await uiManager.initializeUI();
   } catch (e) {
-    commonPrint.log('Failed to initialize UI: $e');
+    commonPrint.error('Failed to initialize UI: $e');
   }
 
   await _runApp();
@@ -73,7 +73,7 @@ Future<void> _sendControlCommand(String command) async {
       return;
     } catch (e) {
       if (i == 4) {
-        commonPrint.log('Failed to send $command command: $e');
+        commonPrint.warn('Failed to send $command command: $e');
         return;
       }
       await Future.delayed(const Duration(milliseconds: 200));
@@ -88,7 +88,7 @@ Future<void> _runApp() async {
     try {
       await FlutterDisplayMode.setHighRefreshRate();
     } catch (e) {
-      commonPrint.log('Failed to set high refresh rate: $e');
+      commonPrint.warn('Failed to set high refresh rate: $e');
     }
     await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   }
@@ -130,9 +130,7 @@ Future<void> _service(List<String> flags) async {
           if (candidateIps.isEmpty && candidateGateways.isEmpty) return;
 
           final shouldStop =
-              candidateIps.any(
-                (ip) => NetworkMatcher.matchAny(ip, networks),
-              ) ||
+              candidateIps.any((ip) => NetworkMatcher.matchAny(ip, networks)) ||
               candidateGateways.any(
                 (gw) => NetworkMatcher.matchAnyGateway(gw, networks),
               );
@@ -149,7 +147,7 @@ Future<void> _service(List<String> flags) async {
           }
         });
       } catch (e) {
-        commonPrint.log('Smart auto stop check failed: $e');
+        commonPrint.warn('Smart auto stop check failed: $e');
       }
     }
 
@@ -221,7 +219,7 @@ Future<void> _service(List<String> flags) async {
         final message = res.message;
         debugPrint(message);
         if (message.isNotEmpty) {
-          commonPrint.log('QuickStart failed with error: $message');
+          commonPrint.error('QuickStart failed with error: $message');
           await vpn?.stop();
           return;
         }
@@ -238,7 +236,7 @@ Future<void> _service(List<String> flags) async {
 
         clashLibHandler.startListener();
       } catch (e) {
-        commonPrint.log('Fatal error during service background start: $e');
+        commonPrint.error('Fatal error during service background start: $e');
         await vpn?.stop();
       }
     });
@@ -248,7 +246,9 @@ Future<void> _service(List<String> flags) async {
 void _handleMainIpc(ClashLibHandler clashLibHandler) {
   final sendPort = IsolateNameServer.lookupPortByName(mainIsolate);
   if (sendPort == null) {
-    commonPrint.log('Service: mainIsolate sendPort not found, IPC unavailable');
+    commonPrint.warn(
+      'Service: mainIsolate sendPort not found, IPC unavailable',
+    );
     return;
   }
 
@@ -275,7 +275,7 @@ void _safeSend(SendPort sendPort, dynamic message) {
   try {
     sendPort.send(message);
   } catch (e) {
-    commonPrint.log('Service: IPC send failed: $e');
+    commonPrint.warn('Service: IPC send failed: $e');
     final retryPort = IsolateNameServer.lookupPortByName(mainIsolate);
     if (retryPort != null) {
       try {
@@ -317,8 +317,8 @@ class _VpnListenerWithService with VpnListener {
   const _VpnListenerWithService({
     required Function(String dns) onDnsChanged,
     required Function() onNetworkChanged,
-  })  : _onDnsChanged = onDnsChanged,
-        _onNetworkChanged = onNetworkChanged;
+  }) : _onDnsChanged = onDnsChanged,
+       _onNetworkChanged = onNetworkChanged;
 
   @override
   void onDnsChanged(String dns) {

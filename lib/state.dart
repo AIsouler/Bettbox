@@ -106,8 +106,9 @@ class GlobalState {
     final selectedMap = config.currentProfile?.selectedMap ?? {};
     final sortedEntries = selectedMap.entries.toList()
       ..sort((a, b) => a.key.compareTo(b.key));
-    final selectedStr =
-        sortedEntries.map((e) => '${e.key}:${e.value}').join(';');
+    final selectedStr = sortedEntries
+        .map((e) => '${e.key}:${e.value}')
+        .join(';');
     String activeGroupsStr = '';
     if (isInit && _appController != null) {
       try {
@@ -115,8 +116,9 @@ class GlobalState {
         if (groups.isNotEmpty) {
           final sortedGroups = groups.toList()
             ..sort((a, b) => a.name.compareTo(b.name));
-          activeGroupsStr =
-              sortedGroups.map((g) => '${g.name}:${g.realNow}').join(';');
+          activeGroupsStr = sortedGroups
+              .map((g) => '${g.name}:${g.realNow}')
+              .join(';');
         }
       } catch (_) {}
     }
@@ -210,7 +212,7 @@ class GlobalState {
         return digest.toString();
       });
     } catch (e) {
-      commonPrint.log('Failed to calculate core SHA256: $e');
+      commonPrint.warn('Failed to calculate core SHA256: $e');
       return null;
     }
   }
@@ -290,7 +292,7 @@ class GlobalState {
       try {
         await task();
       } catch (e) {
-        commonPrint.log('Background task failed: $e');
+        commonPrint.warn('Background task failed: $e');
       }
     }
     timer = null;
@@ -359,7 +361,7 @@ class GlobalState {
         startTime = null;
       }
     } catch (e) {
-      commonPrint.log('Sync VPN state error: $e');
+      commonPrint.warn('Sync VPN state error: $e');
     }
   }
 
@@ -659,6 +661,7 @@ class GlobalState {
       this.config = config;
       await prefs.remove(customDashboardTitleKey);
     }
+    await prefs?.remove(customSidebarIconKey);
   }
 
   CoreState getCoreState() {
@@ -776,7 +779,7 @@ class GlobalState {
         }
         return file.path;
       } catch (e) {
-        commonPrint.log('Script execution failed: $e');
+        commonPrint.error('Script execution failed: $e');
         showNotifier('${appLocalizations.profileParseErrorDesc}: $e');
         return '';
       } finally {
@@ -993,6 +996,8 @@ class DashboardRefreshManager {
 
   bool get isRunning => _isRunning;
 
+  Future<bool> isActive() => _isActive();
+
   Future<bool> _isActive() async {
     if (system.isDesktop) {
       final isPinned = globalState.config.windowProps.isPinned;
@@ -1012,7 +1017,16 @@ class DashboardRefreshManager {
     if (lifecycleState != null && lifecycleState != AppLifecycleState.resumed) {
       return false;
     }
+
+    if (globalState.appState.pageLabel != PageLabel.dashboard) {
+      return false;
+    }
+
     return true;
+  }
+
+  void triggerImmediateTick() {
+    _tryTick(_tickToken);
   }
 
   Future<void> _tryTick(int token) async {
@@ -1060,6 +1074,9 @@ class DetectionState {
   IpInfo? _rawIpInfo;
   bool _isFirstLaunch = true;
   String? _lastCheckedNodeSignature;
+  String? _pendingCheckKey;
+  bool _recheckOnFailure = false;
+  bool _pendingInit = false;
 
   final state = ValueNotifier<NetworkDetectionState>(
     const NetworkDetectionState(
@@ -1099,7 +1116,7 @@ class DetectionState {
       ipInfo: null,
       errorMessage: null,
     );
-    startCheck(immediate: true, showLoading: true);
+    startCheck(immediate: true, showLoading: true, force: true);
   }
 
   void _onIpProgress(int requestId, IpInfo info) {
@@ -1137,14 +1154,18 @@ class DetectionState {
     _handleResponse(res);
   }
 
-  void startCheck({bool immediate = false, bool showLoading = false}) {
+  void startCheck({
+    bool immediate = false,
+    bool showLoading = false,
+    bool force = false,
+  }) {
     final appState = globalState.appState;
-    if (!appState.isInit) return;
+    if (!appState.isInit) {
+      _pendingInit = true;
+      return;
+    }
 
-    state.value = state.value.copyWith(
-      isLoading: true,
-      errorMessage: null,
-    );
+    state.value = state.value.copyWith(isLoading: true, errorMessage: null);
 
     final delay = immediate
         ? Duration.zero
@@ -1152,8 +1173,18 @@ class DetectionState {
 
     debouncer.call(
       FunctionTag.checkIp,
-      () => _checkIp(showLoading: showLoading),
+      () => _checkIp(showLoading: showLoading, force: force),
       duration: delay,
+    );
+  }
+
+  void flushPendingCheck() {
+    if (!_pendingInit) return;
+    _pendingInit = false;
+    debouncer.call(
+      FunctionTag.checkIp,
+      _checkIp,
+      duration: const Duration(seconds: 2),
     );
   }
 
@@ -1181,6 +1212,7 @@ class DetectionState {
   void _cancelPreviousRequest() {
     _cancelToken?.cancel();
     _cancelToken = null;
+    _pendingCheckKey = null;
   }
 
   void _handleResponse(Result<IpInfo?> res) {
@@ -1215,17 +1247,22 @@ class DetectionState {
       errorMessage: _rawIpInfo != null
           ? null
           : (state.value.ipInfo == null
-              ? appLocalizations.tryManualRefresh
-              : null),
+                ? appLocalizations.tryManualRefresh
+                : null),
     );
   }
 
-  Future<void> _checkIp({bool showLoading = false}) async {
+  Future<void> _checkIp({bool showLoading = false, bool force = false}) async {
     final appState = globalState.appState;
 
     if (!appState.isInit) return;
 
     final isStart = appState.runTime != null;
+    final checkKey = '$isStart|${globalState.getCurrentNodeSignature()}';
+    if (!force && _pendingCheckKey == checkKey) {
+      _recheckOnFailure = true;
+      return;
+    }
 
     final isStateChanged = _preIsStart != isStart;
     _preIsStart = isStart;
@@ -1239,6 +1276,8 @@ class DetectionState {
 
     _cancelPreviousRequest();
     _cancelToken = CancelToken();
+    _pendingCheckKey = checkKey;
+    _recheckOnFailure = false;
     final requestId = ++_requestId;
 
     final shouldShowLoading =
@@ -1267,19 +1306,24 @@ class DetectionState {
           );
 
     if (requestId != _requestId) return;
+    _pendingCheckKey = null;
 
-    if (_isFirstLaunch && (res.isError || res.data == null)) {
-      _isFirstLaunch = false;
-      _handleResponse(res);
+    final isFailed = res.isError || res.data == null;
+    final isFirstLaunch = _isFirstLaunch;
+    _isFirstLaunch = false;
+    _handleResponse(res);
+    if (!isFailed) return;
 
+    if (_recheckOnFailure) {
+      startCheck();
+      return;
+    }
+    if (isFirstLaunch) {
       Future.delayed(const Duration(seconds: 3), () {
         if (state.value.ipInfo == null && !state.value.isLoading) {
           startCheck();
         }
       });
-    } else {
-      _isFirstLaunch = false;
-      _handleResponse(res);
     }
   }
 }
@@ -1299,9 +1343,7 @@ class MediaUnlockStateNotifier {
     return globalState.getCurrentNodeSignature();
   }
 
-  final state = ValueNotifier<MediaUnlockState>(
-    const MediaUnlockState(),
-  );
+  final state = ValueNotifier<MediaUnlockState>(const MediaUnlockState());
   final Set<MediaPlatform> _batchTestingPlatforms = {};
 
   bool isBatchChecking([Iterable<MediaPlatform>? platforms]) {
@@ -1326,35 +1368,39 @@ class MediaUnlockStateNotifier {
   List<MediaPlatform> get pinnedPlatforms {
     final pinned = globalState.config.appSetting.pinnedMediaPlatforms;
     return (pinned.isNotEmpty ? pinned : defaultPinnedMediaPlatforms)
-        .take(4)
+        .take(3)
         .toList();
   }
 
   void checkSingle(MediaPlatform platform) async {
     _batchTestingPlatforms.remove(platform);
     if (state.value.testingPlatforms.contains(platform)) return;
-    final currentTesting =
-        Set<MediaPlatform>.from(state.value.testingPlatforms)..add(platform);
+    final currentTesting = Set<MediaPlatform>.from(state.value.testingPlatforms)
+      ..add(platform);
     state.value = state.value.copyWith(testingPlatforms: currentTesting);
 
     try {
-      final res = await _checker.checkPlatform(platform).timeout(
-        const Duration(seconds: 8),
-        onTimeout: () => MediaUnlockResult(
-          platform: platform,
-          status: MediaUnlockStatus.failed,
-        ),
+      final res = await _checker
+          .checkPlatform(platform)
+          .timeout(
+            const Duration(seconds: 8),
+            onTimeout: () => MediaUnlockResult(
+              platform: platform,
+              status: MediaUnlockStatus.failed,
+            ),
+          );
+      final finalMap = Map<MediaPlatform, MediaUnlockResult>.from(
+        state.value.results,
       );
-      final finalMap =
-          Map<MediaPlatform, MediaUnlockResult>.from(state.value.results);
       finalMap[platform] = res;
       state.value = state.value.copyWith(
         results: finalMap,
         lastChecked: DateTime.now(),
       );
     } catch (_) {
-      final finalMap =
-          Map<MediaPlatform, MediaUnlockResult>.from(state.value.results);
+      final finalMap = Map<MediaPlatform, MediaUnlockResult>.from(
+        state.value.results,
+      );
       finalMap.putIfAbsent(
         platform,
         () => MediaUnlockResult(
@@ -1367,9 +1413,8 @@ class MediaUnlockStateNotifier {
         lastChecked: DateTime.now(),
       );
     } finally {
-      final nextTesting =
-          Set<MediaPlatform>.from(state.value.testingPlatforms)
-            ..remove(platform);
+      final nextTesting = Set<MediaPlatform>.from(state.value.testingPlatforms)
+        ..remove(platform);
       state.value = state.value.copyWith(testingPlatforms: nextTesting);
     }
   }
@@ -1390,17 +1435,16 @@ class MediaUnlockStateNotifier {
     final targetPlatforms = force
         ? platforms.toList()
         : platforms
-            .where((p) => !state.value.testingPlatforms.contains(p))
-            .toList();
+              .where((p) => !state.value.testingPlatforms.contains(p))
+              .toList();
     if (targetPlatforms.isEmpty) return;
 
     final requestId = ++_requestId;
     if (isBatchCheck) {
       _batchTestingPlatforms.addAll(targetPlatforms);
     }
-    final pendingTesting =
-        Set<MediaPlatform>.from(state.value.testingPlatforms)
-          ..addAll(targetPlatforms);
+    final pendingTesting = Set<MediaPlatform>.from(state.value.testingPlatforms)
+      ..addAll(targetPlatforms);
 
     state.value = state.value.copyWith(
       isLoading: isFullCheck ? true : state.value.isLoading,
@@ -1416,12 +1460,11 @@ class MediaUnlockStateNotifier {
       if (bufferResults.isEmpty) return;
       final updates = Map<MediaPlatform, MediaUnlockResult>.from(bufferResults);
       bufferResults.clear();
-      final nextResults =
-          Map<MediaPlatform, MediaUnlockResult>.from(state.value.results)
-            ..addAll(updates);
-      final nextTesting =
-          Set<MediaPlatform>.from(state.value.testingPlatforms)
-            ..removeAll(updates.keys);
+      final nextResults = Map<MediaPlatform, MediaUnlockResult>.from(
+        state.value.results,
+      )..addAll(updates);
+      final nextTesting = Set<MediaPlatform>.from(state.value.testingPlatforms)
+        ..removeAll(updates.keys);
       state.value = state.value.copyWith(
         results: nextResults,
         testingPlatforms: nextTesting,
@@ -1429,44 +1472,46 @@ class MediaUnlockStateNotifier {
     }
 
     try {
-      final results = await _checker.checkAll(
-        platforms: targetPlatforms,
-        onProgress: (res) {
-          if (requestId != _requestId) return;
-          bufferResults[res.platform] = res;
-          throttleTimer ??= Timer(
-            const Duration(milliseconds: 100),
-            flushUpdates,
+      final results = await _checker
+          .checkAll(
+            platforms: targetPlatforms,
+            onProgress: (res) {
+              if (requestId != _requestId) return;
+              bufferResults[res.platform] = res;
+              throttleTimer ??= Timer(
+                const Duration(milliseconds: 100),
+                flushUpdates,
+              );
+            },
+          )
+          .timeout(
+            Duration(seconds: (targetPlatforms.length / 8).ceil() * 8 + 5),
+            onTimeout: () {
+              _checker.cancel();
+              final timeoutMap = <MediaPlatform, MediaUnlockResult>{};
+              for (final p in targetPlatforms) {
+                timeoutMap[p] =
+                    bufferResults[p] ??
+                    state.value.results[p] ??
+                    MediaUnlockResult(
+                      platform: p,
+                      status: MediaUnlockStatus.failed,
+                    );
+              }
+              return timeoutMap;
+            },
           );
-        },
-      ).timeout(
-        Duration(seconds: (targetPlatforms.length / 8).ceil() * 8 + 5),
-        onTimeout: () {
-          _checker.cancel();
-          final timeoutMap = <MediaPlatform, MediaUnlockResult>{};
-          for (final p in targetPlatforms) {
-            timeoutMap[p] = bufferResults[p] ??
-                state.value.results[p] ??
-                MediaUnlockResult(
-                  platform: p,
-                  status: MediaUnlockStatus.failed,
-                );
-          }
-          return timeoutMap;
-        },
-      );
       if (requestId != _requestId) return;
       flushUpdates();
-      final nextResults =
-          Map<MediaPlatform, MediaUnlockResult>.from(state.value.results);
+      final nextResults = Map<MediaPlatform, MediaUnlockResult>.from(
+        state.value.results,
+      );
       for (final p in targetPlatforms) {
-        nextResults[p] = results[p] ??
+        nextResults[p] =
+            results[p] ??
             bufferResults[p] ??
             state.value.results[p] ??
-            MediaUnlockResult(
-              platform: p,
-              status: MediaUnlockStatus.failed,
-            );
+            MediaUnlockResult(platform: p, status: MediaUnlockStatus.failed);
       }
       _lastCheckedNodeSignature = _getNodeSignature();
       state.value = state.value.copyWith(
@@ -1478,15 +1523,14 @@ class MediaUnlockStateNotifier {
       throttleTimer?.cancel();
       if (requestId != _requestId) return;
       flushUpdates();
-      final fallbackResults =
-          Map<MediaPlatform, MediaUnlockResult>.from(state.value.results);
+      final fallbackResults = Map<MediaPlatform, MediaUnlockResult>.from(
+        state.value.results,
+      );
       for (final p in targetPlatforms) {
         fallbackResults.putIfAbsent(
           p,
-          () => MediaUnlockResult(
-            platform: p,
-            status: MediaUnlockStatus.failed,
-          ),
+          () =>
+              MediaUnlockResult(platform: p, status: MediaUnlockStatus.failed),
         );
       }
       _lastCheckedNodeSignature = _getNodeSignature();
@@ -1498,9 +1542,8 @@ class MediaUnlockStateNotifier {
     } finally {
       throttleTimer?.cancel();
       _batchTestingPlatforms.removeAll(targetPlatforms);
-      final nextTesting =
-          Set<MediaPlatform>.from(state.value.testingPlatforms)
-            ..removeAll(targetPlatforms);
+      final nextTesting = Set<MediaPlatform>.from(state.value.testingPlatforms)
+        ..removeAll(targetPlatforms);
       state.value = state.value.copyWith(
         isLoading: (requestId == _requestId && isFullCheck)
             ? false
@@ -1514,10 +1557,7 @@ class MediaUnlockStateNotifier {
     checkPlatforms(platforms ?? pinnedPlatforms, force: force);
   }
 
-  void checkAll({
-    bool force = false,
-    List<MediaPlatform>? platforms,
-  }) {
+  void checkAll({bool force = false, List<MediaPlatform>? platforms}) {
     final showMoreStreaming =
         globalState.config.appSetting.mediaUnlockMoreStreamingPlatforms;
     final allAvailable = MediaPlatform.values
@@ -1563,9 +1603,12 @@ class MediaUnlockStateNotifier {
       } else {
         await Future.delayed(const Duration(seconds: 2));
       }
-      if (requestId != _requestId || globalState.appState.runTime == null) return;
-      final nextResults =
-          Map<MediaPlatform, MediaUnlockResult>.from(state.value.results);
+      if (requestId != _requestId || globalState.appState.runTime == null) {
+        return;
+      }
+      final nextResults = Map<MediaPlatform, MediaUnlockResult>.from(
+        state.value.results,
+      );
       for (final p in pinnedPlatforms) {
         nextResults.remove(p);
       }
@@ -1590,8 +1633,9 @@ class MediaUnlockStateNotifier {
         return;
       }
       _lastCheckedNodeSignature = currentSignature;
-      final nextResults =
-          Map<MediaPlatform, MediaUnlockResult>.from(state.value.results);
+      final nextResults = Map<MediaPlatform, MediaUnlockResult>.from(
+        state.value.results,
+      );
       for (final p in pinnedPlatforms) {
         nextResults.remove(p);
       }
@@ -1615,8 +1659,9 @@ class MediaUnlockStateNotifier {
       return;
     }
     _lastCheckedNodeSignature = currentSignature;
-    final nextResults =
-        Map<MediaPlatform, MediaUnlockResult>.from(state.value.results);
+    final nextResults = Map<MediaPlatform, MediaUnlockResult>.from(
+      state.value.results,
+    );
     for (final p in pinnedPlatforms) {
       nextResults.remove(p);
     }
@@ -1632,14 +1677,16 @@ class MediaUnlockStateNotifier {
     final isRunning = globalState.appState.runTime != null;
     if (!isRunning) return;
     if (!globalState.hasMediaUnlockWidget) return;
-    if (state.value.isLoading || state.value.testingPlatforms.isNotEmpty) return;
+    if (state.value.isLoading || state.value.testingPlatforms.isNotEmpty) {
+      return;
+    }
     if (state.value.results.isNotEmpty) return;
-    final needsInitialCheck =
-        pinnedPlatforms.any((p) => !state.value.results.containsKey(p));
+    final needsInitialCheck = pinnedPlatforms.any(
+      (p) => !state.value.results.containsKey(p),
+    );
     if (!needsInitialCheck) return;
     checkPinned();
   }
 }
 
 final mediaUnlockState = MediaUnlockStateNotifier();
-

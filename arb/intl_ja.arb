@@ -7,7 +7,7 @@
   "titleTooLong": "長すぎます（最大20文字）",
   "proxies": "プロキシ",
   "profile": "プロファイル",
-  "profiles": "プロファイル",
+  "profiles": "サブスク",
   "tools": "ツール",
   "logs": "ログ",
   "logsDesc": "キャプチャログの確認",
@@ -290,6 +290,7 @@
   "size": "サイズ",
   "delayAnimation": "テストアニメーション",
   "delayAnimationDesc": "テスト中の表示アニメーションを変更",
+  "syncDelayAnimation": "アニメーションを他のページに同期",
   "noAnimation": "デフォルト",
   "rotatingCircle": "ローテーション",
   "pulse": "パルス",
@@ -531,6 +532,8 @@
   "icon": "画像",
   "iconConfiguration": "画像設定",
   "iconConfigurationDesc": "プロキシグループのICONアイコンをカスタマイズ",
+  "resetIconCache": "アイコンキャッシュをリセット",
+  "resetIconCacheDesc": "ローカルのアイコンキャッシュをリセットしますか？アプリがリモートリンクから自動的に再取得するため、この操作は安全です。",
   "noData": "データがありません",
   "adminAutoLaunch": "管理者権限で自動起動",
   "adminAutoLaunchDesc": "管理者モードでOS起動時に自動開始",
@@ -548,7 +551,7 @@
   "fileIsUpdate": "ファイルが変更されました。保存しますか？",
   "profileHasUpdate": "プロファイルが変更されました。自動更新をオフにしますか？",
   "hasCacheChange": "変更をキャッシュしますか？",
-  "navConnections": "接続",
+  "navConnections": "セッション",
   "navTools": "ツール",
   "copySuccess": "コピー成功",
   "copiedPackageName": "パッケージ名をコピーしました",
@@ -748,8 +751,8 @@
   "mediaUnlockColorfulIcons": "既定でカラーアイコンを表示",
   "mediaUnlockRefreshByCategory": "現在のカテゴリに基づいて部分更新",
 
-  "mediaUnlockPinnedSettingsDesc": "ウィジェットに常駐表示する最大4項目を選択できます",
-  "mediaUnlockSelectLimit": "最大4項目まで選択できます",
+  "mediaUnlockPinnedSettingsDesc": "ウィジェットに常駐表示する最大3項目を選択できます",
+  "mediaUnlockSelectLimit": "最大3項目まで選択できます",
   "categoryAll": "すべて",
   "categoryAi": "AI",
   "categoryStreaming": "動画配信",
@@ -792,7 +795,14 @@
   "systemDns": "DNS",
   "enabled": "有効",
   "disabled": "無効",
-  "openRouterAdmin": "ゲートウェイを開く"
+  "openRouterAdmin": "ゲートウェイを開く",
+  "newLogsCount": "新しいログ {count} 件",
+  "noMatchedLogs": "条件に一致するログはありません",
+  "clearFilter": "フィルターをクリア",
+  "onlyShow": "{label} のみ表示",
+  "logLevelDebugHint": "{level}モードはネットワークのデバッグ向けです。普段はオフにすることをおすすめします",
+  "collapse": "折りたたむ",
+  "analyzeLogPrompt": "Bettbox(Mihomo)のログを分析:{log}"
 }
 
 

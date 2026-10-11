@@ -290,6 +290,7 @@
   "size": "اندازه",
   "delayAnimation": "انیمیشن تست",
   "delayAnimationDesc": "سفارشی‌سازی انیمیشن حین تست تاخیر",
+  "syncDelayAnimation": "همگام‌سازی انیمیشن با صفحات دیگر",
   "noAnimation": "پیش‌فرض",
   "rotatingCircle": "چرخش تک‌دایره",
   "pulse": "پالس",
@@ -531,6 +532,8 @@
   "icon": "تصویر",
   "iconConfiguration": "تنظیمات تصویر",
   "iconConfigurationDesc": "سفارشی‌سازی آیکون‌های ICON گروه پروکسی",
+  "resetIconCache": "بازنشانی حافظه پنهان آیکون‌ها",
+  "resetIconCacheDesc": "حافظه پنهان محلی آیکون‌ها بازنشانی شود؟ این کار ایمن است، زیرا برنامه دوباره آن‌ها را به‌طور خودکار از پیوندهای راه دور دریافت می‌کند.",
   "noData": "داده‌ای موجود نیست",
   "adminAutoLaunch": "شروع خودکار با دسترسی Admin",
   "adminAutoLaunchDesc": "اجرای خودکار با دسترسی Admin هنگام بووت",
@@ -748,8 +751,8 @@
   "mediaUnlockColorfulIcons": "نمایش آیکون‌های رنگی به‌صورت پیش‌فرض",
   "mediaUnlockRefreshByCategory": "تازه‌سازی جزئی بر اساس دسته‌بندی فعلی",
 
-  "mediaUnlockPinnedSettingsDesc": "امکان انتخاب حداکثر ۴ مورد برای پین کردن در ویجت",
-  "mediaUnlockSelectLimit": "حداکثر می‌توانید ۴ مورد را انتخاب کنید",
+  "mediaUnlockPinnedSettingsDesc": "امکان انتخاب حداکثر ۳ مورد برای پین کردن در ویجت",
+  "mediaUnlockSelectLimit": "حداکثر می‌توانید ۳ مورد را انتخاب کنید",
   "categoryAll": "همه",
   "categoryAi": "AI",
   "categoryStreaming": "رسانه‌های جاری",
@@ -792,7 +795,14 @@
   "systemDns": "DNS",
   "enabled": "فعال",
   "disabled": "غیرفعال",
-  "openRouterAdmin": "باز کردن گیت‌وی"
+  "openRouterAdmin": "باز کردن گیت‌وی",
+  "newLogsCount": "{count} گزارش جدید",
+  "noMatchedLogs": "گزارشی مطابق فیلتر یافت نشد",
+  "clearFilter": "پاک کردن فیلترها",
+  "onlyShow": "فقط {label}",
+  "logLevelDebugHint": "حالت {level} برای اشکال‌زدایی شبکه مناسب است؛ در استفاده روزمره آن را خاموش کنید",
+  "collapse": "جمع کردن",
+  "analyzeLogPrompt": "تحلیل گزارش Bettbox (Mihomo): {log}"
 }
 
 

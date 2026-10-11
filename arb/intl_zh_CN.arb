@@ -290,6 +290,7 @@
   "size": "尺寸",
   "delayAnimation": "延迟动画",
   "delayAnimationDesc": "自定义测试过程中的动画显示",
+  "syncDelayAnimation": "同步动画到其他页面",
   "noAnimation": "默认",
   "rotatingCircle": "单圆自转",
   "pulse": "脉冲律动",
@@ -531,6 +532,8 @@
   "icon": "图片",
   "iconConfiguration": "图片配置",
   "iconConfigurationDesc": "自定义代理组 ICON 图标",
+  "resetIconCache": "重置图标缓存",
+  "resetIconCacheDesc": "是否重置本地图标缓存？这个操作是安全的，因为应用会再次从远程链接自动获取。",
   "noData": "暂无数据",
   "adminAutoLaunch": "管理员自启动",
   "adminAutoLaunchDesc": "使用管理员模式开机自启动",
@@ -748,8 +751,8 @@
   "mediaUnlockColorfulIcons": "默认显示彩色 ICON 图标",
   "mediaUnlockRefreshByCategory": "根据当前分组状态局部刷新",
 
-  "mediaUnlockPinnedSettingsDesc": "可选 4 个在小部件常驻展示的项目",
-  "mediaUnlockSelectLimit": "最多只能选择 4 个项目",
+  "mediaUnlockPinnedSettingsDesc": "可选 3 个在小部件常驻展示的项目",
+  "mediaUnlockSelectLimit": "最多只能选择 3 个项目",
   "categoryAll": "全部",
   "categoryAi": "AI",
   "categoryStreaming": "流媒体",
@@ -792,7 +795,14 @@
   "systemDns": "DNS",
   "enabled": "已开启",
   "disabled": "已关闭",
-  "openRouterAdmin": "打开后台网关"
+  "openRouterAdmin": "打开后台网关",
+  "newLogsCount": "{count} 条新日志",
+  "noMatchedLogs": "没有符合条件的日志",
+  "clearFilter": "清除筛选",
+  "onlyShow": "只看 {label}",
+  "logLevelDebugHint": "{level}模式适合网络调试，日常使用建议关闭",
+  "collapse": "收起",
+  "analyzeLogPrompt": "分析Bettbox(Mihomo)日志:{log}"
 }
 
 

@@ -12,6 +12,7 @@ import 'package:bett_box/plugins/app.dart';
 import 'package:bett_box/providers/providers.dart';
 import 'package:bett_box/state.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -47,10 +48,37 @@ class ApplicationState extends ConsumerState<Application>
     return ref.read(genColorSchemeProvider(brightness));
   }
 
+  InputDecorationTheme _inputDecorationTheme(ColorScheme colorScheme) {
+    const border = UnderlineInputBorder(
+      borderRadius: BorderRadius.all(Radius.circular(16)),
+      borderSide: BorderSide.none,
+    );
+    return InputDecorationTheme(
+      filled: true,
+      fillColor: colorScheme.brightness == Brightness.light
+          ? Color.lerp(
+              colorScheme.surface,
+              colorScheme.surfaceContainerLowest,
+              0.5,
+            )
+          : colorScheme.surfaceContainerHighest,
+      border: border,
+      enabledBorder: border,
+      focusedBorder: border,
+      disabledBorder: border,
+      errorBorder: border,
+      focusedErrorBorder: border,
+      contentPadding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    if (system.isAndroid) {
+      unawaited(SystemNavigator.setFrameworkHandlesBack(true));
+    }
     globalState.backgroundMode.addListener(_syncAutoUpdateTasks);
     _syncAutoUpdateTasks();
     globalState.appController = AppController(context, ref);
@@ -75,7 +103,7 @@ class ApplicationState extends ConsumerState<Application>
       try {
         await ExternalControl.start();
       } catch (e) {
-        commonPrint.log('ExternalControl start failed: $e');
+        commonPrint.warn('ExternalControl start failed: $e');
       }
     }
     globalState.appController.initLink();
@@ -85,6 +113,21 @@ class ApplicationState extends ConsumerState<Application>
     Future.delayed(const Duration(seconds: 3), () {
       globalState.warmupCommonDialog();
     });
+  }
+
+  @override
+  Future<bool> didPopRoute() async {
+    if (!system.isAndroid) return false;
+    final navigator = globalState.navigatorKey.currentState;
+    if (navigator == null) return false;
+    try {
+      if (!await navigator.maybePop()) {
+        await globalState.appController.handleBackOrExit();
+      }
+    } catch (e) {
+      commonPrint.warn('Back dispatch failed: $e');
+    }
+    return true;
   }
 
   @override
@@ -121,7 +164,7 @@ class ApplicationState extends ConsumerState<Application>
     try {
       await FlutterDisplayMode.setHighRefreshRate();
     } catch (e) {
-      commonPrint.log('Failed to restore high refresh rate: $e');
+      commonPrint.warn('Failed to restore high refresh rate: $e');
     }
   }
 
@@ -164,7 +207,7 @@ class ApplicationState extends ConsumerState<Application>
                 clashCore.closeConnections().then<void>(
                   (_) {},
                   onError: (Object e) =>
-                      commonPrint.log('closeConnections ignored: $e'),
+                      commonPrint.debug('closeConnections ignored: $e'),
                 ),
               );
             }
@@ -176,7 +219,7 @@ class ApplicationState extends ConsumerState<Application>
               final dnsState = ref.read(autoSetSystemDnsStateProvider);
               await macOS?.updateDns(!(dnsState.a && dnsState.b));
             }
-            globalState.appController.updateLocalIp();
+            globalState.appController.updateLocalNetwork();
             globalState.appController.addCheckIpNumDebounce();
           },
           child: child,
@@ -213,6 +256,7 @@ class ApplicationState extends ConsumerState<Application>
             return MaterialApp(
               debugShowCheckedModeBanner: false,
               navigatorKey: globalState.navigatorKey,
+              navigatorObservers: [routeIdleObserver],
               localizationsDelegates: const [
                 AppLocalizations.delegate,
                 GlobalMaterialLocalizations.delegate,
@@ -248,6 +292,22 @@ class ApplicationState extends ConsumerState<Application>
               theme: ThemeData(
                 useMaterial3: true,
                 pageTransitionsTheme: _pageTransitionsTheme,
+                scaffoldBackgroundColor: _getAppColorScheme(
+                  brightness: Brightness.light,
+                  primaryColor: themeProps.primaryColor,
+                ).surfaceContainer,
+                appBarTheme: const AppBarTheme(
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                  scrolledUnderElevation: 0,
+                  surfaceTintColor: Colors.transparent,
+                  systemOverlayStyle: SystemUiOverlayStyle(
+                    statusBarColor: Colors.transparent,
+                    statusBarIconBrightness: Brightness.dark,
+                    statusBarBrightness: Brightness.light,
+                    systemStatusBarContrastEnforced: false,
+                  ),
+                ),
                 colorScheme: _getAppColorScheme(
                   brightness: Brightness.light,
                   primaryColor: themeProps.primaryColor,
@@ -275,39 +335,21 @@ class ApplicationState extends ConsumerState<Application>
                 ),
                 popupMenuTheme: const PopupMenuThemeData(
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(20)),
+                    borderRadius: BorderRadius.all(Radius.circular(16)),
                   ),
                 ),
                 dividerTheme: DividerThemeData(
                   color: _getAppColorScheme(
                     brightness: Brightness.light,
                     primaryColor: themeProps.primaryColor,
-                  ).outlineVariant.withValues(alpha: 0.6),
+                  ).outlineVariant.withValues(alpha: 0.45),
                   thickness: 1,
                   space: 1,
                 ),
-                inputDecorationTheme: InputDecorationTheme(
-                  border: const OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(18)),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: const BorderRadius.all(Radius.circular(18)),
-                    borderSide: BorderSide(
-                      color: _getAppColorScheme(
-                        brightness: Brightness.light,
-                        primaryColor: themeProps.primaryColor,
-                      ).outlineVariant.withValues(alpha: 0.6),
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: const BorderRadius.all(Radius.circular(18)),
-                    borderSide: BorderSide(
-                      color: _getAppColorScheme(
-                        brightness: Brightness.light,
-                        primaryColor: themeProps.primaryColor,
-                      ).primary,
-                      width: 2,
-                    ),
+                inputDecorationTheme: _inputDecorationTheme(
+                  _getAppColorScheme(
+                    brightness: Brightness.light,
+                    primaryColor: themeProps.primaryColor,
                   ),
                 ),
                 chipTheme: ChipThemeData(
@@ -321,13 +363,19 @@ class ApplicationState extends ConsumerState<Application>
                     ).outlineVariant.withValues(alpha: 0.6),
                   ),
                 ),
-                tooltipTheme: const TooltipThemeData(
+                tooltipTheme: TooltipThemeData(
                   decoration: BoxDecoration(
-                    color: Colors.black87,
-                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                    color: _getAppColorScheme(
+                      brightness: Brightness.light,
+                      primaryColor: themeProps.primaryColor,
+                    ).inverseSurface,
+                    borderRadius: const BorderRadius.all(Radius.circular(10)),
                   ),
                   textStyle: TextStyle(
-                    color: Colors.white,
+                    color: _getAppColorScheme(
+                      brightness: Brightness.light,
+                      primaryColor: themeProps.primaryColor,
+                    ).onInverseSurface,
                     fontSize: 12,
                   ),
                 ),
@@ -335,6 +383,22 @@ class ApplicationState extends ConsumerState<Application>
               darkTheme: ThemeData(
                 useMaterial3: true,
                 pageTransitionsTheme: _pageTransitionsTheme,
+                scaffoldBackgroundColor: _getAppColorScheme(
+                  brightness: Brightness.dark,
+                  primaryColor: themeProps.primaryColor,
+                ).toPureBlack(themeProps.pureBlack).surfaceContainer,
+                appBarTheme: const AppBarTheme(
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                  scrolledUnderElevation: 0,
+                  surfaceTintColor: Colors.transparent,
+                  systemOverlayStyle: SystemUiOverlayStyle(
+                    statusBarColor: Colors.transparent,
+                    statusBarIconBrightness: Brightness.light,
+                    statusBarBrightness: Brightness.dark,
+                    systemStatusBarContrastEnforced: false,
+                  ),
+                ),
                 colorScheme: _getAppColorScheme(
                   brightness: Brightness.dark,
                   primaryColor: themeProps.primaryColor,
@@ -362,7 +426,7 @@ class ApplicationState extends ConsumerState<Application>
                 ),
                 popupMenuTheme: const PopupMenuThemeData(
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(20)),
+                    borderRadius: BorderRadius.all(Radius.circular(16)),
                   ),
                 ),
                 dividerTheme: DividerThemeData(
@@ -373,37 +437,15 @@ class ApplicationState extends ConsumerState<Application>
                           )
                           .toPureBlack(themeProps.pureBlack)
                           .outlineVariant
-                          .withValues(alpha: 0.45),
+                          .withValues(alpha: 0.25),
                   thickness: 1,
                   space: 1,
                 ),
-                inputDecorationTheme: InputDecorationTheme(
-                  border: const OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(18)),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: const BorderRadius.all(Radius.circular(18)),
-                    borderSide: BorderSide(
-                      color:
-                          _getAppColorScheme(
-                                brightness: Brightness.dark,
-                                primaryColor: themeProps.primaryColor,
-                              )
-                              .toPureBlack(themeProps.pureBlack)
-                              .outlineVariant
-                              .withValues(alpha: 0.45),
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: const BorderRadius.all(Radius.circular(18)),
-                    borderSide: BorderSide(
-                      color: _getAppColorScheme(
-                        brightness: Brightness.dark,
-                        primaryColor: themeProps.primaryColor,
-                      ).toPureBlack(themeProps.pureBlack).primary,
-                      width: 2,
-                    ),
-                  ),
+                inputDecorationTheme: _inputDecorationTheme(
+                  _getAppColorScheme(
+                    brightness: Brightness.dark,
+                    primaryColor: themeProps.primaryColor,
+                  ).toPureBlack(themeProps.pureBlack),
                 ),
                 chipTheme: ChipThemeData(
                   shape: const RoundedRectangleBorder(
@@ -417,16 +459,22 @@ class ApplicationState extends ConsumerState<Application>
                             )
                             .toPureBlack(themeProps.pureBlack)
                             .outlineVariant
-                            .withValues(alpha: 0.45),
+                            .withValues(alpha: 0.5),
                   ),
                 ),
-                tooltipTheme: const TooltipThemeData(
+                tooltipTheme: TooltipThemeData(
                   decoration: BoxDecoration(
-                    color: Colors.black87,
-                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                    color: _getAppColorScheme(
+                      brightness: Brightness.dark,
+                      primaryColor: themeProps.primaryColor,
+                    ).toPureBlack(themeProps.pureBlack).inverseSurface,
+                    borderRadius: const BorderRadius.all(Radius.circular(10)),
                   ),
                   textStyle: TextStyle(
-                    color: Colors.white,
+                    color: _getAppColorScheme(
+                      brightness: Brightness.dark,
+                      primaryColor: themeProps.primaryColor,
+                    ).toPureBlack(themeProps.pureBlack).onInverseSurface,
                     fontSize: 12,
                   ),
                 ),

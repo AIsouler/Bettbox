@@ -10,7 +10,7 @@ Future<bool> _initRustLib() async {
     await RustLib.init();
     return true;
   } catch (e) {
-    commonPrint.log('Failed to initialize RustLib: $e');
+    commonPrint.error('Failed to initialize RustLib: $e');
     _rustLibReady = null;
     return false;
   }

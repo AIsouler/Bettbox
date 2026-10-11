@@ -60,6 +60,7 @@ _AppSettingProps _$AppSettingPropsFromJson(
       ) ??
       RecoveryStrategy.compatible,
   enableHighPriority: json['enableHighPriority'] as bool? ?? false,
+  sidebarCollapsed: json['sidebarCollapsed'] as bool? ?? false,
   dashboardTitle: json['dashboardTitle'] as String?,
 );
 
@@ -104,6 +105,7 @@ Map<String, dynamic> _$AppSettingPropsToJson(_AppSettingProps instance) =>
       'enableHighRefreshRate': instance.enableHighRefreshRate,
       'recoveryStrategy': _$RecoveryStrategyEnumMap[instance.recoveryStrategy]!,
       'enableHighPriority': instance.enableHighPriority,
+      'sidebarCollapsed': instance.sidebarCollapsed,
       'dashboardTitle': instance.dashboardTitle,
     };
 
@@ -383,6 +385,7 @@ _ProxiesStyle _$ProxiesStyleFromJson(Map<String, dynamic> json) =>
             json['delayAnimation'],
           ) ??
           DelayAnimationType.none,
+      syncDelayAnimation: json['syncDelayAnimation'] as bool? ?? true,
       iconMap:
           (json['iconMap'] as Map<String, dynamic>?)?.map(
             (k, e) => MapEntry(k, e as String),
@@ -402,6 +405,7 @@ Map<String, dynamic> _$ProxiesStyleToJson(_ProxiesStyle instance) =>
       'iconStyle': _$ProxiesIconStyleEnumMap[instance.iconStyle]!,
       'cardType': _$ProxyCardTypeEnumMap[instance.cardType]!,
       'delayAnimation': _$DelayAnimationTypeEnumMap[instance.delayAnimation]!,
+      'syncDelayAnimation': instance.syncDelayAnimation,
       'iconMap': instance.iconMap,
       'concurrencyLimit': instance.concurrencyLimit,
       'autoStickyHeader': instance.autoStickyHeader,

@@ -193,6 +193,7 @@ abstract class AppSettingProps with _$AppSettingProps {
     @Default(false) bool enableHighRefreshRate,
     @Default(RecoveryStrategy.compatible) RecoveryStrategy recoveryStrategy,
     @Default(false) bool enableHighPriority,
+    @Default(false) bool sidebarCollapsed,
     String? dashboardTitle,
   }) = _AppSettingProps;
 
@@ -347,6 +348,7 @@ abstract class ProxiesStyle with _$ProxiesStyle {
     @Default(ProxiesIconStyle.none) ProxiesIconStyle iconStyle,
     @Default(ProxyCardType.shrink) ProxyCardType cardType,
     @Default(DelayAnimationType.none) DelayAnimationType delayAnimation,
+    @Default(true) bool syncDelayAnimation,
     @Default({}) Map<String, String> iconMap,
     @Default(250) int concurrencyLimit,
     @Default(true) bool autoStickyHeader,
@@ -509,6 +511,18 @@ abstract class Config with _$Config {
               profile['id'] = id.toString();
             }
           }
+        }
+      }
+    } catch (_) {}
+
+    try {
+      final themeProps = json['themeProps'];
+      if (themeProps is Map &&
+          themeProps['primaryColor'] != legacyPrimaryColors.last) {
+        final colors = themeProps['primaryColors'];
+        if (colors is List &&
+            intListEquality.equals(colors.cast<int>(), legacyPrimaryColors)) {
+          themeProps.remove('primaryColors');
         }
       }
     } catch (_) {}

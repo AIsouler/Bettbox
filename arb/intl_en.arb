@@ -256,7 +256,7 @@
   "tcpConcurrentDesc": "Allow concurrent TCP connections",
   "geodataLoader": "GEO Low Memory",
   "geodataLoaderDesc": "Use GEO low memory loader",
-  "requests": "Requests",
+  "requests": "Recent",
   "requestsDesc": "View recent request logs",
   "findProcessMode": "Find Process",
   "init": "Init",
@@ -290,6 +290,7 @@
   "size": "Size",
   "delayAnimation": "Delay Animation",
   "delayAnimationDesc": "Customize animation during delay testing",
+  "syncDelayAnimation": "Sync animation to other pages",
   "noAnimation": "Default",
   "rotatingCircle": "Rotating Circle",
   "pulse": "Pulse",
@@ -531,6 +532,8 @@
   "icon": "Icon",
   "iconConfiguration": "Icon Configuration",
   "iconConfigurationDesc": "Customize proxy group ICON icons",
+  "resetIconCache": "Reset Icon Cache",
+  "resetIconCacheDesc": "Reset the local icon cache? This is safe, the app will fetch icons from their remote links again automatically.",
   "noData": "No Data",
   "adminAutoLaunch": "Admin Auto-Launch",
   "adminAutoLaunchDesc": "Auto-start with admin privileges",
@@ -747,8 +750,8 @@
   "mediaUnlockColorfulIcons": "Show colored icons by default",
   "mediaUnlockRefreshByCategory": "Partially refresh based on current category",
 
-  "mediaUnlockPinnedSettingsDesc": "Select up to 4 items to pin on the widget",
-  "mediaUnlockSelectLimit": "You can select up to 4 items",
+  "mediaUnlockPinnedSettingsDesc": "Select up to 3 items to pin on the widget",
+  "mediaUnlockSelectLimit": "You can select up to 3 items",
   "categoryAll": "All",
   "categoryAi": "AI",
   "categoryStreaming": "Streaming",
@@ -791,7 +794,14 @@
   "systemDns": "DNS",
   "enabled": "Enabled",
   "disabled": "Disabled",
-  "openRouterAdmin": "Open Gateway"
+  "openRouterAdmin": "Open Gateway",
+  "newLogsCount": "{count} new logs",
+  "noMatchedLogs": "No matching logs",
+  "clearFilter": "Clear filters",
+  "onlyShow": "Only {label}",
+  "logLevelDebugHint": "{level} mode is for network debugging; turn it off for daily use",
+  "collapse": "Collapse",
+  "analyzeLogPrompt": "Analyze Bettbox (Mihomo) log: {log}"
 }
 
 

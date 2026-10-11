@@ -290,6 +290,7 @@
   "size": "尺寸",
   "delayAnimation": "延遲動畫",
   "delayAnimationDesc": "自訂測試過程中的動畫顯示",
+  "syncDelayAnimation": "同步動畫到其他頁面",
   "noAnimation": "預設",
   "rotatingCircle": "單圓自轉",
   "pulse": "脈衝律動",
@@ -531,6 +532,8 @@
   "icon": "圖片",
   "iconConfiguration": "圖片設定",
   "iconConfigurationDesc": "自訂代理組 ICON 圖示",
+  "resetIconCache": "重置圖示快取",
+  "resetIconCacheDesc": "是否重置本機圖示快取？這個操作是安全的，因為應用會再次從遠端連結自動取得。",
   "noData": "暫無資料",
   "adminAutoLaunch": "管理員自啟動",
   "adminAutoLaunchDesc": "使用管理員模式開機自動啟動",
@@ -748,8 +751,8 @@
   "mediaUnlockColorfulIcons": "預設顯示彩色 ICON 圖示",
   "mediaUnlockRefreshByCategory": "根據當前分組狀態局部重新整理",
 
-  "mediaUnlockPinnedSettingsDesc": "可選 4 個在小組件常駐展示的項目",
-  "mediaUnlockSelectLimit": "最多只能選擇 4 個項目",
+  "mediaUnlockPinnedSettingsDesc": "可選 3 個在小組件常駐展示的項目",
+  "mediaUnlockSelectLimit": "最多只能選擇 3 個項目",
   "categoryAll": "全部",
   "categoryAi": "AI",
   "categoryStreaming": "串流媒體",
@@ -792,7 +795,14 @@
   "systemDns": "DNS",
   "enabled": "已開啟",
   "disabled": "已關閉",
-  "openRouterAdmin": "開啟後台閘道"
+  "openRouterAdmin": "開啟後台閘道",
+  "newLogsCount": "{count} 則新日誌",
+  "noMatchedLogs": "沒有符合條件的日誌",
+  "clearFilter": "清除篩選",
+  "onlyShow": "只看 {label}",
+  "logLevelDebugHint": "{level}模式適合網路偵錯，日常使用建議關閉",
+  "collapse": "收起",
+  "analyzeLogPrompt": "分析Bettbox(Mihomo)日誌:{log}"
 }
 
 

@@ -290,6 +290,7 @@
   "size": "크기",
   "delayAnimation": "테스트 애니메이션",
   "delayAnimationDesc": "테스트 진행 중 표시할 애니메이션 변경",
+  "syncDelayAnimation": "다른 페이지에 애니메이션 동기화",
   "noAnimation": "기본값",
   "rotatingCircle": "단일 회전",
   "pulse": "펄스",
@@ -531,6 +532,8 @@
   "icon": "이미지",
   "iconConfiguration": "이미지 설정",
   "iconConfigurationDesc": "프록시 그룹 ICON 아이콘 사용자 지정",
+  "resetIconCache": "아이콘 캐시 초기화",
+  "resetIconCacheDesc": "로컬 아이콘 캐시를 초기화하시겠습니까? 앱이 원격 링크에서 자동으로 다시 가져오므로 안전한 작업입니다.",
   "noData": "데이터가 없습니다",
   "adminAutoLaunch": "관리자 권한 자동 시작",
   "adminAutoLaunchDesc": "관리자 모드로 부팅 시 자동 실행",
@@ -748,8 +751,8 @@
   "mediaUnlockColorfulIcons": "기본적으로 컬러 아이콘 표시",
   "mediaUnlockRefreshByCategory": "현재 카테고리를 기반으로 부분 새로고침",
 
-  "mediaUnlockPinnedSettingsDesc": "위젯에 고정 표시할 항목을 최대 4개 선택할 수 있습니다",
-  "mediaUnlockSelectLimit": "최대 4개 항목까지 선택할 수 있습니다",
+  "mediaUnlockPinnedSettingsDesc": "위젯에 고정 표시할 항목을 최대 3개 선택할 수 있습니다",
+  "mediaUnlockSelectLimit": "최대 3개 항목까지 선택할 수 있습니다",
   "categoryAll": "전체",
   "categoryAi": "AI",
   "categoryStreaming": "스트리밍",
@@ -792,7 +795,14 @@
   "systemDns": "DNS",
   "enabled": "사용 중",
   "disabled": "사용 안 함",
-  "openRouterAdmin": "게이트웨이 열기"
+  "openRouterAdmin": "게이트웨이 열기",
+  "newLogsCount": "새 로그 {count}개",
+  "noMatchedLogs": "조건에 맞는 로그가 없습니다",
+  "clearFilter": "필터 지우기",
+  "onlyShow": "{label}만 보기",
+  "logLevelDebugHint": "{level} 모드는 네트워크 디버깅용입니다. 평소에는 끄는 것을 권장합니다",
+  "collapse": "접기",
+  "analyzeLogPrompt": "Bettbox(Mihomo) 로그 분석: {log}"
 }
 
 
