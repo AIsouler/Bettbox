@@ -104,7 +104,7 @@ class ClashService extends ClashHandlerInterface {
                 },
                 onError: (error) {
                   if (_isDestroying || globalState.isExiting) return;
-                  commonPrint.log('Frame decode error: $error');
+                  commonPrint.error('Frame decode error: $error');
                 },
                 onDone: () {
                   commonPrint.log('Socket connection closed');
@@ -115,7 +115,7 @@ class ClashService extends ClashHandlerInterface {
       },
       (error, stack) {
         if (_isDestroying || globalState.isExiting) return;
-        commonPrint.log(error.toString());
+        commonPrint.error(error.toString());
         if (error is SocketException &&
             !_isDestroying &&
             !globalState.isExiting) {
@@ -208,14 +208,14 @@ class ClashService extends ClashHandlerInterface {
                     true,
                   )
                   .catchError((e) {
-                    commonPrint.log('Failed to set core process priority: $e');
+                    commonPrint.warn('Failed to set core process priority: $e');
                     return false;
                   }),
             );
           }
           return;
         }
-        commonPrint.log(
+        commonPrint.warn(
           'Helper start core failed, falling back to normal mode',
         );
       }
@@ -233,7 +233,7 @@ class ClashService extends ClashHandlerInterface {
 
     var connected = await _startCoreDirectly(arg, environment);
     if (!connected) {
-      commonPrint.log('core did not connect, retrying with a fresh transport');
+      commonPrint.warn('core did not connect, retrying with a fresh transport');
       process?.kill();
       process = null;
       await _rebindTransport();
@@ -250,7 +250,7 @@ class ClashService extends ClashHandlerInterface {
         helperClient
             .setProcessPriority('${AppIdentity.coreExecutableName}.exe', true)
             .catchError((e) {
-              commonPrint.log('Failed to set core process priority: $e');
+              commonPrint.warn('Failed to set core process priority: $e');
               return false;
             }),
       );
@@ -277,7 +277,7 @@ class ClashService extends ClashHandlerInterface {
     process?.stdout.listen((_) {});
     process?.stderr.listen((e) {
       final error = utf8.decode(e);
-      if (error.isNotEmpty) commonPrint.log(error);
+      if (error.isNotEmpty) commonPrint.error(error);
     });
     return _waitForCoreReady(process);
   }
@@ -289,7 +289,9 @@ class ClashService extends ClashHandlerInterface {
         final result = await Future.any<bool>([
           socketCompleter.future.then((_) => true),
           targetProcess.exitCode.then((code) {
-            commonPrint.log('Core process exited prematurely with code: $code');
+            commonPrint.error(
+              'Core process exited prematurely with code: $code',
+            );
             return false;
           }),
         ]).timeout(timeout);
@@ -299,7 +301,7 @@ class ClashService extends ClashHandlerInterface {
       await socketCompleter.future.timeout(timeout);
       return true;
     } on TimeoutException {
-      commonPrint.log('Core ready timeout after ${timeout.inSeconds}s');
+      commonPrint.error('Core ready timeout after ${timeout.inSeconds}s');
       return false;
     }
   }
@@ -330,7 +332,7 @@ class ClashService extends ClashHandlerInterface {
       return socket;
     } on SocketException catch (e) {
       if (_isDestroying || globalState.isExiting || isStarting) {
-        commonPrint.log(
+        commonPrint.debug(
           'Ignored message send on closed socket during transition: $e',
         );
         throw const CoreDisconnectedException();
@@ -338,7 +340,7 @@ class ClashService extends ClashHandlerInterface {
       rethrow;
     } on StateError catch (e) {
       if (_isDestroying || globalState.isExiting || isStarting) {
-        commonPrint.log(
+        commonPrint.debug(
           'Ignored message send on closed socket during transition: $e',
         );
         throw const CoreDisconnectedException();
