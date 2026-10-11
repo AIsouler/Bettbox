@@ -37,7 +37,10 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
     );
     final (scriptOn, compatible) = ref.watch(
       scriptStateProvider.select(
-        (s) => (s.currentId != null, s.currentScript?.isCompatibleWithBettbox ?? false),
+        (s) => (
+          s.currentId != null,
+          s.currentScript?.isCompatibleWithBettbox ?? false,
+        ),
       ),
     );
     final profileOverride = ref.watch(
@@ -189,12 +192,12 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
         ref.read(currentProfileProvider)?.useScriptOverride ?? false;
     final script = ref.read(scriptStateProvider).currentScript;
     if (script != null && script.isCompatibleWithBettbox && profileOverride) {
-      await showScriptCustomOptions(context, ref, script: script);
+      await showScriptCustomOptions(context, script: script);
       return;
     }
     final profileId = ref.read(currentProfileIdProvider);
     if (profileId != null) {
-      await showGroupSwitchOptions(context, ref, profileId: profileId);
+      await showGroupSwitchOptions(context, profileId: profileId);
     }
   }
 
@@ -228,8 +231,10 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
 
   @override
   Widget build(BuildContext context) {
-    final proxiesType = ref.watch(
-      proxiesStyleSettingProvider.select((state) => state.type),
+    final (proxiesType, autoStickyHeader) = ref.watch(
+      proxiesStyleSettingProvider.select(
+        (state) => (state.type, state.autoStickyHeader),
+      ),
     );
     final hasGroups = ref.watch(
       groupsProvider.select((state) => state.isNotEmpty),
@@ -239,6 +244,7 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
       floatingActionButton: _buildFAB(),
       actions: _buildActions(),
       title: appLocalizations.proxies,
+      scrollEdgeFade: proxiesType == ProxiesType.list && !autoStickyHeader,
       searchState: AppBarSearchState(onSearch: _onSearch),
       body: switch (hasGroups) {
         false => NullStatus(label: appLocalizations.noProxy),
@@ -250,4 +256,3 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
     );
   }
 }
-
