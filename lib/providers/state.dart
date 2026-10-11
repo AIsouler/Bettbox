@@ -942,7 +942,7 @@ ColorScheme genColorScheme(
 }
 
 @riverpod
-VM4<String?, String?, Dns?, List<String>?> needSetup(Ref ref) {
+VM5<String?, String?, Dns?, List<String>?, String?> needSetup(Ref ref) {
   final profileId = ref.watch(currentProfileIdProvider);
   final content = ref.watch(
     scriptStateProvider.select((state) => state.currentScript?.content),
@@ -960,7 +960,17 @@ VM4<String?, String?, Dns?, List<String>?> needSetup(Ref ref) {
           ),
         )
       : null;
-  return VM4(a: profileId, b: content, c: dns, d: routeExcludeAddress);
+  final loopbackPorts =
+      ref.watch(vpnSettingProvider.select((state) => state.loopbackProtection))
+      ? ref.watch(patchClashConfigProvider.select((state) => state.listenPorts))
+      : null;
+  return VM5(
+    a: profileId,
+    b: content,
+    c: dns,
+    d: routeExcludeAddress,
+    e: loopbackPorts,
+  );
 }
 
 @riverpod

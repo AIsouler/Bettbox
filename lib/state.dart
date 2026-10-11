@@ -915,6 +915,7 @@ class GlobalState {
     final overrideData = profile.overrideData;
     final isRussian =
         config.appSetting.locale?.toLowerCase().startsWith('ru') ?? false;
+    final listenPorts = patchConfig.listenPorts;
 
     return {
       'general': general,
@@ -953,13 +954,20 @@ class GlobalState {
               'rules': overrideData.runningRule,
             }
           : null,
-      'prepend-rules': config.vpnProps.disableQuic
-          ? [
-              config.vpnProps.excludeChina && !isRussian
-                  ? 'AND,((NETWORK,UDP),(DST-PORT,443),(NOT,((OR,((GEOSITE,geolocation-cn),(GEOIP,CN,no-resolve)))))),REJECT'
-                  : 'AND,((NETWORK,UDP),(DST-PORT,443)),REJECT',
-            ]
-          : const [],
+      'prepend-rules': [
+        if (config.vpnProps.loopbackProtection) ...[
+          if (listenPorts.isNotEmpty) ...[
+            'AND,((DST-PORT,$listenPorts),(IP-CIDR,127.0.0.0/8,no-resolve)),REJECT',
+            'AND,((DST-PORT,$listenPorts),(IP-CIDR6,::1/128,no-resolve)),REJECT',
+          ],
+          if (system.isAndroid)
+            'AND,((DST-PORT,853),(IP-CIDR,198.51.100.0/30,no-resolve)),REJECT',
+        ],
+        if (config.vpnProps.disableQuic)
+          config.vpnProps.excludeChina && !isRussian
+              ? 'AND,((NETWORK,UDP),(DST-PORT,443),(NOT,((OR,((GEOSITE,geolocation-cn),(GEOIP,CN,no-resolve)))))),REJECT'
+              : 'AND,((NETWORK,UDP),(DST-PORT,443)),REJECT',
+      ],
       'disabled-groups': scriptActive
           ? const []
           : [

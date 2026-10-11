@@ -675,11 +675,15 @@ List<Rule> _genRule(List<dynamic>? rules) {
 }
 
 List<RuleProvider> _genRuleProviders(Map json) {
-  return json.entries.map((entry) => RuleProvider(name: entry.key.toString())).toList();
+  return json.entries
+      .map((entry) => RuleProvider(name: entry.key.toString()))
+      .toList();
 }
 
 List<SubRule> _genSubRules(Map json) {
-  return json.entries.map((entry) => SubRule(name: entry.key.toString())).toList();
+  return json.entries
+      .map((entry) => SubRule(name: entry.key.toString()))
+      .toList();
 }
 
 @freezed
@@ -697,6 +701,16 @@ abstract class ClashConfigSnippet with _$ClashConfigSnippet {
 
   factory ClashConfigSnippet.fromJson(Map<String, Object?> json) =>
       _$ClashConfigSnippetFromJson(json);
+}
+
+extension ClashConfigExt on ClashConfig {
+  String get listenPorts => {
+    mixedPort,
+    port,
+    socksPort,
+    redirPort,
+    tproxyPort,
+  }.where((port) => port > 0).join('/');
 }
 
 @freezed

@@ -2168,12 +2168,14 @@ class _GenColorSchemeProviderElement
   bool get ignoreConfig => (origin as GenColorSchemeProvider).ignoreConfig;
 }
 
-String _$needSetupHash() => r'e87e4e7586c3d9a8713647e6313508020f89900a';
+String _$needSetupHash() => r'05c866be219750479850707fcf98216b0494672c';
 
 /// See also [needSetup].
 @ProviderFor(needSetup)
 final needSetupProvider =
-    AutoDisposeProvider<VM4<String?, String?, Dns?, List<String>?>>.internal(
+    AutoDisposeProvider<
+      VM5<String?, String?, Dns?, List<String>?, String?>
+    >.internal(
       needSetup,
       name: r'needSetupProvider',
       debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
@@ -2186,7 +2188,7 @@ final needSetupProvider =
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef NeedSetupRef =
-    AutoDisposeProviderRef<VM4<String?, String?, Dns?, List<String>?>>;
+    AutoDisposeProviderRef<VM5<String?, String?, Dns?, List<String>?, String?>>;
 String _$currentBrightnessHash() => r'ab56c47af4fcae773c8f9f81c91800c1e1890b70';
 
 /// See also [currentBrightness].
