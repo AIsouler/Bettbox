@@ -431,7 +431,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "doYouWantToPass": MessageLookupByLibrary.simpleMessage(
       "آیا می‌خواهید مجوز دهید برای:",
     ),
-    "domain": MessageLookupByLibrary.simpleMessage("سازمان / دامنه"),
+    "domain": MessageLookupByLibrary.simpleMessage("دامنه"),
     "doubleBounce": MessageLookupByLibrary.simpleMessage("جهش دوگانه"),
     "download": MessageLookupByLibrary.simpleMessage("دانلود"),
     "dozeSuspend": MessageLookupByLibrary.simpleMessage("پشتیبانی از Doze"),
@@ -910,6 +910,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "openSettings": MessageLookupByLibrary.simpleMessage("باز کردن تنظیمات"),
     "operatorOrAsn": MessageLookupByLibrary.simpleMessage("سازمان / ASN"),
     "options": MessageLookupByLibrary.simpleMessage("گزینه‌ها"),
+    "organizationDomain": MessageLookupByLibrary.simpleMessage(
+      "سازمان / دامنه",
+    ),
     "other": MessageLookupByLibrary.simpleMessage("سایر"),
     "otherContributors": MessageLookupByLibrary.simpleMessage(
       "مشارکت‌کنندگان دیگر (ترتیب تصادفی)",

@@ -722,6 +722,7 @@
   "provinceAndCity": "Провинция / Город",
   "operatorOrAsn": "Организация / ASN",
   "continent": "Континент",
+  "organizationDomain": "Организация / Домен",
   "copiedToClipboard": "Скопировано в буфер обмена",
   "privateIp": "Частный / локальный IP-адрес",
   "isp": "Провайдер",

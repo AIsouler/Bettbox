@@ -248,7 +248,7 @@ class _NetworkDetectionState extends ConsumerState<NetworkDetection> {
         _buildStatTile(
           icon: Icons.link_rounded,
           iconColor: context.colorScheme.tertiary,
-          label: appLocalizations.domain,
+          label: appLocalizations.organizationDomain,
           value: rawIpInfo.asDomain!,
         ),
     ];

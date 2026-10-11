@@ -16,6 +16,7 @@ import (
 	"github.com/metacubex/mihomo/common/yaml"
 	"github.com/metacubex/mihomo/config"
 	LC "github.com/metacubex/mihomo/listener/config"
+	"github.com/metacubex/mihomo/log"
 )
 
 type PatchHost struct {
@@ -33,6 +34,7 @@ type PatchParams struct {
 	GeoXUrl            json.RawMessage `json:"geox-url"`
 	Hosts              []PatchHost     `json:"hosts"`
 	OverrideDns        bool            `json:"override-dns"`
+	DnsNodeOverride    bool            `json:"dns-node-override"`
 	Dns                json.RawMessage `json:"dns"`
 	Ntp                json.RawMessage `json:"ntp"`
 	Sniffer            json.RawMessage `json:"sniffer"`
@@ -65,8 +67,20 @@ var commonDnsList = []string{
 	"208.67.222.222", "208.67.220.220", "94.140.14.14", "94.140.15.15",
 	"76.76.2.0", "76.76.10.0", "185.228.168.9", "185.228.169.9",
 	"77.88.8.8", "77.88.8.1", "156.154.70.1", "156.154.71.1",
+	"119.28.28.28", "101.6.6.6", "101.101.101.101", "101.102.103.104",
+	"185.222.222.222", "45.11.45.11", "1.1.1.2", "1.0.0.2", "1.1.1.3", "1.0.0.3",
+	"9.9.9.10", "9.9.9.11", "149.112.112.10", "149.112.112.11",
+	"2400:3200::1", "2400:3200:baba::1", "2402:4e00::", "2400:da00::6666",
+	"2606:4700:4700::1111", "2606:4700:4700::1001",
+	"2001:4860:4860::8888", "2001:4860:4860::8844",
+	"2620:fe::fe", "2620:fe::9", "2620:119:35::35", "2620:119:53::53",
+	"2a10:50c0::bad1:ff", "2a10:50c0::bad2:ff", "2a10:50c0::ad1:ff", "2a10:50c0::ad2:ff",
+	"2a0d:2a00:1::2", "2a0d:2a00:2::2", "2a02:6b8::feed:0ff", "2a02:6b8:0:1::feed:0ff",
+	"2610:a1:1018::1", "2610:a1:1019::1",
 	"alidns", "doh.pub", "dot.pub", "dns.pub", "dnspod", "dns.baidu",
-	"dns.google", "cloudflare", "quad9", "opendns", "nextdns", "adguard",
+	"dns.google", "dns.apple", "cloudflare", "one.one.one.one",
+	"quad9", "opendns", "nextdns", "adguard",
+	"dns.sb", "twnic", "mullvad", "controld", "cleanbrowsing", "yandex",
 	"system",
 }
 
@@ -244,7 +258,9 @@ func patchDns(raw *config.RawConfig, params *PatchParams, defaults *config.RawCo
 			dns.NameServer = append(append([]string{}, dns.NameServer...), "system://")
 		}
 		raw.DNS = dns
-		applyDnsNodeOverride(raw, &original, hostOrder)
+		if params.DnsNodeOverride {
+			applyDnsNodeOverride(raw, &original, hostOrder)
+		}
 	}
 	raw.DNS.FallbackFilter.GeoSite = []string{}
 
@@ -272,8 +288,12 @@ func patchDns(raw *config.RawConfig, params *PatchParams, defaults *config.RawCo
 func applyDnsNodeOverride(raw *config.RawConfig, original *config.RawDNS, hostOrder []string) {
 	proxyServerNameservers := original.ProxyServerNameserver
 	listen := original.Listen
-	rewriteByHosts := len(proxyServerNameservers) == 1 && listen != "" &&
-		strings.Contains(strings.ToLower(proxyServerNameservers[0]), strings.ToLower(listen))
+	rewriteByHosts := false
+	if len(proxyServerNameservers) == 1 && listen != "" {
+		nameserver := strings.ToLower(proxyServerNameservers[0])
+		rewriteByHosts = strings.Contains(nameserver, strings.ToLower(listen)) ||
+			(strings.Contains(listen, "0.0.0.0") && strings.Contains(nameserver, "127.0.0.1"))
+	}
 
 	seenDomains := map[string]bool{}
 	var proxyDomains []string
@@ -312,7 +332,11 @@ func applyDnsNodeOverride(raw *config.RawConfig, original *config.RawDNS, hostOr
 
 	seenDns := map[string]bool{}
 	var privateDns []string
-	for _, dns := range append(append([]string{}, original.NameServer...), proxyServerNameservers...) {
+	candidates := append([]string{}, original.NameServer...)
+	if !rewriteByHosts {
+		candidates = append(candidates, proxyServerNameservers...)
+	}
+	for _, dns := range candidates {
 		stripped := stripDnsSuffix(dns)
 		if stripped == "" || isCommonDns(stripped) || seenDns[stripped] {
 			continue
@@ -366,6 +390,9 @@ func applyDnsNodeOverride(raw *config.RawConfig, original *config.RawDNS, hostOr
 	}
 	if len(proxyFakeIpFilter) > 0 {
 		raw.DNS.FakeIPFilter = append(append([]string{}, raw.DNS.FakeIPFilter...), proxyFakeIpFilter...)
+	}
+	if rewriteByHosts || len(privateDns) > 0 || proxyServerPolicy.Len() > 0 || len(proxyFakeIpFilter) > 0 {
+		log.Infoln("[APP] dns override: private dns %v, node policies %d, fake-ip filters %d, nodes rewritten by hosts: %t", privateDns, proxyServerPolicy.Len(), len(proxyFakeIpFilter), rewriteByHosts)
 	}
 }
 
@@ -438,6 +465,9 @@ func stripDnsSuffix(dns string) string {
 	suffix := strings.TrimSpace(strings.ToLower(dns[index+1:]))
 	if suffix == "direct" || strings.HasPrefix(suffix, "direct&") {
 		return dns
+	}
+	if strings.Contains(suffix, "direct") || strings.Contains(suffix, "直连") {
+		return strings.TrimSpace(dns[:index]) + "#DIRECT"
 	}
 	return dns[:index]
 }

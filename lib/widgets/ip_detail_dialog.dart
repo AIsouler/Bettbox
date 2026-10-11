@@ -369,7 +369,7 @@ class _IpDetailDialogState extends State<_IpDetailDialog> {
           _buildStatTile(
             icon: Icons.link_rounded,
             iconColor: context.colorScheme.tertiary,
-            label: appLocalizations.domain,
+            label: appLocalizations.organizationDomain,
             value: domainText,
           ),
       ];

@@ -721,7 +721,7 @@
   "provinceAndCity": "都道府県 / 都市",
   "operatorOrAsn": "組織 / ASN",
   "continent": "大陸",
-  "domain": "組織 / ドメイン",
+  "organizationDomain": "組織 / ドメイン",
   "copiedToClipboard": "クリップボードにコピーしました",
   "privateIp": "プライベート / LAN IP アドレス",
   "isp": "プロバイダ",

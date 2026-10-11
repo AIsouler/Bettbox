@@ -357,7 +357,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "dnsMode": MessageLookupByLibrary.simpleMessage("DNS 모드"),
     "dnsResolution": MessageLookupByLibrary.simpleMessage("DNS 확인"),
     "doYouWantToPass": MessageLookupByLibrary.simpleMessage("다음 요청을 허용하시겠습니까:"),
-    "domain": MessageLookupByLibrary.simpleMessage("조직 / 도메인"),
+    "domain": MessageLookupByLibrary.simpleMessage("도메인"),
     "doubleBounce": MessageLookupByLibrary.simpleMessage("더블 바운스"),
     "download": MessageLookupByLibrary.simpleMessage("다운로드"),
     "dozeSuspend": MessageLookupByLibrary.simpleMessage("절전 모드 연동"),
@@ -730,6 +730,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "openSettings": MessageLookupByLibrary.simpleMessage("설정 열기"),
     "operatorOrAsn": MessageLookupByLibrary.simpleMessage("소속 / ASN"),
     "options": MessageLookupByLibrary.simpleMessage("옵션"),
+    "organizationDomain": MessageLookupByLibrary.simpleMessage("조직 / 도메인"),
     "other": MessageLookupByLibrary.simpleMessage("기타"),
     "otherContributors": MessageLookupByLibrary.simpleMessage(
       "기타 기여자 (무작위 정렬)",

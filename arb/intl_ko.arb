@@ -721,7 +721,7 @@
   "provinceAndCity": "시 / 도 / 도시",
   "operatorOrAsn": "소속 / ASN",
   "continent": "대륙",
-  "domain": "조직 / 도메인",
+  "organizationDomain": "조직 / 도메인",
   "copiedToClipboard": "클립보드에 복사되었습니다",
   "privateIp": "사설 / LAN IP 주소",
   "isp": "통신사",

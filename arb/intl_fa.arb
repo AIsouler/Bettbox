@@ -721,7 +721,7 @@
   "provinceAndCity": "استان / شهر",
   "operatorOrAsn": "سازمان / ASN",
   "continent": "قاره",
-  "domain": "سازمان / دامنه",
+  "organizationDomain": "سازمان / دامنه",
   "copiedToClipboard": "در کلیپ‌بورد کپی شد",
   "privateIp": "آدرس IP خصوصی / شبکه محلی",
   "isp": "ارائه‌دهنده اینترنت",

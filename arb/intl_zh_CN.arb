@@ -721,7 +721,7 @@
   "provinceAndCity": "省份 / 城市",
   "operatorOrAsn": "归属 / ASN",
   "continent": "大洲",
-  "domain": "组织 / 域名",
+  "organizationDomain": "组织 / 域名",
   "copiedToClipboard": "已复制到剪贴板",
   "privateIp": "私有 / 局域网 IP 地址",
   "isp": "运营商",

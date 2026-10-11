@@ -720,7 +720,7 @@
   "provinceAndCity": "Province / City",
   "operatorOrAsn": "Organization / ASN",
   "continent": "Continent",
-  "domain": "Organization / Domain",
+  "organizationDomain": "Organization / Domain",
   "copiedToClipboard": "Copied to clipboard",
   "privateIp": "Private / LAN IP Address",
   "isp": "ISP",
