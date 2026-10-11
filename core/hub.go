@@ -49,7 +49,7 @@ var (
 	requestHistory      []*statistic.TrackerInfo
 	isStreamingRequests atomic.Bool
 	logHistoryLock      sync.RWMutex
-	logHistory          []log.Event
+	logHistory          []logEntry
 	isStreamingLogs     atomic.Bool
 )
 
@@ -642,13 +642,18 @@ func marshalInlineProviderContent(rawConfig *config.RawConfig, providerName stri
 
 const maxLogHistory = 512
 
-func recordLogHistory(logData log.Event) {
+type logEntry struct {
+	log.Event
+	Time int64 `json:"time"`
+}
+
+func recordLogHistory(entry logEntry) {
 	logHistoryLock.Lock()
 	defer logHistoryLock.Unlock()
 	if len(logHistory) >= maxLogHistory {
 		logHistory = logHistory[1:]
 	}
-	logHistory = append(logHistory, logData)
+	logHistory = append(logHistory, entry)
 }
 
 func ensureLogSubscriber() {
@@ -661,7 +666,8 @@ func ensureLogSubscriber() {
 			if logData.LogLevel < log.Level() {
 				continue
 			}
-			recordLogHistory(logData)
+			entry := logEntry{Event: logData, Time: time.Now().UnixMilli()}
+			recordLogHistory(entry)
 			if !isStreamingLogs.Load() {
 				if logData.LogLevel != log.ERROR {
 					continue
@@ -669,7 +675,7 @@ func ensureLogSubscriber() {
 			}
 			message := &Message{
 				Type: LogMessage,
-				Data: logData,
+				Data: entry,
 			}
 			sendMessage(*message)
 		}
