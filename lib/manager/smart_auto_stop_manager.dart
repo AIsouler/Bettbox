@@ -130,7 +130,7 @@ class _SmartAutoStopManagerState extends ConsumerState<SmartAutoStopManager> {
 
     Future.delayed(const Duration(milliseconds: 1000), () async {
       if (currentSequence != _checkSequence) {
-        commonPrint.log('Smart Auto Stop: Skipping outdated network check');
+        commonPrint.debug('Smart Auto Stop: Skipping outdated network check');
         return;
       }
       await _checkCurrentNetwork();
@@ -160,7 +160,7 @@ class _SmartAutoStopManagerState extends ConsumerState<SmartAutoStopManager> {
       }
 
       if (candidateIps.isEmpty && candidateGateways.isEmpty) {
-        commonPrint.log('Smart Auto Stop: No IP/Gateway found. Skipping.');
+        commonPrint.debug('Smart Auto Stop: No IP/Gateway found. Skipping.');
         return;
       }
 
@@ -171,7 +171,7 @@ class _SmartAutoStopManagerState extends ConsumerState<SmartAutoStopManager> {
             (gw) => NetworkMatcher.matchAnyGateway(gw, networks),
           );
 
-      commonPrint.log(
+      commonPrint.debug(
         'SmartAutoStop: IPs=${candidateIps.join(",")}, Gateways=${candidateGateways.join(",")}, RuleMatch=$shouldStop, SmartStopped=$isSmartStopped',
       );
 
@@ -202,7 +202,7 @@ class _SmartAutoStopManagerState extends ConsumerState<SmartAutoStopManager> {
         if (ips.isNotEmpty) return ips;
       }
     } catch (e) {
-      commonPrint.log('Smart Auto Stop: Native IP error: $e');
+      commonPrint.warn('Smart Auto Stop: Native IP error: $e');
     }
     // Fallback to Flutter layer
     final ip = await _getLocalIpAddress();
@@ -217,7 +217,7 @@ class _SmartAutoStopManagerState extends ConsumerState<SmartAutoStopManager> {
         if (gateways.isNotEmpty) return gateways;
       }
     } catch (e) {
-      commonPrint.log('Smart Auto Stop: Native gateway error: $e');
+      commonPrint.warn('Smart Auto Stop: Native gateway error: $e');
     }
     return [];
   }
@@ -226,7 +226,7 @@ class _SmartAutoStopManagerState extends ConsumerState<SmartAutoStopManager> {
     try {
       return await utils.getLocalGateways();
     } catch (e) {
-      commonPrint.log('Smart Auto Stop: Desktop gateway error: $e');
+      commonPrint.warn('Smart Auto Stop: Desktop gateway error: $e');
       return [];
     }
   }
