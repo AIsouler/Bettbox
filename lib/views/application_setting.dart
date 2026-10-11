@@ -274,11 +274,10 @@ class ApplicationSettingView extends StatelessWidget {
       AutoRunItem(),
       if (system.isAndroid) ...[HiddenItem()],
       if (system.isDesktop) ...[
-        if (system.isWindows || system.isLinux)
-          const AlwaysShowTitleBarItem(),
+        if (system.isWindows || system.isLinux) const AlwaysShowTitleBarItem(),
       ],
       const ShowStartSwitchItem(),
-      if (system.isAndroid) ...[NavBarHapticFeedbackItem()],
+      const NavBarHapticFeedbackItem(),
       if (system.isMacOS) const KeepDockIconItem(),
       CloseConnectionsItem(),
       UsageItem(),

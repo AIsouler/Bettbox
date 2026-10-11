@@ -64,8 +64,7 @@ class SmartAutoStopSection extends ConsumerWidget {
                   ref
                       .read(vpnSettingProvider.notifier)
                       .updateState(
-                        (state) =>
-                            state.copyWith(smartAutoStopNetworks: value),
+                        (state) => state.copyWith(smartAutoStopNetworks: value),
                       );
                 }
               },
@@ -231,7 +230,7 @@ class NetworkFixItem extends ConsumerWidget {
         }
       }
     } catch (e) {
-      commonPrint.log('Network fix error: $e');
+      commonPrint.warn('Network fix error: $e');
       rethrow;
     }
   }
@@ -289,7 +288,7 @@ class HighPriorityItem extends ConsumerWidget {
             try {
               await globalState.appController.setProcessPriority(value);
             } catch (e) {
-              commonPrint.log('Set process priority error: $e');
+              commonPrint.warn('Set process priority error: $e');
               if (context.mounted) {
                 context.showSnackBar('Failed to set process priority: $e');
               }
@@ -301,96 +300,17 @@ class HighPriorityItem extends ConsumerWidget {
   }
 }
 
-class BatteryOptimizationItem extends ConsumerStatefulWidget {
-  const BatteryOptimizationItem({super.key});
+class BatteryOptimizationItem extends StatelessWidget {
+  final VoidCallback onRequest;
 
-  @override
-  ConsumerState<BatteryOptimizationItem> createState() =>
-      _BatteryOptimizationItemState();
-}
-
-class _BatteryOptimizationItemState extends ConsumerState<BatteryOptimizationItem>
-    with WidgetsBindingObserver {
-  bool? _isIgnoring;
-  bool _isWaitingForSettings = false;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
-    _checkStatus();
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      _checkStatus(maxRetries: _isWaitingForSettings ? 3 : 1);
-    }
-  }
-
-  Future<void> _checkStatus({int maxRetries = 1}) async {
-    for (int attempt = 0; attempt < maxRetries; attempt++) {
-      try {
-        final isIgnoring = await app.isIgnoringBatteryOptimizations();
-        if (mounted) {
-          setState(() {
-            _isIgnoring = isIgnoring;
-            if (isIgnoring) {
-              _isWaitingForSettings = false;
-            }
-          });
-        }
-        if (isIgnoring || attempt >= maxRetries - 1) {
-          break;
-        }
-        await Future.delayed(const Duration(milliseconds: 666));
-      } catch (e) {
-        commonPrint.log('Battery optimization check error: $e');
-        break;
-      }
-    }
-    if (mounted && _isWaitingForSettings) {
-      setState(() => _isWaitingForSettings = false);
-    }
-  }
-
-  Future<void> _handleSwitchChanged(BuildContext context, bool value) async {
-    final isIgnoring = _isIgnoring;
-    if (isIgnoring == null) return;
-
-    if (isIgnoring) {
-      if (context.mounted) {
-        context.showSnackBar(appLocalizations.alreadyInWhitelist);
-      }
-      setState(() {});
-    } else {
-      try {
-        setState(() => _isWaitingForSettings = true);
-        await app.requestIgnoreBatteryOptimizations();
-      } catch (e) {
-        commonPrint.log('Battery optimization error: $e');
-        setState(() => _isWaitingForSettings = false);
-      }
-    }
-  }
+  const BatteryOptimizationItem({super.key, required this.onRequest});
 
   @override
   Widget build(BuildContext context) {
-    final isIgnoring = _isIgnoring;
-
     return ListItem.switchItem(
       title: Text(appLocalizations.batteryOptimization),
       subtitle: Text(appLocalizations.batteryOptimizationDesc),
-      delegate: SwitchDelegate(
-        value: isIgnoring ?? false,
-        onChanged: (value) => _handleSwitchChanged(context, value),
-      ),
+      delegate: SwitchDelegate(value: false, onChanged: (_) => onRequest()),
     );
   }
 }
@@ -447,7 +367,9 @@ class DisableQuicSection extends ConsumerWidget {
               onChanged: (bool value) async {
                 ref
                     .read(vpnSettingProvider.notifier)
-                    .updateState((state) => state.copyWith(excludeChina: value));
+                    .updateState(
+                      (state) => state.copyWith(excludeChina: value),
+                    );
                 globalState.appController.setupClashConfigDebounce();
               },
             ),
@@ -630,7 +552,9 @@ class TraySection extends ConsumerWidget {
             onChanged: (bool value) async {
               ref
                   .read(vpnSettingProvider.notifier)
-                  .updateState((state) => state.copyWith(trayEnhancement: value));
+                  .updateState(
+                    (state) => state.copyWith(trayEnhancement: value),
+                  );
               await globalState.appController.updateTray();
             },
           ),
@@ -655,7 +579,9 @@ class TraySection extends ConsumerWidget {
               onChanged: (bool value) async {
                 ref
                     .read(vpnSettingProvider.notifier)
-                    .updateState((state) => state.copyWith(enableTraySpeed: value));
+                    .updateState(
+                      (state) => state.copyWith(enableTraySpeed: value),
+                    );
                 await globalState.appController.updateTray();
               },
             ),
@@ -761,11 +687,69 @@ class _TrayClickBehaviorDialogState extends State<_TrayClickBehaviorDialog> {
   }
 }
 
-class OtherSettingView extends ConsumerWidget {
+class OtherSettingView extends StatefulWidget {
   const OtherSettingView({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  State<OtherSettingView> createState() => _OtherSettingViewState();
+}
+
+class _OtherSettingViewState extends State<OtherSettingView>
+    with WidgetsBindingObserver {
+  bool _showBatteryOptimization = false;
+  bool _isWaitingForSettings = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (!system.isAndroid) return;
+    WidgetsBinding.instance.addObserver(this);
+    _checkBatteryOptimization();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed) return;
+    final maxRetries = _isWaitingForSettings ? 3 : 1;
+    _isWaitingForSettings = false;
+    _checkBatteryOptimization(maxRetries: maxRetries);
+  }
+
+  Future<void> _checkBatteryOptimization({int maxRetries = 1}) async {
+    for (int attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        final isIgnoring = await app.isIgnoringBatteryOptimizations();
+        if (!mounted) return;
+        if (_showBatteryOptimization == isIgnoring) {
+          setState(() => _showBatteryOptimization = !isIgnoring);
+        }
+        if (isIgnoring || attempt >= maxRetries - 1) return;
+        await Future.delayed(const Duration(milliseconds: 666));
+      } catch (e) {
+        commonPrint.warn('Battery optimization check error: $e');
+        return;
+      }
+    }
+  }
+
+  Future<void> _requestBatteryOptimization() async {
+    _isWaitingForSettings = true;
+    try {
+      await app.requestIgnoreBatteryOptimizations();
+    } catch (e) {
+      commonPrint.warn('Battery optimization error: $e');
+      _isWaitingForSettings = false;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     List<Widget> items = [
       const SmartAutoStopSection(),
       if (system.isAndroid) const DozeSuspendItem(),
@@ -777,7 +761,8 @@ class OtherSettingView extends ConsumerWidget {
       if (!system.isAndroid) const TraySection(),
       if (system.isWindows) const HighPriorityItem(),
       if (system.isWindows) const NetworkFixItem(),
-      if (system.isAndroid) const BatteryOptimizationItem(),
+      if (_showBatteryOptimization)
+        BatteryOptimizationItem(onRequest: _requestBatteryOptimization),
     ];
 
     if (items.isEmpty) {
