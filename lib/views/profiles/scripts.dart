@@ -8,6 +8,7 @@ import 'package:bett_box/providers/providers.dart';
 import 'package:bett_box/state.dart';
 import 'package:bett_box/widgets/card.dart';
 import 'package:bett_box/widgets/dialog.dart';
+import 'package:bett_box/widgets/fade_box.dart';
 import 'package:bett_box/widgets/icon.dart';
 import 'package:bett_box/widgets/input.dart';
 import 'package:bett_box/widgets/list.dart';
@@ -18,13 +19,12 @@ import 'package:bett_box/widgets/scaffold.dart';
 import 'package:bett_box/widgets/scroll.dart';
 import 'package:bett_box/widgets/sheet.dart';
 import 'package:bett_box/widgets/text.dart';
+import 'package:bett_box/widgets/delay_animation_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 
-bool _isExtractingCustomOptions = false;
 const Duration _kMinLoadingDuration = Duration(seconds: 1);
-const Duration _kCachedMinLoadingDuration = Duration(milliseconds: 500);
 
 bool _isValidIconUrl(String? url) {
   if (url == null || url.isEmpty) return false;
@@ -83,58 +83,15 @@ _processScriptData(Map<String, dynamic> data, Script script) {
 }
 
 Future<void> showScriptCustomOptions(
-  BuildContext context,
-  WidgetRef ref, {
+  BuildContext context, {
   required Script script,
 }) async {
-  if (_isExtractingCustomOptions) return;
-  _isExtractingCustomOptions = true;
-  try {
-    await globalState.appController.safeRun(
-      silence: false,
-      needLoading: true,
-      () async {
-        final stopwatch = Stopwatch()..start();
-        final cached = JavaScriptRuntimeManager.getCachedOptions(
-          script.content,
-        );
-        final data = cached ??
-            await JavaScriptRuntimeManager.extractScriptOptions(
-              script.content,
-            );
-        final (:options, :icons, :policyGroupOptions) = _processScriptData(
-          data,
-          script,
-        );
-
-        final targetDuration = cached != null
-            ? _kCachedMinLoadingDuration
-            : _kMinLoadingDuration;
-        final remaining =
-            targetDuration.inMilliseconds - stopwatch.elapsedMilliseconds;
-        if (remaining > 0) {
-          await Future.delayed(Duration(milliseconds: remaining));
-        }
-
-        if (!context.mounted) return;
-
-        showExtend(
-          context,
-          builder: (_, type) {
-            return _ScriptCustomOptionsSheet(
-              type: type,
-              script: script,
-              initialOptions: options,
-              icons: icons,
-              policyGroupOptions: policyGroupOptions,
-            );
-          },
-        );
-      },
-    );
-  } finally {
-    _isExtractingCustomOptions = false;
-  }
+  await showExtend(
+    context,
+    builder: (_, type) {
+      return _ScriptCustomOptionsSheet(type: type, script: script);
+    },
+  );
 }
 
 class ScriptsView extends ConsumerStatefulWidget {
@@ -158,17 +115,14 @@ class _ScriptsViewState extends ConsumerState<ScriptsView> {
   }
 
   Future<void> _handleSyncScript(String id) async {
-    await globalState.appController.safeRun(
-      silence: false,
-      () async {
-        await ref.read(scriptStateProvider.notifier).syncScript(id);
-        globalState.showNotifier(appLocalizations.success);
-      },
-    );
+    await globalState.appController.safeRun(silence: false, () async {
+      await ref.read(scriptStateProvider.notifier).syncScript(id);
+      globalState.showNotifier(appLocalizations.success);
+    });
   }
 
   Future<void> _handleCustomOptions(Script script) async {
-    await showScriptCustomOptions(context, ref, script: script);
+    await showScriptCustomOptions(context, script: script);
   }
 
   Future<void> _handleExportFile(Script script) async {
@@ -201,6 +155,30 @@ class _ScriptsViewState extends ConsumerState<ScriptsView> {
     );
   }
 
+  Widget _buildScriptTag({required IconData icon, required String label}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+      decoration: BoxDecoration(
+        color: context.colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: context.colorScheme.onSurfaceVariant),
+          const SizedBox(width: 3),
+          Text(
+            label,
+            style: context.textTheme.labelSmall?.copyWith(
+              color: context.colorScheme.onSurfaceVariant,
+              height: 1.1,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildContent() {
     return Consumer(
       builder: (_, ref, _) {
@@ -216,89 +194,150 @@ class _ScriptsViewState extends ConsumerState<ScriptsView> {
             label: appLocalizations.nullTip(appLocalizations.script),
           );
         }
-        return CommonScrollBar(
-          controller: null,
-          child: ListView.builder(
-            padding: kMaterialListPadding.copyWith(bottom: 16 + 64),
-            itemCount: scripts.length,
-            itemBuilder: (_, index) {
-              final script = scripts[index];
-              final isSelected = script.id == currentId;
-              return Container(
-                padding: kTabLabelPadding,
-                margin: EdgeInsets.symmetric(vertical: 6),
-                child: CommonCard(
-                  type: CommonCardType.filled,
+        return ScrollEdgeRise(
+          builder: (_, rise) => CommonScrollBar(
+            controller: null,
+            child: ListView.separated(
+              padding: const EdgeInsets.all(
+                16,
+              ).copyWith(top: 16 + rise, bottom: 16 + 64),
+              itemCount: scripts.length,
+              separatorBuilder: (_, _) => const SizedBox(height: 10),
+              itemBuilder: (context, index) {
+                final script = scripts[index];
+                final isSelected = script.id == currentId;
+                final hasRemote = script.url?.isNotEmpty ?? false;
+                final hasCustom = script.isCompatibleWithBettbox;
+                final hasTags = hasRemote || hasCustom;
+                return CommonCard(
+                  key: ValueKey(script.id),
+                  isSelected: isSelected,
                   radius: 16,
-                  child: ListItem(
-                    padding: const EdgeInsets.only(left: 12, right: 12),
-                    title: EmojiText(script.label),
-                    leading: Switch(
-                      value: isSelected,
-                      onChanged: (value) {
-                        if (value) {
-                          ref.read(scriptStateProvider.notifier).setId(script.id);
-                        } else if (isSelected) {
-                          ref.read(scriptStateProvider.notifier).setId(script.id);
-                        }
-                      },
+                  type: CommonCardType.filled,
+                  onPressed: () {
+                    ref.read(scriptStateProvider.notifier).setId(script.id);
+                  },
+                  child: Container(
+                    constraints: BoxConstraints(minHeight: hasTags ? 68 : 60),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 8,
                     ),
-                    trailing: CommonPopupBox(
-                      targetBuilder: (open) {
-                        return IconButton(
-                          onPressed: () {
-                            open();
+                    child: Row(
+                      children: [
+                        Switch(
+                          value: isSelected,
+                          materialTapTargetSize:
+                              MaterialTapTargetSize.shrinkWrap,
+                          onChanged: (_) {
+                            ref
+                                .read(scriptStateProvider.notifier)
+                                .setId(script.id);
                           },
-                          tooltip: appLocalizations.more,
-                          icon: Icon(Icons.more_vert),
-                        );
-                      },
-                      popup: CommonPopupMenu(
-                        items: [
-                          PopupMenuItemData(
-                            icon: Icons.edit,
-                            label: appLocalizations.edit,
-                            onPressed: () {
-                              _handleToEditor(script: script);
-                            },
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              EmojiText(
+                                script.label,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: context.textTheme.titleMedium?.copyWith(
+                                  fontWeight: isSelected
+                                      ? FontWeight.w600
+                                      : FontWeight.normal,
+                                ),
+                              ),
+                              if (hasTags)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 4),
+                                  child: Wrap(
+                                    spacing: 6,
+                                    runSpacing: 4,
+                                    children: [
+                                      if (hasRemote)
+                                        _buildScriptTag(
+                                          icon: Icons.sync,
+                                          label: appLocalizations.remote,
+                                        ),
+                                      if (hasCustom)
+                                        _buildScriptTag(
+                                          icon: Icons.tune,
+                                          label: appLocalizations.custom,
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                            ],
                           ),
-                          if (script.isCompatibleWithBettbox)
-                            PopupMenuItemData(
-                              icon: Icons.tune,
-                              label: appLocalizations.custom,
+                        ),
+                        CommonPopupBox(
+                          targetBuilder: (open) {
+                            return IconButton(
+                              visualDensity: VisualDensity.compact,
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(
+                                minWidth: 32,
+                                minHeight: 32,
+                              ),
                               onPressed: () {
-                                _handleCustomOptions(script);
+                                open();
                               },
-                            ),
-                          if (script.url != null && script.url!.isNotEmpty)
-                            PopupMenuItemData(
-                              icon: Icons.sync,
-                              label: appLocalizations.sync,
-                              onPressed: () {
-                                _handleSyncScript(script.id);
-                              },
-                            ),
-                          PopupMenuItemData(
-                            icon: Icons.file_copy_outlined,
-                            label: appLocalizations.exportFile,
-                            onPressed: () {
-                              _handleExportFile(script);
-                            },
+                              tooltip: appLocalizations.more,
+                              icon: const Icon(Icons.more_vert, size: 20),
+                            );
+                          },
+                          popup: CommonPopupMenu(
+                            items: [
+                              PopupMenuItemData(
+                                icon: Icons.edit,
+                                label: appLocalizations.edit,
+                                onPressed: () {
+                                  _handleToEditor(script: script);
+                                },
+                              ),
+                              if (script.isCompatibleWithBettbox)
+                                PopupMenuItemData(
+                                  icon: Icons.tune,
+                                  label: appLocalizations.custom,
+                                  onPressed: () {
+                                    _handleCustomOptions(script);
+                                  },
+                                ),
+                              if (script.url?.isNotEmpty ?? false)
+                                PopupMenuItemData(
+                                  icon: Icons.sync,
+                                  label: appLocalizations.sync,
+                                  onPressed: () {
+                                    _handleSyncScript(script.id);
+                                  },
+                                ),
+                              PopupMenuItemData(
+                                icon: Icons.file_copy_outlined,
+                                label: appLocalizations.exportFile,
+                                onPressed: () {
+                                  _handleExportFile(script);
+                                },
+                              ),
+                              PopupMenuItemData(
+                                icon: Icons.delete,
+                                label: appLocalizations.delete,
+                                onPressed: () {
+                                  _handleDelScript(script.label);
+                                },
+                              ),
+                            ],
                           ),
-                          PopupMenuItemData(
-                            icon: Icons.delete,
-                            label: appLocalizations.delete,
-                            onPressed: () {
-                              _handleDelScript(script.label);
-                            },
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
         );
       },
@@ -358,14 +397,25 @@ class _ScriptsViewState extends ConsumerState<ScriptsView> {
       message: TextSpan(text: appLocalizations.saveChanges),
     );
     if (res == true && mounted) {
-      _handleEditorSave(context, title, content, script: script, url: script?.url);
+      _handleEditorSave(
+        context,
+        title,
+        content,
+        script: script,
+        url: script?.url,
+      );
     } else {
       return true;
     }
     return false;
   }
 
-  void _handleToEditor({Script? script, String? initialContent, String? url, bool delayedFocus = false}) {
+  void _handleToEditor({
+    Script? script,
+    String? initialContent,
+    String? url,
+    bool delayedFocus = false,
+  }) {
     final title = script?.label ?? '';
     final raw = script?.content ?? initialContent ?? scriptTemplate;
     String? importedUrl = url ?? script?.url;
@@ -383,7 +433,13 @@ class _ScriptsViewState extends ConsumerState<ScriptsView> {
           final scriptToSave = script != null
               ? script.copyWith(url: importedUrl)
               : null;
-          _handleEditorSave(context, title, content, script: scriptToSave, url: importedUrl);
+          _handleEditorSave(
+            context,
+            title,
+            content,
+            script: scriptToSave,
+            url: importedUrl,
+          );
         },
         onPop: (context, title, content) {
           return _handleEditorPop(context, title, content, raw, script: script);
@@ -487,9 +543,7 @@ class _ScriptsViewState extends ConsumerState<ScriptsView> {
 class _ScriptSettingsSheet extends ConsumerWidget {
   final SheetType type;
 
-  const _ScriptSettingsSheet({
-    required this.type,
-  });
+  const _ScriptSettingsSheet({required this.type});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -499,35 +553,44 @@ class _ScriptSettingsSheet extends ConsumerWidget {
       type: type,
       body: profiles.isEmpty
           ? NullStatus(label: appLocalizations.nullProfileDesc)
-          : ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-              itemCount: profiles.length,
-              itemBuilder: (_, index) {
-                final profile = profiles[index];
-                final isCurrentProfile = profile.id == currentProfileId;
-                return Container(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: CommonCard(
-                    type: CommonCardType.filled,
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.only(left: 16, right: 16),
-                      title: EmojiText(profile.label ?? profile.id),
-                      trailing: Switch(
-                        value: profile.useScriptOverride,
-                        onChanged: (value) async {
-                          ref.read(profilesProvider.notifier).updateProfile(
-                            profile.id,
-                            (p) => p.copyWith(useScriptOverride: value),
-                          );
-                          if (isCurrentProfile) {
-                            await globalState.appController.applyProfile(silence: true);
-                          }
-                        },
+          : ScrollEdgeRise(
+              builder: (_, rise) => ListView.builder(
+                padding: EdgeInsets.fromLTRB(12, 16 + rise, 12, 16),
+                itemCount: profiles.length,
+                itemBuilder: (_, index) {
+                  final profile = profiles[index];
+                  final isCurrentProfile = profile.id == currentProfileId;
+                  return Container(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: CommonCard(
+                      type: CommonCardType.filled,
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.only(
+                          left: 16,
+                          right: 16,
+                        ),
+                        title: EmojiText(profile.label ?? profile.id),
+                        trailing: Switch(
+                          value: profile.useScriptOverride,
+                          onChanged: (value) async {
+                            ref
+                                .read(profilesProvider.notifier)
+                                .updateProfile(
+                                  profile.id,
+                                  (p) => p.copyWith(useScriptOverride: value),
+                                );
+                            if (isCurrentProfile) {
+                              await globalState.appController.applyProfile(
+                                silence: true,
+                              );
+                            }
+                          },
+                        ),
                       ),
                     ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
       title: appLocalizations.useGlobalScriptOverride,
     );
@@ -574,17 +637,8 @@ class _ScriptImportOptionsDialog extends StatelessWidget {
 class _ScriptCustomOptionsSheet extends ConsumerStatefulWidget {
   final SheetType type;
   final Script script;
-  final Map<String, bool> initialOptions;
-  final Map<String, String> icons;
-  final Set<String> policyGroupOptions;
 
-  const _ScriptCustomOptionsSheet({
-    required this.type,
-    required this.script,
-    required this.initialOptions,
-    required this.icons,
-    required this.policyGroupOptions,
-  });
+  const _ScriptCustomOptionsSheet({required this.type, required this.script});
 
   @override
   ConsumerState<_ScriptCustomOptionsSheet> createState() =>
@@ -593,14 +647,53 @@ class _ScriptCustomOptionsSheet extends ConsumerStatefulWidget {
 
 class __ScriptCustomOptionsSheetState
     extends ConsumerState<_ScriptCustomOptionsSheet> {
-  late Map<String, bool> _options;
+  Map<String, bool> _options = {};
+  Map<String, String> _icons = {};
+  Set<String> _policyGroupOptions = {};
+  bool _isLoading = true;
   bool _dirty = false;
   bool _isSaving = false;
 
   @override
   void initState() {
     super.initState();
-    _options = Map<String, bool>.from(widget.initialOptions);
+    final cached = JavaScriptRuntimeManager.getCachedOptions(
+      widget.script.content,
+    );
+    if (cached != null) {
+      _applyData(cached);
+      return;
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.afterRouteTransition(_load);
+    });
+  }
+
+  void _applyData(Map<String, dynamic> data) {
+    final (:options, :icons, :policyGroupOptions) = _processScriptData(
+      data,
+      widget.script,
+    );
+    _options = options;
+    _icons = icons;
+    _policyGroupOptions = policyGroupOptions;
+    _isLoading = false;
+  }
+
+  Future<void> _load() async {
+    if (!mounted) return;
+    final data = await globalState.appController.safeRun(
+      silence: false,
+      () =>
+          JavaScriptRuntimeManager.extractScriptOptions(widget.script.content),
+    );
+    if (!mounted) return;
+    if (data == null) {
+      Navigator.of(context).pop();
+      return;
+    }
+    setState(() => _applyData(data));
   }
 
   bool get _hasUnsavedChanges => _dirty;
@@ -622,14 +715,13 @@ class __ScriptCustomOptionsSheetState
     _dirty = false;
     if (mounted) setState(() => _isSaving = true);
     try {
-      final applyFuture = ref.read(scriptStateProvider).currentId == widget.script.id
+      final applyFuture =
+          ref.read(scriptStateProvider).currentId == widget.script.id
           ? globalState.appController.applyProfile(silence: true)
           : Future.value();
-      await Future.wait([
-        applyFuture,
-        Future.delayed(_kMinLoadingDuration),
-      ]);
+      await Future.wait([applyFuture, Future.delayed(_kMinLoadingDuration)]);
     } finally {
+      await WidgetsBinding.instance.endOfFrame;
       if (mounted) {
         setState(() => _isSaving = false);
         if (popSheet) {
@@ -654,7 +746,7 @@ class __ScriptCustomOptionsSheetState
         return _ScriptOtherOptionsSheet(
           type: type,
           values: {for (final key in keys) key: _options[key] ?? true},
-          icons: widget.icons,
+          icons: _icons,
           onSave: _handleSaveOtherOptions,
         );
       },
@@ -678,7 +770,7 @@ class __ScriptCustomOptionsSheetState
     final groups = <String>[];
     final others = <String>[];
     for (final key in _options.keys) {
-      if (widget.policyGroupOptions.contains(key)) {
+      if (_policyGroupOptions.contains(key)) {
         groups.add(key);
       } else {
         others.add(key);
@@ -718,38 +810,51 @@ class __ScriptCustomOptionsSheetState
                   color: context.colorScheme.primary,
                 ),
               Expanded(
-                child: keys.isEmpty
-                    ? NullStatus(label: appLocalizations.noStatusAvailable)
-                    : RepaintBoundary(
-                        child: ListView.builder(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-                          itemCount: displayKeys.length + (split ? 1 : 0),
-                          itemBuilder: (_, index) {
-                            if (split && index == displayKeys.length) {
+                child: FadeBox(
+                  alignment: Alignment.center,
+                  child: _isLoading
+                      ? const Center(
+                          child: SyncedLoading(
+                            size: 40,
+                            child: CircularProgressIndicator(),
+                          ),
+                        )
+                      : keys.isEmpty
+                      ? NullStatus(label: appLocalizations.noStatusAvailable)
+                      : RepaintBoundary(
+                          child: ListView.builder(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 16,
+                            ),
+                            itemCount: displayKeys.length + (split ? 1 : 0),
+                            itemBuilder: (_, index) {
+                              if (split && index == displayKeys.length) {
+                                return RepaintBoundary(
+                                  child: _ScriptNavTile(
+                                    label: appLocalizations.scriptOtherOptions,
+                                    assetIcon: 'assets/images/settings.svg',
+                                    onTap: () {
+                                      _handleOpenOtherOptions(others);
+                                    },
+                                  ),
+                                );
+                              }
+                              final key = displayKeys[index];
                               return RepaintBoundary(
-                                child: _ScriptNavTile(
-                                  label: appLocalizations.scriptOtherOptions,
-                                  assetIcon: 'assets/images/settings.svg',
-                                  onTap: () {
-                                    _handleOpenOtherOptions(others);
+                                child: _ScriptOptionTile(
+                                  label: key,
+                                  value: _options[key] ?? true,
+                                  iconUrl: _icons[key],
+                                  onChanged: (v) {
+                                    _onOptionChanged(key, v);
                                   },
                                 ),
                               );
-                            }
-                            final key = displayKeys[index];
-                            return RepaintBoundary(
-                              child: _ScriptOptionTile(
-                                label: key,
-                                value: _options[key] ?? true,
-                                iconUrl: widget.icons[key],
-                                onChanged: (v) {
-                                  _onOptionChanged(key, v);
-                                },
-                              ),
-                            );
-                          },
+                            },
+                          ),
                         ),
-                      ),
+                ),
               ),
             ],
           ),
@@ -964,56 +1069,13 @@ Future<bool> _showSaveChangesDialog({
 }
 
 Future<void> showGroupSwitchOptions(
-  BuildContext context,
-  WidgetRef ref, {
+  BuildContext context, {
   required String profileId,
 }) async {
-  await globalState.appController.safeRun(
-    silence: false,
-    needLoading: true,
-    () async {
-      final stopwatch = Stopwatch()..start();
-      final rawConfig = await globalState.getProfileConfig(profileId);
-      final rules = rawConfig['rules'] as List? ?? [];
-      final proxyGroups = rawConfig['proxy-groups'] as List? ?? [];
-      final mode = ref.read(patchClashConfigProvider).mode;
-      String? matchTarget;
-      for (final rule in rules) {
-        if (rule is String) {
-          final parsed = ParsedRule.parseString(rule);
-          if (parsed.ruleAction == RuleAction.MATCH &&
-              parsed.ruleTarget != null &&
-              parsed.ruleTarget!.isNotEmpty) {
-            matchTarget = parsed.ruleTarget;
-            break;
-          }
-        }
-      }
-
-      final remaining =
-          _kMinLoadingDuration.inMilliseconds -
-          stopwatch.elapsedMilliseconds;
-      if (remaining > 0) {
-        await Future.delayed(Duration(milliseconds: remaining));
-      }
-
-      if (!context.mounted) return;
-
-      showExtend(
-        context,
-        builder: (_, type) {
-          return _GroupSwitchOptionsSheet(
-            type: type,
-            profileId: profileId,
-            matchTarget: matchTarget,
-            mode: mode,
-            groupNames: [
-              for (final g in proxyGroups)
-                if (g is Map && g['name'] is String) g['name'] as String,
-            ],
-          );
-        },
-      );
+  await showExtend(
+    context,
+    builder: (_, type) {
+      return _GroupSwitchOptionsSheet(type: type, profileId: profileId);
     },
   );
 }
@@ -1021,17 +1083,8 @@ Future<void> showGroupSwitchOptions(
 class _GroupSwitchOptionsSheet extends ConsumerStatefulWidget {
   final SheetType type;
   final String profileId;
-  final String? matchTarget;
-  final Mode mode;
-  final List<String> groupNames;
 
-  const _GroupSwitchOptionsSheet({
-    required this.type,
-    required this.profileId,
-    required this.matchTarget,
-    required this.mode,
-    required this.groupNames,
-  });
+  const _GroupSwitchOptionsSheet({required this.type, required this.profileId});
 
   @override
   ConsumerState<_GroupSwitchOptionsSheet> createState() =>
@@ -1040,26 +1093,68 @@ class _GroupSwitchOptionsSheet extends ConsumerStatefulWidget {
 
 class _GroupSwitchOptionsSheetState
     extends ConsumerState<_GroupSwitchOptionsSheet> {
-  late Map<String, bool> _options;
-  late Map<String, bool> _originalOptions;
-  late Set<String> _lockedGroups;
+  late final Mode _mode;
+  List<String> _groupNames = [];
+  String? _matchTarget;
+  Map<String, bool> _options = {};
+  Map<String, bool> _originalOptions = {};
+  Set<String> _lockedGroups = {};
+  bool _isLoading = true;
   bool _dirty = false;
   bool _isSaving = false;
 
   @override
   void initState() {
     super.initState();
-    final profile = ref.read(currentProfileProvider);
-    final groupSwitches = profile?.groupSwitches ?? {};
-    final isGlobalMode = widget.mode == Mode.global;
+    _mode = ref.read(patchClashConfigProvider).mode;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.afterRouteTransition(_load);
+    });
+  }
 
-    _options = {
-      for (final name in widget.groupNames)
-        if (isGlobalMode || name != 'GLOBAL')
-          name: groupSwitches[name] ?? true,
-    };
-    _originalOptions = Map<String, bool>.from(_options);
-    _lockedGroups = _computeLockedGroups();
+  Future<void> _load() async {
+    if (!mounted) return;
+    final rawConfig = await globalState.appController.safeRun(
+      silence: false,
+      () => globalState.getProfileConfig(widget.profileId),
+    );
+    if (!mounted) return;
+    if (rawConfig == null) {
+      Navigator.of(context).pop();
+      return;
+    }
+    final rules = rawConfig['rules'] as List? ?? [];
+    final proxyGroups = rawConfig['proxy-groups'] as List? ?? [];
+    String? matchTarget;
+    for (final rule in rules) {
+      if (rule is! String) continue;
+      final parsed = ParsedRule.parseString(rule);
+      final target = parsed.ruleTarget;
+      if (parsed.ruleAction == RuleAction.MATCH &&
+          target != null &&
+          target.isNotEmpty) {
+        matchTarget = target;
+        break;
+      }
+    }
+    final groupSwitches = ref.read(currentProfileProvider)?.groupSwitches ?? {};
+    final isGlobalMode = _mode == Mode.global;
+    setState(() {
+      _groupNames = [
+        for (final g in proxyGroups)
+          if (g is Map && g['name'] is String) g['name'] as String,
+      ];
+      _matchTarget = matchTarget;
+      _options = {
+        for (final name in _groupNames)
+          if (isGlobalMode || name != 'GLOBAL')
+            name: groupSwitches[name] ?? true,
+      };
+      _originalOptions = Map<String, bool>.from(_options);
+      _lockedGroups = _computeLockedGroups();
+      _isLoading = false;
+    });
   }
 
   Set<String> _computeLockedGroups() {
@@ -1071,10 +1166,10 @@ class _GroupSwitchOptionsSheetState
     if (firstNonGlobal.isNotEmpty) {
       locked.add(firstNonGlobal);
     }
-    if (widget.mode == Mode.global && _options.containsKey('GLOBAL')) {
+    if (_mode == Mode.global && _options.containsKey('GLOBAL')) {
       locked.add('GLOBAL');
     }
-    final matchTarget = widget.matchTarget;
+    final matchTarget = _matchTarget;
     if (matchTarget != null && matchTarget.isNotEmpty) {
       locked.add(matchTarget);
     }
@@ -1102,8 +1197,7 @@ class _GroupSwitchOptionsSheetState
             child: Text(appLocalizations.cancel),
           ),
           FilledButton(
-            onPressed: () =>
-                globalState.navigatorKey.currentState?.pop(true),
+            onPressed: () => globalState.navigatorKey.currentState?.pop(true),
             child: Text(appLocalizations.save),
           ),
         ],
@@ -1128,13 +1222,15 @@ class _GroupSwitchOptionsSheetState
 
     try {
       final validOptions = {
-        for (final name in widget.groupNames) name: _options[name] ?? true,
+        for (final name in _groupNames) name: _options[name] ?? true,
       };
 
-      ref.read(profilesProvider.notifier).updateProfile(
-        widget.profileId,
-        (state) => state.copyWith(groupSwitches: validOptions),
-      );
+      ref
+          .read(profilesProvider.notifier)
+          .updateProfile(
+            widget.profileId,
+            (state) => state.copyWith(groupSwitches: validOptions),
+          );
 
       final patchConfig = ref.read(patchClashConfigProvider);
       final message = await globalState.validatePatchedConfig(
@@ -1142,10 +1238,12 @@ class _GroupSwitchOptionsSheetState
       );
 
       if (message.isNotEmpty) {
-        ref.read(profilesProvider.notifier).updateProfile(
-          widget.profileId,
-          (state) => state.copyWith(groupSwitches: _originalOptions),
-        );
+        ref
+            .read(profilesProvider.notifier)
+            .updateProfile(
+              widget.profileId,
+              (state) => state.copyWith(groupSwitches: _originalOptions),
+            );
         if (mounted) {
           await globalState.showMessage(
             message: TextSpan(
@@ -1157,17 +1255,13 @@ class _GroupSwitchOptionsSheetState
         return;
       }
 
-      final applyFuture = globalState.appController.applyProfile(
-        silence: true,
-      );
-      await Future.wait([
-        applyFuture,
-        Future.delayed(_kMinLoadingDuration),
-      ]);
+      final applyFuture = globalState.appController.applyProfile(silence: true);
+      await Future.wait([applyFuture, Future.delayed(_kMinLoadingDuration)]);
 
       _dirty = false;
       _originalOptions = Map<String, bool>.from(validOptions);
     } finally {
+      await WidgetsBinding.instance.endOfFrame;
       if (mounted) {
         setState(() => _isSaving = false);
         Navigator.of(context).pop();
@@ -1200,48 +1294,58 @@ class _GroupSwitchOptionsSheetState
                   color: context.colorScheme.primary,
                 ),
               Expanded(
-                child: keys.isEmpty
-                    ? NullStatus(label: appLocalizations.noStatusAvailable)
-                    : RepaintBoundary(
-                        child: ListView.builder(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 16,
+                child: FadeBox(
+                  alignment: Alignment.center,
+                  child: _isLoading
+                      ? const Center(
+                          child: SyncedLoading(
+                            size: 40,
+                            child: CircularProgressIndicator(),
                           ),
-                          itemCount: keys.length,
-                          itemBuilder: (_, index) {
-                            final key = keys[index];
-                            final val = _options[key] ?? true;
-                            final locked = _lockedGroups.contains(key);
-                            return RepaintBoundary(
-                              child: Container(
-                                margin: const EdgeInsets.symmetric(
-                                  vertical: 4,
-                                ),
-                                child: CommonCard(
-                                  type: CommonCardType.filled,
-                                  child: ListTile(
-                                    contentPadding: const EdgeInsets.only(
-                                      left: 16,
-                                      right: 16,
-                                    ),
-                                    leading: const Icon(Icons.alt_route),
-                                    title: Text(key),
-                                    trailing: Switch(
-                                      value: val,
-                                      onChanged: locked
-                                          ? null
-                                          : (v) {
-                                              _onOptionChanged(key, v);
-                                            },
+                        )
+                      : keys.isEmpty
+                      ? NullStatus(label: appLocalizations.noStatusAvailable)
+                      : RepaintBoundary(
+                          child: ListView.builder(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 16,
+                            ),
+                            itemCount: keys.length,
+                            itemBuilder: (_, index) {
+                              final key = keys[index];
+                              final val = _options[key] ?? true;
+                              final locked = _lockedGroups.contains(key);
+                              return RepaintBoundary(
+                                child: Container(
+                                  margin: const EdgeInsets.symmetric(
+                                    vertical: 4,
+                                  ),
+                                  child: CommonCard(
+                                    type: CommonCardType.filled,
+                                    child: ListTile(
+                                      contentPadding: const EdgeInsets.only(
+                                        left: 16,
+                                        right: 16,
+                                      ),
+                                      leading: const Icon(Icons.alt_route),
+                                      title: Text(key),
+                                      trailing: Switch(
+                                        value: val,
+                                        onChanged: locked
+                                            ? null
+                                            : (v) {
+                                                _onOptionChanged(key, v);
+                                              },
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                            );
-                          },
+                              );
+                            },
+                          ),
                         ),
-                      ),
+                ),
               ),
             ],
           ),

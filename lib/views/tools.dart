@@ -19,6 +19,7 @@ import 'package:bett_box/views/config/ntp.dart';
 import 'package:bett_box/views/config/sniffer.dart';
 import 'package:bett_box/views/config/tunnel.dart';
 import 'package:bett_box/views/connection/connections.dart';
+import 'package:bett_box/views/connection/requests.dart';
 import 'package:bett_box/views/hotkey.dart';
 import 'package:bett_box/views/other_setting.dart';
 import 'package:bett_box/widgets/widgets.dart';
@@ -68,6 +69,9 @@ class _ToolViewState extends ConsumerState<ToolsView> {
     if (navigationItem.label == PageLabel.connections) {
       return const ConnectionsView(respectCurrentPage: false);
     }
+    if (navigationItem.label == PageLabel.requests) {
+      return const RequestsView();
+    }
     return navigationItem.builder(context);
   }
 
@@ -90,42 +94,9 @@ class _ToolViewState extends ConsumerState<ToolsView> {
     BuildContext context, {
     required String title,
     required List<Widget> items,
+    bool isFirst = false,
   }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ListHeader(
-            title: title,
-            padding: const EdgeInsets.only(left: 8, bottom: 8),
-          ),
-          CommonCard(
-            type: CommonCardType.filled,
-            child: Column(
-              children: [
-                for (var i = 0; i < items.length; i++) ...[
-                  items[i],
-                  if (i != items.length - 1)
-                    Divider(
-                      height: 1,
-                      thickness: 1,
-                      color: context.colorScheme.outlineVariant.withValues(
-                        alpha:
-                            context.colorScheme.brightness == Brightness.light
-                            ? 0.6
-                            : 0.45,
-                      ),
-                      indent: 16,
-                      endIndent: 16,
-                    ),
-                ],
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
+    return SectionContainer(title: title, items: items, isFirst: isFirst);
   }
 
   String _query = '';
@@ -286,7 +257,7 @@ class _ToolViewState extends ConsumerState<ToolsView> {
         title: appLocalizations.basicConfig,
         subtitle: appLocalizations.basicConfigDesc,
         category: settingsCategory,
-        leading: const Icon(Icons.edit),
+        leading: const Icon(Icons.developer_board_rounded),
         onTap: (context, _) => _pushPage(
           context,
           appLocalizations.basicConfig,
@@ -500,17 +471,16 @@ class _ToolViewState extends ConsumerState<ToolsView> {
           const ApplicationSettingView(),
         ),
       ),
-      if (system.isAndroid)
-        _SearchItem(
-          title: appLocalizations.navBarHapticFeedback,
-          subtitle: appLocalizations.navBarHapticFeedbackDesc,
-          category: appCategory,
-          onTap: (context, _) => _pushPage(
-            context,
-            appLocalizations.application,
-            const ApplicationSettingView(),
-          ),
+      _SearchItem(
+        title: appLocalizations.navBarHapticFeedback,
+        subtitle: appLocalizations.navBarHapticFeedbackDesc,
+        category: appCategory,
+        onTap: (context, _) => _pushPage(
+          context,
+          appLocalizations.application,
+          const ApplicationSettingView(),
         ),
+      ),
       _SearchItem(
         title: appLocalizations.autoCloseConnections,
         subtitle: appLocalizations.autoCloseConnectionsDesc,
@@ -1386,6 +1356,7 @@ class _ToolViewState extends ConsumerState<ToolsView> {
           return _buildModernSection(
             context,
             title: appLocalizations.more,
+            isFirst: true,
             items: state.navigationItems
                 .map((item) => _buildNavigationMenuItem(item))
                 .toList(),
@@ -1417,17 +1388,19 @@ class _ToolViewState extends ConsumerState<ToolsView> {
     return CommonScaffold(
       title: appLocalizations.tools,
       searchState: AppBarSearchState(onSearch: _onSearchChanged),
-      body: ListView.builder(
-        key: _query.isEmpty ? toolsStoreKey : null,
-        itemCount: _query.isEmpty ? items.length : searchResults.length,
-        itemBuilder: (_, index) {
-          return _query.isEmpty ? items[index] : searchResults[index];
-        },
-        padding: EdgeInsets.only(
-          bottom:
-              (globalState.isAndroidTV ? 80.0 : 20.0) +
-              (isMobileView ? getFloatingBottomBarReserveHeight(context) : 0),
-          top: 8,
+      body: ScrollEdgeRise(
+        builder: (context, rise) => ListView.builder(
+          key: _query.isEmpty ? toolsStoreKey : null,
+          itemCount: _query.isEmpty ? items.length : searchResults.length,
+          itemBuilder: (_, index) {
+            return _query.isEmpty ? items[index] : searchResults[index];
+          },
+          padding: EdgeInsets.only(
+            bottom:
+                (globalState.isAndroidTV ? 80.0 : 20.0) +
+                (isMobileView ? getFloatingBottomBarReserveHeight(context) : 0),
+            top: 8 + rise,
+          ),
         ),
       ),
     );
@@ -1450,7 +1423,9 @@ class _LocaleItem extends ConsumerWidget {
 
   static List<Locale> _getOrderedLocales() {
     final priority = ['zh_CN', 'zh_TC', 'en', 'ru', 'fa', 'ja', 'ko'];
-    final locales = List<Locale>.from(AppLocalizations.delegate.supportedLocales);
+    final locales = List<Locale>.from(
+      AppLocalizations.delegate.supportedLocales,
+    );
     locales.sort((a, b) {
       final aKey = a.toString();
       final bKey = b.toString();
@@ -1591,7 +1566,7 @@ class _ConfigItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListItem.next(
-      leading: const Icon(Icons.edit),
+      leading: const Icon(Icons.developer_board_rounded),
       title: Text(appLocalizations.basicConfig),
       subtitle: Text(appLocalizations.basicConfigDesc),
       delegate: NextDelegate(

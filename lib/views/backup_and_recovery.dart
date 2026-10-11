@@ -11,6 +11,7 @@ import 'package:bett_box/widgets/fade_box.dart';
 import 'package:bett_box/widgets/input.dart';
 import 'package:bett_box/widgets/list.dart';
 import 'package:bett_box/widgets/text.dart';
+import 'package:bett_box/widgets/delay_animation_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -247,8 +248,11 @@ class _BackupAndRecoveryState extends ConsumerState<BackupAndRecovery> {
                                 ? const SizedBox(
                                     width: 12,
                                     height: 12,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 1,
+                                    child: SyncedLoading(
+                                      size: 12,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 1,
+                                      ),
                                     ),
                                   )
                                 : Container(
@@ -388,30 +392,32 @@ class _BackupVersionsDialogState extends State<BackupVersionsDialog> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              ...displayFiles.map<Widget>((file) {
-                final sizeText = TrafficValue(value: file.size ?? 0).show;
-                final timeText = file.mTime?.lastUpdateTimeDesc ?? '';
-                final subtitle = [
-                  if (sizeText.isNotEmpty) sizeText,
-                  if (timeText.isNotEmpty) timeText,
-                ].join('  ·  ');
+              ...displayFiles
+                  .map<Widget>((file) {
+                    final sizeText = TrafficValue(value: file.size ?? 0).show;
+                    final timeText = file.mTime?.lastUpdateTimeDesc ?? '';
+                    final subtitle = [
+                      if (sizeText.isNotEmpty) sizeText,
+                      if (timeText.isNotEmpty) timeText,
+                    ].join('  ·  ');
 
-                return ListItem<webdav.File>.radio(
-                  title: Text(file.name ?? ''),
-                  subtitle: subtitle.isNotEmpty ? Text(subtitle) : null,
-                  delegate: RadioDelegate<webdav.File>(
-                    value: file,
-                    groupValue: _selectedFile,
-                    onChanged: (val) {
-                      if (val != null) {
-                        setState(() {
-                          _selectedFile = val;
-                        });
-                      }
-                    },
-                  ),
-                );
-              }).separated(const Divider(height: 1)),
+                    return ListItem<webdav.File>.radio(
+                      title: Text(file.name ?? ''),
+                      subtitle: subtitle.isNotEmpty ? Text(subtitle) : null,
+                      delegate: RadioDelegate<webdav.File>(
+                        value: file,
+                        groupValue: _selectedFile,
+                        onChanged: (val) {
+                          if (val != null) {
+                            setState(() {
+                              _selectedFile = val;
+                            });
+                          }
+                        },
+                      ),
+                    );
+                  })
+                  .separated(const Divider(height: 1)),
             ],
           ),
         ),
