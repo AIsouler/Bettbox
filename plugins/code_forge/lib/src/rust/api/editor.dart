@@ -6,6 +6,7 @@
 import '../frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
+// These functions are ignored because they are not marked as `pub`: `search_query`
 // These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `fmt`, `fmt`
 
 Future<List<RustFoldRange>> foldsComputeAll({
@@ -38,6 +39,48 @@ List<GuideBlock> guidesComputeViewport({
 
 Future<List<String>> wordsExtract({required RopeBridge rope}) =>
     RustLib.instance.api.crateApiEditorWordsExtract(rope: rope);
+
+Uint32List? searchFind({
+  required String text,
+  required String pattern,
+  required bool isRegex,
+  required bool caseSensitive,
+  required bool wholeWord,
+}) => RustLib.instance.api.crateApiEditorSearchFind(
+  text: text,
+  pattern: pattern,
+  isRegex: isRegex,
+  caseSensitive: caseSensitive,
+  wholeWord: wholeWord,
+);
+
+String? searchReplaceAll({
+  required String text,
+  required String pattern,
+  required bool isRegex,
+  required bool caseSensitive,
+  required bool wholeWord,
+  required String replacement,
+}) => RustLib.instance.api.crateApiEditorSearchReplaceAll(
+  text: text,
+  pattern: pattern,
+  isRegex: isRegex,
+  caseSensitive: caseSensitive,
+  wholeWord: wholeWord,
+  replacement: replacement,
+);
+
+/// `[start, end, scope, ...]` in UTF-16 code units, for one line of YAML.
+Uint32List highlightYamlLine({required String text}) =>
+    RustLib.instance.api.crateApiEditorHighlightYamlLine(text: text);
+
+/// As [highlight_yaml_line] with scopes numbered as [highlight_javascript_scopes]
+/// names them; `None` for a line the caller has to highlight itself.
+Uint32List? highlightJavascriptLine({required String text}) =>
+    RustLib.instance.api.crateApiEditorHighlightJavascriptLine(text: text);
+
+List<String> highlightJavascriptScopes() =>
+    RustLib.instance.api.crateApiEditorHighlightJavascriptScopes();
 
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<RopeBridge>>
 abstract class RopeBridge implements RustOpaqueInterface {

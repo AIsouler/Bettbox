@@ -5,6 +5,8 @@
 mod buffer;
 mod folds;
 mod guides;
+pub mod highlight;
+pub mod search;
 mod words;
 
 pub use buffer::Buffer;

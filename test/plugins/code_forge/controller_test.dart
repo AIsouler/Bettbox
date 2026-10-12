@@ -3080,6 +3080,40 @@ void _find() {
     expect(controller.searchHighlights, isEmpty);
   });
 
+  testWidgets('matches are counted in scalars and CJK words are whole words', (
+    tester,
+  ) async {
+    final (controller, finder) = await pumpFind(
+      tester,
+      text: '😀 节点 a节点\n节点',
+    );
+
+    finder.find('节点');
+    expect(finder.matchCount, 3);
+    expect(controller.searchHighlights.first.start, 2);
+    expect(controller.searchHighlights.last.start, 9);
+    finder.matchWholeWord = true;
+    expect(finder.matchCount, 2);
+  });
+
+  testWidgets('a regex may look around and an invalid or runaway one finds '
+      'nothing', (tester) async {
+    final (controller, finder) = await pumpFind(
+      tester,
+      text: 'port: 80\n${'a' * 40}b',
+    );
+    finder.isRegex = true;
+
+    finder.find(r'(?<=port: )\d+');
+    expect(highlighted(controller), ['80']);
+    finder.find('(');
+    expect(finder.matchCount, 0);
+    final watch = Stopwatch()..start();
+    finder.find(r'(a+)+\1$');
+    expect(finder.matchCount, 0);
+    expect(watch.elapsed, lessThan(const Duration(seconds: 2)));
+  });
+
   testWidgets('case, whole-word and regex options narrow the matches', (
     tester,
   ) async {

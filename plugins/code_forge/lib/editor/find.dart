@@ -3,8 +3,9 @@ import 'dart:math';
 
 import 'package:flutter/widgets.dart';
 
+import 'package:code_forge/src/rust/api/editor.dart';
+
 import 'controller.dart';
-import 'text.dart';
 
 /// Controller for managing text search functionality in [CodeForge].
 ///
@@ -120,14 +121,10 @@ class FindController extends ChangeNotifier {
     final end = lastLine + 1 < controller.lineCount
         ? controller.getLineStartOffset(lastLine + 1) - 1
         : controller.length;
-    final List<TextRange> ranges;
-    try {
-      ranges = _search(
-        controller.getLinesRange(firstLine, lastLine + 1).join('\n'),
-      );
-    } on FormatException {
-      return true;
-    }
+    final ranges = _search(
+      controller.getLinesRange(firstLine, lastLine + 1).join('\n'),
+    );
+    if (ranges == null) return true;
     final found = [
       for (final range in ranges)
         TextRange(start: start + range.start, end: start + range.end),
@@ -168,11 +165,21 @@ class FindController extends ChangeNotifier {
     _currentMatchIndex = index < _matches.length ? index : 0;
   }
 
-  List<TextRange> _search(String text) => text.toScalarRanges(
-    _buildRegExp(
-      _lastQuery,
-    ).allMatches(text).map((m) => TextRange(start: m.start, end: m.end)),
-  );
+  /// The matches in scalar values, or null when the query is no valid regex.
+  List<TextRange>? _search(String text) {
+    final ends = searchFind(
+      text: text,
+      pattern: _lastQuery,
+      isRegex: _isRegex,
+      caseSensitive: _caseSensitive,
+      wholeWord: _matchWholeWord,
+    );
+    if (ends == null) return null;
+    return [
+      for (var i = 0; i < ends.length; i += 2)
+        TextRange(start: ends[i], end: ends[i + 1]),
+    ];
+  }
 
   /// The number of matches found for the current query.
   int get matchCount => _matches.length;
@@ -289,11 +296,7 @@ class FindController extends ChangeNotifier {
       return;
     }
 
-    try {
-      _matches = _search(_codeController.text);
-    } on FormatException {
-      _matches = [];
-    }
+    _matches = _search(_codeController.text) ?? [];
     _selectMatchAtCaret();
     if (scrollToMatch) _scrollToCurrentMatch();
     _updateHighlights();
@@ -337,19 +340,17 @@ class FindController extends ChangeNotifier {
   void replaceAll() {
     _codeController.commitComposition();
     if (_matches.isEmpty) return;
-    _codeController.replaceText(
-      _codeController.text.replaceAll(
-        _buildRegExp(_lastQuery),
-        replaceInputController.text,
-      ),
+    final replaced = searchReplaceAll(
+      text: _codeController.text,
+      pattern: _lastQuery,
+      isRegex: _isRegex,
+      caseSensitive: _caseSensitive,
+      wholeWord: _matchWholeWord,
+      replacement: replaceInputController.text,
     );
+    if (replaced == null) return;
+    _codeController.replaceText(replaced);
     _reperformSearch();
-  }
-
-  RegExp _buildRegExp(String query) {
-    var pattern = _isRegex ? query : RegExp.escape(query);
-    if (_matchWholeWord) pattern = '\\b$pattern\\b';
-    return RegExp(pattern, caseSensitive: _caseSensitive, multiLine: true);
   }
 
   void _clearMatches() {

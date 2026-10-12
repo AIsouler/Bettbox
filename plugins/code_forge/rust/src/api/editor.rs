@@ -1,4 +1,4 @@
-use crate::editor::{self, Buffer};
+use crate::editor::{self, highlight, search, Buffer};
 use flutter_rust_bridge::frb;
 
 #[derive(Clone, Debug)]
@@ -100,4 +100,58 @@ pub fn guides_compute_viewport(
 
 pub fn words_extract(rope: &RopeBridge) -> Vec<String> {
     editor::extract_words(&rope.buffer.snapshot())
+}
+
+fn search_query(pattern: String, is_regex: bool, case_sensitive: bool, whole_word: bool) -> search::Query {
+    search::Query {
+        pattern,
+        is_regex,
+        case_sensitive,
+        whole_word,
+    }
+}
+
+#[frb(sync)]
+pub fn search_find(
+    text: String,
+    pattern: String,
+    is_regex: bool,
+    case_sensitive: bool,
+    whole_word: bool,
+) -> Option<Vec<u32>> {
+    search::find(&text, &search_query(pattern, is_regex, case_sensitive, whole_word))
+}
+
+#[frb(sync)]
+pub fn search_replace_all(
+    text: String,
+    pattern: String,
+    is_regex: bool,
+    case_sensitive: bool,
+    whole_word: bool,
+    replacement: String,
+) -> Option<String> {
+    search::replace_all(
+        &text,
+        &search_query(pattern, is_regex, case_sensitive, whole_word),
+        &replacement,
+    )
+}
+
+/// `[start, end, scope, ...]` in UTF-16 code units, for one line of YAML.
+#[frb(sync)]
+pub fn highlight_yaml_line(text: String) -> Vec<u32> {
+    highlight::highlight_yaml(&text)
+}
+
+/// As [highlight_yaml_line] with scopes numbered as [highlight_javascript_scopes]
+/// names them; `None` for a line the caller has to highlight itself.
+#[frb(sync)]
+pub fn highlight_javascript_line(text: String) -> Option<Vec<u32>> {
+    highlight::highlight_javascript(&text)
+}
+
+#[frb(sync)]
+pub fn highlight_javascript_scopes() -> Vec<String> {
+    highlight::javascript_scopes()
 }

@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:code_forge/editor/text.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -25,16 +24,9 @@ void _textOffsets() {
     );
   });
 
-  test('scalar substrings and ranges', () {
+  test('scalar substrings', () {
     expect(text.scalarSubstring(1, 3), '😀b');
     expect(text.scalarSubstring(4), '😀');
-    expect(
-      text.toScalarRanges(const [
-        TextRange(start: 1, end: 3),
-        TextRange(start: 5, end: 7),
-      ]),
-      const [TextRange(start: 1, end: 2), TextRange(start: 4, end: 5)],
-    );
   });
 }
 

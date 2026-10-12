@@ -87,27 +87,6 @@ extension TextOffsets on String {
     return substring(from, end == null ? length : toUtf16Offset(end));
   }
 
-  List<TextRange> toScalarRanges(Iterable<TextRange> ranges) {
-    var utf16 = 0;
-    var scalar = 0;
-    int advance(int target) {
-      if (target < utf16) {
-        utf16 = 0;
-        scalar = 0;
-      }
-      while (utf16 < target && utf16 < length) {
-        utf16 += _pairWidthAt(utf16);
-        scalar++;
-      }
-      return scalar;
-    }
-
-    return [
-      for (final range in ranges)
-        TextRange(start: advance(range.start), end: advance(range.end)),
-    ];
-  }
-
   bool isLowSurrogateAt(int index) =>
       index > 0 && index < length && (codeUnitAt(index) & 0xFC00) == 0xDC00;
 
