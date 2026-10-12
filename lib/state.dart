@@ -31,8 +31,6 @@ import 'models/models.dart';
 
 typedef UpdateTasks = List<FutureOr Function()>;
 
-final _volatileScriptPattern = RegExp(r'\bDate\b|Math\s*\.\s*random');
-
 class GlobalState {
   static GlobalState? _instance;
   Map<CacheTag, FixedMap<String, double>> computeHeightMapCache = {};
@@ -242,6 +240,11 @@ class GlobalState {
             showStartSwitch: _isAndroidTV ?? false,
           ),
         );
+    final scriptProps = await config.scriptProps.externalize();
+    if (scriptProps != config.scriptProps) {
+      config = config.copyWith(scriptProps: scriptProps);
+      await preferences.saveConfig(config);
+    }
     await globalState.migrateOldData(config);
     final locale =
         utils.getLocaleForString(config.appSetting.locale) ??
@@ -752,7 +755,17 @@ class GlobalState {
       unawaited(_sweepRelay(relayPath));
       final cache = File('$relayPath${separator}cache-${profile.id}.json');
       final cacheKey = File('$relayPath${separator}cache-${profile.id}.key');
-      final key = await _scriptedCacheKey(profile, currentScript);
+      String? content;
+      var digest = currentScript.digest;
+      var volatile = currentScript.volatile;
+      if (digest == null || volatile == null) {
+        content = await currentScript.readContent();
+        digest = content.toMd5();
+        volatile = volatileScriptPattern.hasMatch(content);
+      }
+      final key = volatile
+          ? null
+          : await _scriptedCacheKey(profile, currentScript, digest);
       final exported = File('$relayPath${separator}profile-$stamp.json');
       try {
         if (key != null &&
@@ -764,7 +777,7 @@ class GlobalState {
         }
         await _exportProfileConfig(profile, exported.path);
         await JavaScriptRuntimeManager.evaluateScriptFile(
-          scriptContent: currentScript.content,
+          scriptContent: content ?? await currentScript.readContent(),
           inputPath: exported.path,
           outputPath: file.path,
           customOptions: currentScript.customOptions,
@@ -805,10 +818,11 @@ class GlobalState {
     } catch (_) {}
   }
 
-  Future<String?> _scriptedCacheKey(Profile profile, Script script) async {
-    if (_volatileScriptPattern.hasMatch(script.content)) {
-      return null;
-    }
+  Future<String?> _scriptedCacheKey(
+    Profile profile,
+    Script script,
+    String digest,
+  ) async {
     final profileFile = File(await appPath.getProfilePath(profile.id));
     if (!await profileFile.exists()) {
       return null;
@@ -820,7 +834,7 @@ class GlobalState {
       stat.modified.microsecondsSinceEpoch,
       stat.size,
       profile.ageSecretKey ?? '',
-      script.content.toMd5(),
+      digest,
       json.encode(script.customOptions ?? const <String, bool>{}),
     ].join('\n').toMd5();
   }

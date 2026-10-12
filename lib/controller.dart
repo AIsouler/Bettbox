@@ -506,7 +506,11 @@ class AppController {
     _ref.read(localNetworkProvider.notifier).value = info;
   }
 
-  Future<void> updateProfile(Profile profile, {bool validate = true}) async {
+  Future<void> updateProfile(
+    Profile profile, {
+    bool validate = true,
+    bool applyUnchanged = true,
+  }) async {
     if (_updatingProfileIds.contains(profile.id)) {
       _ref
           .read(profilesProvider.notifier)
@@ -515,13 +519,18 @@ class AppController {
     }
     _updatingProfileIds.add(profile.id);
     try {
+      final modified = applyUnchanged
+          ? null
+          : await profile.profileLastModified;
       final newProfile = await profile.update(validate: validate);
       _ref
           .read(profilesProvider.notifier)
           .setProfile(newProfile.copyWith(isUpdating: false));
-      if (profile.id == _ref.read(currentProfileIdProvider)) {
-        applyProfileDebounce(silence: true);
+      if (profile.id != _ref.read(currentProfileIdProvider)) return;
+      if (modified != null && modified == await profile.profileLastModified) {
+        return;
       }
+      applyProfileDebounce(silence: true);
     } finally {
       _updatingProfileIds.remove(profile.id);
     }
@@ -790,7 +799,7 @@ class AppController {
     for (final profile in _ref.read(profilesProvider)) {
       if (!_isProfileUpdateNeeded(profile)) continue;
       try {
-        await updateProfile(profile, validate: false);
+        await updateProfile(profile, validate: false, applyUnchanged: false);
       } catch (e) {
         commonPrint.error(
           '[AutoUpdate] Failed to update ${profile.label ?? profile.id}: ${e.formatErrorLog}',
@@ -809,7 +818,7 @@ class AppController {
       var updated = false;
       for (final profile in profilesToUpdate) {
         try {
-          await updateProfile(profile, validate: false);
+          await updateProfile(profile, validate: false, applyUnchanged: false);
           updated = true;
         } catch (e) {
           commonPrint.error(
@@ -1296,28 +1305,6 @@ class AppController {
     await WakelockPlus.enable();
   }
 
-  Future<void> _initHighRefreshRateDefault() async {
-    try {
-      final androidVersion = await system.version;
-      final currentSetting = _ref.read(appSettingProvider);
-
-      final bool shouldEnableHighRefreshRate =
-          androidVersion >= 31; // Android 12+
-
-      if (currentSetting.enableHighRefreshRate != shouldEnableHighRefreshRate) {
-        _ref
-            .read(appSettingProvider.notifier)
-            .updateState(
-              (state) => state.copyWith(
-                enableHighRefreshRate: shouldEnableHighRefreshRate,
-              ),
-            );
-      }
-    } catch (e) {
-      commonPrint.warn('Failed to initialize high refresh rate default: $e');
-    }
-  }
-
   Future<void> init() async {
     FlutterError.onError = (details) {
       if (kDebugMode) {
@@ -1336,10 +1323,6 @@ class AppController {
         }
       }
     });
-
-    if (system.isAndroid) {
-      await _initHighRefreshRateDefault();
-    }
 
     try {
       final wakelockEnabled = await WakelockPlus.enabled;
@@ -1857,7 +1840,14 @@ class AppController {
   Future<List<int>> backupData() async {
     final homeDirPath = await appPath.homeDirPath;
     final profilesPath = await appPath.profilesPath;
-    final configJson = globalState.config.toJson();
+    final scripts = await Future.wait(
+      globalState.config.scriptProps.scripts.map(
+        (script) async => script.copyWith(content: await script.readContent()),
+      ),
+    );
+    final configJson = globalState.config.copyWith
+        .scriptProps(scripts: scripts)
+        .toJson();
     if (configJson['dav'] is Map) {
       final davMap = Map<String, dynamic>.from(configJson['dav'] as Map);
       if (davMap['user'] is String) {
@@ -2131,6 +2121,12 @@ class AppController {
     }
 
     await restoreBackupFiles(profiles, homeDirPath);
+
+    if (recoveryOption != RecoveryOption.onlyProfiles) {
+      tempConfig = tempConfig.copyWith(
+        scriptProps: await tempConfig.scriptProps.externalize(),
+      );
+    }
 
     _recovery(tempConfig, recoveryOption);
     await savePreferences();
@@ -2450,6 +2446,12 @@ class AppController {
       }
 
       // 11. Restore script settings
+      final scriptIds = config.scriptProps.scripts.map((e) => e.id).toSet();
+      for (final script in _ref.read(scriptStateProvider).scripts) {
+        if (!scriptIds.contains(script.id)) {
+          unawaited(script.deleteContent());
+        }
+      }
       _ref.read(scriptStateProvider.notifier).value = config.scriptProps;
     }
 

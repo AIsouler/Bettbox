@@ -62,16 +62,18 @@ class Preferences {
     }
 
     Config? prefsConfig;
-    try {
-      final configString = preferences?.getString(configKey);
-      if (configString != null && configString.isNotEmpty) {
-        final configMap = json.decode(configString);
-        prefsConfig = Config.compatibleFromJson(configMap);
+    if (fileConfig == null || fileConfig.profiles.isEmpty) {
+      try {
+        final configString = preferences?.getString(configKey);
+        if (configString != null && configString.isNotEmpty) {
+          final configMap = json.decode(configString);
+          prefsConfig = Config.compatibleFromJson(configMap);
+        }
+      } catch (e, stackTrace) {
+        commonPrint.error(
+          'Failed to parse config from preferences: $e\n$stackTrace',
+        );
       }
-    } catch (e, stackTrace) {
-      commonPrint.error(
-        'Failed to parse config from preferences: $e\n$stackTrace',
-      );
     }
 
     Config? selectedConfig;

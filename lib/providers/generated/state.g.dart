@@ -2168,7 +2168,7 @@ class _GenColorSchemeProviderElement
   bool get ignoreConfig => (origin as GenColorSchemeProvider).ignoreConfig;
 }
 
-String _$needSetupHash() => r'05c866be219750479850707fcf98216b0494672c';
+String _$needSetupHash() => r'08ab4dfcebe2b35067e4b10b868b1fa263d6dbd1';
 
 /// See also [needSetup].
 @ProviderFor(needSetup)

@@ -132,7 +132,7 @@ class _ScriptsViewState extends ConsumerState<ScriptsView> {
         final fileName = rawName.endsWith('.js') ? rawName : '$rawName.js';
         final value = await picker.saveFile(
           fileName,
-          utf8.encode(script.content),
+          utf8.encode(await script.readContent()),
           allowedExtensions: ['js'],
         );
         if (value == null) return false;
@@ -207,7 +207,7 @@ class _ScriptsViewState extends ConsumerState<ScriptsView> {
                 final script = scripts[index];
                 final isSelected = script.id == currentId;
                 final hasRemote = script.url?.isNotEmpty ?? false;
-                final hasCustom = script.isCompatibleWithBettbox;
+                final hasCustom = script.compatible;
                 final hasTags = hasRemote || hasCustom;
                 return CommonCard(
                   key: ValueKey(script.id),
@@ -299,7 +299,7 @@ class _ScriptsViewState extends ConsumerState<ScriptsView> {
                                   _handleToEditor(script: script);
                                 },
                               ),
-                              if (script.isCompatibleWithBettbox)
+                              if (script.compatible)
                                 PopupMenuItemData(
                                   icon: Icons.tune,
                                   label: appLocalizations.custom,
@@ -351,22 +351,19 @@ class _ScriptsViewState extends ConsumerState<ScriptsView> {
     Script? script,
     String? url,
   }) async {
-    if (script != null && script.content != content) {
-      JavaScriptRuntimeManager.invalidateCachedOptions(script.content);
-    }
     var finalLabel = title.trim();
     if (finalLabel.isEmpty) {
       finalLabel = ref
           .read(scriptStateProvider.notifier)
           .getAvailableLabel(appLocalizations.unnamed);
     }
-    Script newScript =
-        script?.copyWith(label: finalLabel, content: content, url: url) ??
-        Script.create(label: finalLabel, content: content, url: url);
-    if (newScript.label != script?.label) {
+    final draft =
+        script?.copyWith(label: finalLabel, url: url) ??
+        Script.create(label: finalLabel, url: url);
+    if (draft.label != script?.label) {
       final isExits = ref
           .read(scriptStateProvider.notifier)
-          .isExits(newScript.label);
+          .isExits(draft.label);
       if (isExits) {
         globalState.showMessage(
           message: TextSpan(
@@ -377,10 +374,13 @@ class _ScriptsViewState extends ConsumerState<ScriptsView> {
         return;
       }
     }
+    final newScript = await globalState.appController.safeRun(
+      silence: false,
+      () => draft.writeContent(content),
+    );
+    if (newScript == null || !mounted) return;
     ref.read(scriptStateProvider.notifier).setScript(newScript);
-    if (mounted) {
-      Navigator.of(context).pop();
-    }
+    Navigator.of(context).pop();
   }
 
   Future<bool> _handleEditorPop(
@@ -410,14 +410,15 @@ class _ScriptsViewState extends ConsumerState<ScriptsView> {
     return false;
   }
 
-  void _handleToEditor({
+  Future<void> _handleToEditor({
     Script? script,
     String? initialContent,
     String? url,
     bool delayedFocus = false,
-  }) {
+  }) async {
     final title = script?.label ?? '';
-    final raw = script?.content ?? initialContent ?? scriptTemplate;
+    final raw = initialContent ?? await script?.readContent() ?? scriptTemplate;
+    if (!mounted) return;
     String? importedUrl = url ?? script?.url;
     BaseNavigator.push(
       context,
@@ -657,9 +658,7 @@ class __ScriptCustomOptionsSheetState
   @override
   void initState() {
     super.initState();
-    final cached = JavaScriptRuntimeManager.getCachedOptions(
-      widget.script.content,
-    );
+    final cached = JavaScriptRuntimeManager.getCachedOptions(widget.script);
     if (cached != null) {
       _applyData(cached);
       return;
@@ -685,8 +684,7 @@ class __ScriptCustomOptionsSheetState
     if (!mounted) return;
     final data = await globalState.appController.safeRun(
       silence: false,
-      () =>
-          JavaScriptRuntimeManager.extractScriptOptions(widget.script.content),
+      () => JavaScriptRuntimeManager.extractScriptOptions(widget.script),
     );
     if (!mounted) return;
     if (data == null) {

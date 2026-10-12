@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:bett_box/common/common.dart';
+import 'package:bett_box/models/models.dart';
 import 'package:code_forge/script.dart' as rust;
 import 'package:synchronized/synchronized.dart';
 
@@ -10,8 +11,7 @@ class _ScriptOptionsCache {
   static final _entries = <String, Map<String, dynamic>>{};
   static const _maxEntries = 16;
 
-  static Map<String, dynamic>? get(String content) {
-    final key = _key(content);
+  static Map<String, dynamic>? get(String key) {
     final v = _entries[key];
     if (v != null) {
       // Move to end (most recently used)
@@ -21,21 +21,11 @@ class _ScriptOptionsCache {
     return v;
   }
 
-  static void put(String content, Map<String, dynamic> value) {
-    final key = _key(content);
+  static void put(String key, Map<String, dynamic> value) {
     _entries[key] = value;
     while (_entries.length > _maxEntries) {
       _entries.remove(_entries.keys.first);
     }
-  }
-
-  static void remove(String content) {
-    _entries.remove(_key(content));
-  }
-
-  static String _key(String content) {
-    final bytes = utf8.encode(content);
-    return '${bytes.length}_${bytes.fold<int>(0, (p, b) => (p * 31 + b) & 0x7fffffff)}';
   }
 }
 
@@ -77,7 +67,7 @@ class JavaScriptRuntimeManager {
   }
 
   static Future<Map<String, dynamic>> _extractScriptOptions(
-    String scriptContent,
+    Script script,
   ) async {
     final result = <String, dynamic>{};
     if (!await ensureRustLib()) {
@@ -85,7 +75,7 @@ class JavaScriptRuntimeManager {
     }
     try {
       final decoded = json.decode(
-        await rust.extractScriptOptions(script: scriptContent),
+        await rust.extractScriptOptions(script: await script.readContent()),
       );
       if (decoded is Map) {
         result.addAll(_deepCastMap(decoded));
@@ -97,34 +87,32 @@ class JavaScriptRuntimeManager {
       commonPrint.warn('extractScriptOptions error: $e');
       return <String, dynamic>{};
     }
-    _ScriptOptionsCache.put(scriptContent, result);
+    _ScriptOptionsCache.put(_cacheKey(script), result);
     return result;
   }
 
+  static String _cacheKey(Script script) => script.digest ?? script.id;
+
   static Future<Map<String, dynamic>> extractScriptOptions(
-    String scriptContent,
+    Script script,
   ) async {
-    final cached = _ScriptOptionsCache.get(scriptContent);
+    final cached = _ScriptOptionsCache.get(_cacheKey(script));
     if (cached != null) return cached;
 
     return _engineLock.synchronized(() async {
       // Double-check after acquiring lock
-      final recached = _ScriptOptionsCache.get(scriptContent);
+      final recached = _ScriptOptionsCache.get(_cacheKey(script));
       if (recached != null) return recached;
-      return _extractScriptOptions(scriptContent);
+      return _extractScriptOptions(script);
     });
   }
 
-  static void invalidateCachedOptions(String scriptContent) {
-    _ScriptOptionsCache.remove(scriptContent);
+  static bool hasCachedOptions(Script script) {
+    return _ScriptOptionsCache.get(_cacheKey(script)) != null;
   }
 
-  static bool hasCachedOptions(String scriptContent) {
-    return _ScriptOptionsCache.get(scriptContent) != null;
-  }
-
-  static Map<String, dynamic>? getCachedOptions(String scriptContent) {
-    return _ScriptOptionsCache.get(scriptContent);
+  static Map<String, dynamic>? getCachedOptions(Script script) {
+    return _ScriptOptionsCache.get(_cacheKey(script));
   }
 
   static Map<String, dynamic> _deepCastMap(Map dynamicMap) {

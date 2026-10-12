@@ -944,8 +944,8 @@ ColorScheme genColorScheme(
 @riverpod
 VM5<String?, String?, Dns?, List<String>?, String?> needSetup(Ref ref) {
   final profileId = ref.watch(currentProfileIdProvider);
-  final content = ref.watch(
-    scriptStateProvider.select((state) => state.currentScript?.content),
+  final scriptDigest = ref.watch(
+    scriptStateProvider.select((state) => state.currentScript?.digest),
   );
   final overrideDns = ref.watch(overrideDnsProvider);
   final dns = overrideDns == true
@@ -966,7 +966,7 @@ VM5<String?, String?, Dns?, List<String>?, String?> needSetup(Ref ref) {
       : null;
   return VM5(
     a: profileId,
-    b: content,
+    b: scriptDigest,
     c: dns,
     d: routeExcludeAddress,
     e: loopbackPorts,

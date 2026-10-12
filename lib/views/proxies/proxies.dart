@@ -39,7 +39,7 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
       scriptStateProvider.select(
         (s) => (
           s.currentId != null,
-          s.currentScript?.isCompatibleWithBettbox ?? false,
+          s.currentScript?.compatible ?? false,
         ),
       ),
     );
@@ -191,7 +191,7 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
     final profileOverride =
         ref.read(currentProfileProvider)?.useScriptOverride ?? false;
     final script = ref.read(scriptStateProvider).currentScript;
-    if (script != null && script.isCompatibleWithBettbox && profileOverride) {
+    if (script != null && script.compatible && profileOverride) {
       await showScriptCustomOptions(context, script: script);
       return;
     }
