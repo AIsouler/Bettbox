@@ -190,7 +190,6 @@ abstract class AppSettingProps with _$AppSettingProps {
     @Default(false) bool hidden,
     @Default(true) bool keepDockIcon,
     @Default(false) bool developerMode,
-    @Default(false) bool enableHighRefreshRate,
     @Default(RecoveryStrategy.compatible) RecoveryStrategy recoveryStrategy,
     @Default(false) bool enableHighPriority,
     @Default(false) bool sidebarCollapsed,
@@ -427,6 +426,24 @@ extension ScriptPropsExt on ScriptProps {
       return scripts[index];
     }
     return null;
+  }
+
+  Future<ScriptProps> externalize() async {
+    if (scripts.every((script) => script.content.isEmpty)) return this;
+    final next = <Script>[];
+    for (final script in scripts) {
+      if (script.content.isEmpty) {
+        next.add(script);
+        continue;
+      }
+      try {
+        next.add(await script.writeContent(script.content));
+      } catch (e) {
+        commonPrint.error('Failed to store script ${script.label}: $e');
+        next.add(script);
+      }
+    }
+    return copyWith(scripts: next);
   }
 }
 

@@ -57,22 +57,21 @@ class ClashLib extends ClashHandlerInterface with AndroidClashInterface {
   }
 
   Future<void> _waitForIpc() async {
-    for (var attempt = 0; attempt < 3; attempt++) {
+    for (var attempt = 1; ; attempt++) {
       if (sendPort != null && _canSendCompleter.isCompleted) return;
       final connected = await _canSendCompleter.future.timeout(
         const Duration(seconds: 2),
         onTimeout: () => false,
       );
       if (connected && sendPort != null) return;
-      commonPrint.warn(
-        'ClashLib: IPC attempt ${attempt + 1}/3 failed, retrying...',
-      );
+      if (attempt <= 3) {
+        commonPrint.warn('ClashLib: IPC attempt $attempt failed, retrying...');
+      }
       if (_canSendCompleter.isCompleted) {
         _canSendCompleter = Completer();
       }
       await service?.reconnectIpc();
     }
-    commonPrint.error('ClashLib: IPC failed after 3 attempts');
   }
 
   void _registerMainPort(SendPort sendPort) {

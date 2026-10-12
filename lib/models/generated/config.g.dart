@@ -52,7 +52,6 @@ _AppSettingProps _$AppSettingPropsFromJson(
   hidden: json['hidden'] as bool? ?? false,
   keepDockIcon: json['keepDockIcon'] as bool? ?? true,
   developerMode: json['developerMode'] as bool? ?? false,
-  enableHighRefreshRate: json['enableHighRefreshRate'] as bool? ?? false,
   recoveryStrategy:
       $enumDecodeNullable(
         _$RecoveryStrategyEnumMap,
@@ -102,7 +101,6 @@ Map<String, dynamic> _$AppSettingPropsToJson(_AppSettingProps instance) =>
       'hidden': instance.hidden,
       'keepDockIcon': instance.keepDockIcon,
       'developerMode': instance.developerMode,
-      'enableHighRefreshRate': instance.enableHighRefreshRate,
       'recoveryStrategy': _$RecoveryStrategyEnumMap[instance.recoveryStrategy]!,
       'enableHighPriority': instance.enableHighPriority,
       'sidebarCollapsed': instance.sidebarCollapsed,

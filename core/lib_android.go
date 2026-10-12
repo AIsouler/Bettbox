@@ -250,6 +250,7 @@ func quickStart(initParamsChar *C.char, paramsChar *C.char, stateParamsChar *C.c
 		res := handleInitClash(paramsString)
 		if res == false {
 			bridge.SendToPort(i, "init error")
+			return
 		}
 		handleSetState(stateParams)
 		result, _ := json.Marshal(handleSetupConfig(bytes))
