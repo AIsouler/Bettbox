@@ -135,7 +135,7 @@ abstract class ClashHandlerInterface with ClashInterface {
   final Map<String, Object> _requestChannels = {};
 
   Future<void> handleResult(ActionResult result) async {
-    final completer = callbackCompleterMap[result.id];
+    final completer = callbackCompleterMap.remove(result.id);
     _requestChannels.remove(result.id);
     try {
       switch (result.method) {

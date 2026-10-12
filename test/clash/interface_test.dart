@@ -47,6 +47,15 @@ void main() {
       expect(await future, '42');
     });
 
+    test('releases the completer as soon as the reply arrives', () async {
+      final handler = _FakeHandler();
+      final future = handler.invoke<String>(method: ActionMethod.getMemory);
+      await pumpEventQueue();
+      handler.reply(handler.sent.single, '42');
+      expect(handler.callbackCompleterMap, isEmpty);
+      expect(await future, '42');
+    });
+
     test('falls back immediately when its channel is aborted', () async {
       final handler = _FakeHandler();
       final oldChannel = handler.channel!;
