@@ -38,6 +38,8 @@ import (
 	"github.com/metacubex/mihomo/tunnel/statistic"
 	"sync"
 	"sync/atomic"
+
+	yamlv3 "go.yaml.in/yaml/v3"
 )
 
 var (
@@ -960,11 +962,68 @@ func handleGetRuntimeConfig(params *SetupParams) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	bytes, err := yaml.Marshal(rawCfg)
+	bytes, err := marshalYamlKeepingSupplementary(rawCfg)
 	if err != nil {
 		return "", err
 	}
 	return string(bytes), nil
+}
+
+func walkYamlScalars(node *yamlv3.Node, visit func(*yamlv3.Node)) {
+	if node.Kind == yamlv3.ScalarNode {
+		visit(node)
+	}
+	for _, child := range node.Content {
+		walkYamlScalars(child, visit)
+	}
+}
+
+func marshalYamlKeepingSupplementary(value any) ([]byte, error) {
+	const privateUseStart, privateUseEnd = rune(0xE000), rune(0xF8FF)
+	var root yamlv3.Node
+	if err := root.Encode(value); err != nil {
+		return nil, err
+	}
+	used := map[rune]bool{}
+	placeholders := map[rune]rune{}
+	walkYamlScalars(&root, func(node *yamlv3.Node) {
+		for _, char := range node.Value {
+			if char >= privateUseStart && char <= privateUseEnd {
+				used[char] = true
+			} else if char > 0xFFFF {
+				placeholders[char] = 0
+			}
+		}
+	})
+	if len(placeholders) == 0 {
+		return yaml.Marshal(value)
+	}
+	next := privateUseStart
+	restore := make([]string, 0, len(placeholders)*2)
+	for char := range placeholders {
+		for used[next] {
+			next++
+		}
+		if next > privateUseEnd {
+			return yaml.Marshal(value)
+		}
+		placeholders[char] = next
+		restore = append(restore, string(next), string(char))
+		next++
+	}
+	walkYamlScalars(&root, func(node *yamlv3.Node) {
+		node.Value = strings.Map(func(char rune) rune {
+			if placeholder, ok := placeholders[char]; ok {
+				return placeholder
+			}
+			return char
+		}, node.Value)
+	})
+	out, err := yamlv3.Marshal(&root)
+	if err != nil {
+		return nil, err
+	}
+	return []byte(strings.NewReplacer(restore...).Replace(string(out))), nil
 }
 
 func handleFlushFakeIP() bool {

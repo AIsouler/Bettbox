@@ -237,6 +237,7 @@ func TestApplyPatchDnsInjection(t *testing.T) {
 	})
 	params := patchParams(t, `{}`)
 	params.Dns = dns
+	params.DnsNodeOverride = true
 	if _, err := applyPatch(rawCfg, params); err != nil {
 		t.Fatal(err)
 	}
