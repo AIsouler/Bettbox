@@ -58,13 +58,20 @@ Future<ProviderContainer> _pump(
   return container;
 }
 
+Config _config(LogLevel level) {
+  final config = Config(themeProps: defaultThemeProps);
+  return config.copyWith(
+    patchClashConfig: config.patchClashConfig.copyWith(logLevel: level),
+  );
+}
+
 void main() {
   setUpAll(() async {
     await AppLocalizations.load(const Locale('zh', 'CN'));
   });
 
   setUp(() {
-    globalState.config = Config(themeProps: defaultThemeProps);
+    globalState.config = _config(LogLevel.debug);
     globalState.appState = AppState(
       brightness: Brightness.light,
       version: 0,
@@ -355,6 +362,7 @@ void main() {
   });
 
   testWidgets('非 debug 等级时不显示等级提示', (tester) async {
+    globalState.config = _config(LogLevel.error);
     await _pump(tester, logs: [_log('short')]);
     expect(find.textContaining('」'), findsNothing);
     expect(find.textContaining('建议关闭', findRichText: true), findsNothing);
@@ -404,20 +412,7 @@ void main() {
     expect(find.textContaining('条新日志'), findsNothing);
   });
 
-  testWidgets('非 debug 等级下来源分段不显示 DNS', (tester) async {
-    await _pump(tester, logs: [_log('[TCP] x')]);
-    expect(find.text('DNS'), findsNothing);
-    final labels = ['全部', '应用', '内核'];
-    final xs = [for (final l in labels) tester.getCenter(find.text(l)).dx];
-    expect(xs, [...xs]..sort());
-  });
-
-  testWidgets('debug 等级下来源分段多出 DNS，并与其他分段互斥', (tester) async {
-    globalState.config = globalState.config.copyWith(
-      patchClashConfig: globalState.config.patchClashConfig.copyWith(
-        logLevel: LogLevel.debug,
-      ),
-    );
+  testWidgets('debug 等级下多出 DNS 标签，并与其他标签互斥', (tester) async {
     final container = await _pump(
       tester,
       logs: [_log('[DNS] a --> 1.1.1.1'), _log('[TCP] x'), _log('[APP] y')],
@@ -427,15 +422,62 @@ void main() {
     expect(xs, [...xs]..sort());
 
     await tester.tap(find.text('DNS'));
-    await tester.pump();
+    await tester.pumpAndSettle();
     expect(_rows, findsOneWidget);
     expect(find.byTooltip('清除筛选'), findsNothing);
 
     await tester.tap(find.text('应用'));
-    await tester.pump();
+    await tester.pumpAndSettle();
     expect(container.read(logsFilterProvider).module, isNull);
     expect(_row('[APP] y'), findsOneWidget);
     expect(_rows, findsOneWidget);
+  });
+
+  testWidgets('标签宽度随文字自适应，下划线滑动到选中项下方', (tester) async {
+    await _pump(tester, logs: [_log('plain'), _log('[APP] y')]);
+    final indicator = find.byType(AnimatedPositionedDirectional);
+    Rect line() => tester.getRect(
+      find.descendant(of: indicator, matching: find.byType(DecoratedBox)),
+    );
+    expect(
+      tester.getSize(find.text('DNS')).width,
+      isNot(tester.getSize(find.text('全部')).width),
+    );
+    expect(line().center.dx, closeTo(tester.getCenter(find.text('全部')).dx, 1));
+
+    await tester.tap(find.text('DNS'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+    final moving = line().center.dx;
+    expect(moving, greaterThan(tester.getCenter(find.text('全部')).dx));
+    expect(moving, lessThan(tester.getCenter(find.text('DNS')).dx));
+    await tester.pumpAndSettle();
+    expect(line().center.dx, closeTo(tester.getCenter(find.text('DNS')).dx, 1));
+    expect(line().width, closeTo(tester.getSize(find.text('DNS')).width, 1));
+  });
+
+  testWidgets('非 debug 等级下没有 DNS 标签，行用更宽松的排版', (tester) async {
+    globalState.config = _config(LogLevel.error);
+    await _pump(
+      tester,
+      logs: [_log('[TCP] ${List.filled(40, 'long').join(' ')}'), _log('ok')],
+    );
+    expect(tester.takeException(), isNull);
+    expect(find.text('DNS'), findsNothing);
+    final heights = <double>[];
+    for (final element in _rows.evaluate()) {
+      final row = find.byWidget(element.widget);
+      final paragraph = _paragraph(tester, row);
+      expect(paragraph.text.style?.fontSize, 14);
+      final height = tester.getSize(row).height;
+      expect(height, paragraph.size.height + 24);
+      heights.add(height);
+    }
+    expect(heights, [45, 87]);
+
+    await tester.tap(_row('long'));
+    await tester.pump();
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('拖动过程中新日志到达不会打断手势', (tester) async {

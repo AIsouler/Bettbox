@@ -10,14 +10,12 @@ import 'package:bett_box/providers/app.dart';
 import 'package:bett_box/state.dart';
 import 'package:bett_box/widgets/widgets.dart';
 import 'package:code_forge/code_forge.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:re_highlight/languages/javascript.dart';
 import 'package:re_highlight/languages/plaintext.dart';
-import 'package:re_highlight/languages/yaml.dart';
 import 'package:re_highlight/re_highlight.dart' show Mode;
 import 'package:re_highlight/styles/atom-one-dark.dart';
 import 'package:re_highlight/styles/atom-one-light.dart';
@@ -27,20 +25,10 @@ typedef EditorWidgetBuilder = Widget Function();
 const double _kMinEditorZoom = 0.7;
 const double _kMaxEditorZoom = 1.5;
 const double _kMaxLineNumberZoom = 1;
-const int _kMaxZoomableLines = 10000;
 const double _kToolbarGapAbove = 32;
 const double _kToolbarGapBelow = 16;
 
-final List<String> _emojiFontFallback = switch (defaultTargetPlatform) {
-  TargetPlatform.windows => [
-    FontFamily.twEmoji.value,
-    'Segoe UI Emoji',
-    'Noto Color Emoji',
-  ],
-  TargetPlatform.linux => [FontFamily.twEmoji.value, 'Noto Color Emoji'],
-  TargetPlatform.android => ['Noto Color Emoji', FontFamily.twEmoji.value],
-  _ => ['Apple Color Emoji', FontFamily.twEmoji.value],
-};
+final List<String> _emojiFontFallback = [FontFamily.twEmoji.value];
 
 class EditorPage extends ConsumerStatefulWidget {
   final String title;
@@ -517,7 +505,7 @@ class _EditorPageState extends ConsumerState<EditorPage> {
   Mode _languageMode() {
     if (_disableSyntaxHighlight) return langPlaintext;
     return switch (widget.languages.firstOrNull) {
-      Language.yaml => langYaml,
+      Language.yaml => editorYamlMode,
       Language.javaScript => langJavascript,
       _ => langPlaintext,
     };
@@ -734,8 +722,6 @@ class _EditorPageState extends ConsumerState<EditorPage> {
                     minZoom: _kMinEditorZoom,
                     maxZoom: _kMaxEditorZoom,
                     lineNumberMaxZoom: _kMaxLineNumberZoom,
-                    enablePinchZoom:
-                        _controller.lineCount <= _kMaxZoomableLines,
                     onZoomEnd: _commitZoom,
                     onContextMenu: _showContextMenu,
                     suggestionPopupBuilder: (_, details) =>

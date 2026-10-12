@@ -255,7 +255,7 @@ class CommonPopupMenu extends StatelessWidget {
     super.key,
     required this.items,
     this.footer,
-    this.minWidth = 200,
+    this.minWidth = 148,
     this.minItemVerticalPadding = 16,
     this.fontSize = 15,
   });
@@ -286,7 +286,7 @@ class CommonPopupMenu extends StatelessWidget {
         constraints: BoxConstraints(minWidth: minWidth),
         padding: EdgeInsets.only(
           left: 16,
-          right: 64,
+          right: 24,
           top: minItemVerticalPadding,
           bottom: minItemVerticalPadding,
         ),

@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:bett_box/clash/clash.dart';
 import 'package:bett_box/common/common.dart';
 import 'package:bett_box/common/external_control.dart';
+import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/l10n/l10n.dart';
 import 'package:bett_box/manager/hotkey_manager.dart';
 import 'package:bett_box/manager/manager.dart';
@@ -13,7 +14,6 @@ import 'package:bett_box/providers/providers.dart';
 import 'package:bett_box/state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -46,6 +46,26 @@ class ApplicationState extends ConsumerState<Application>
     int? primaryColor,
   }) {
     return ref.read(genColorSchemeProvider(brightness));
+  }
+
+  SwitchThemeData _switchTheme(ColorScheme colorScheme) {
+    final isLight = colorScheme.brightness == Brightness.light;
+    return SwitchThemeData(
+      thumbIcon: const WidgetStatePropertyAll(Icon(null)),
+      trackOutlineColor: const WidgetStatePropertyAll(Colors.transparent),
+      thumbColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.disabled)) return null;
+        if (states.contains(WidgetState.selected)) return colorScheme.onPrimary;
+        return isLight ? Colors.white : colorScheme.onSurfaceVariant;
+      }),
+      trackColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.disabled)) return null;
+        if (states.contains(WidgetState.selected)) return colorScheme.primary;
+        return isLight
+            ? colorScheme.surfaceContainerHighest
+            : colorScheme.surfaceContainerHighest.lighten(6);
+      }),
+    );
   }
 
   InputDecorationTheme _inputDecorationTheme(ColorScheme colorScheme) {
@@ -133,12 +153,6 @@ class ApplicationState extends ConsumerState<Application>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     _syncAutoUpdateTasks();
-    if (state == AppLifecycleState.resumed) {
-      if (system.isAndroid &&
-          globalState.config.appSetting.enableHighRefreshRate) {
-        _restoreHighRefreshRate();
-      }
-    }
   }
 
   void _syncAutoUpdateTasks() {
@@ -157,14 +171,6 @@ class ApplicationState extends ConsumerState<Application>
     }
     if (_autoUpdateProfilesTaskTimer == null) {
       _autoUpdateProfilesTask();
-    }
-  }
-
-  Future<void> _restoreHighRefreshRate() async {
-    try {
-      await FlutterDisplayMode.setHighRefreshRate();
-    } catch (e) {
-      commonPrint.warn('Failed to restore high refresh rate: $e');
     }
   }
 
@@ -313,6 +319,7 @@ class ApplicationState extends ConsumerState<Application>
                   primaryColor: themeProps.primaryColor,
                 ),
                 fontFamily: fontFamily,
+                fontFamilyFallback: [FontFamily.twEmoji.value],
                 floatingActionButtonTheme: const FloatingActionButtonThemeData(
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.all(Radius.circular(20)),
@@ -347,6 +354,12 @@ class ApplicationState extends ConsumerState<Application>
                   space: 1,
                 ),
                 inputDecorationTheme: _inputDecorationTheme(
+                  _getAppColorScheme(
+                    brightness: Brightness.light,
+                    primaryColor: themeProps.primaryColor,
+                  ),
+                ),
+                switchTheme: _switchTheme(
                   _getAppColorScheme(
                     brightness: Brightness.light,
                     primaryColor: themeProps.primaryColor,
@@ -404,6 +417,7 @@ class ApplicationState extends ConsumerState<Application>
                   primaryColor: themeProps.primaryColor,
                 ).toPureBlack(themeProps.pureBlack),
                 fontFamily: fontFamily,
+                fontFamilyFallback: [FontFamily.twEmoji.value],
                 floatingActionButtonTheme: const FloatingActionButtonThemeData(
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.all(Radius.circular(20)),
@@ -442,6 +456,12 @@ class ApplicationState extends ConsumerState<Application>
                   space: 1,
                 ),
                 inputDecorationTheme: _inputDecorationTheme(
+                  _getAppColorScheme(
+                    brightness: Brightness.dark,
+                    primaryColor: themeProps.primaryColor,
+                  ).toPureBlack(themeProps.pureBlack),
+                ),
+                switchTheme: _switchTheme(
                   _getAppColorScheme(
                     brightness: Brightness.dark,
                     primaryColor: themeProps.primaryColor,

@@ -8,6 +8,7 @@ import 'package:bett_box/widgets/fade_box.dart';
 import 'package:bett_box/widgets/pop_scope.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -437,10 +438,20 @@ class _ScrollEdgeFadeState extends ConsumerState<_ScrollEdgeFade> {
     if (scrolledUnder == _scrolledUnder && (!scrolledUnder || rise == _rise)) {
       return false;
     }
-    setState(() {
-      _scrolledUnder = scrolledUnder;
-      if (scrolledUnder) _rise = rise;
-    });
+    void apply() {
+      if (!mounted) return;
+      setState(() {
+        _scrolledUnder = scrolledUnder;
+        if (scrolledUnder) _rise = rise;
+      });
+    }
+
+    if (SchedulerBinding.instance.schedulerPhase ==
+        SchedulerPhase.persistentCallbacks) {
+      SchedulerBinding.instance.addPostFrameCallback((_) => apply());
+    } else {
+      apply();
+    }
     return false;
   }
 
@@ -561,15 +572,15 @@ class _ScrollEdgeRiseState extends State<ScrollEdgeRise> {
       builder: (context, constraints) {
         final height = constraints.maxHeight;
         final bodyHeight = state._bodyHeight;
-        if (!height.isFinite || bodyHeight == null || height < bodyHeight) {
-          return _childOf(0);
-        }
+        final risen =
+            height.isFinite && bodyHeight != null && height >= bodyHeight;
         const extent = ScrollEdgeRise.extent;
         return OverflowBox(
           alignment: Alignment.bottomCenter,
-          minHeight: height + extent,
-          maxHeight: height + extent,
-          child: _childOf(extent),
+          minHeight: risen ? height + extent : null,
+          maxHeight: risen ? height + extent : null,
+          fit: risen ? OverflowBoxFit.max : OverflowBoxFit.deferToChild,
+          child: _childOf(risen ? extent : 0),
         );
       },
     );

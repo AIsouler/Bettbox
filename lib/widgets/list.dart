@@ -280,12 +280,23 @@ class ListItem<T> extends StatelessWidget {
       enabled: enabled,
       focusColor: context.colorScheme.primary.withValues(alpha: 0.18),
       shape: shape,
-      titleTextStyle: titleTextStyle,
-      subtitleTextStyle: subtitleTextStyle,
+      titleTextStyle:
+          titleTextStyle ??
+          context.textTheme.bodyLarge?.copyWith(
+            fontSize: 15,
+            fontWeight: FontWeight.w500,
+          ),
+      subtitleTextStyle:
+          subtitleTextStyle ??
+          context.textTheme.bodyMedium?.copyWith(
+            fontSize: 12.5,
+            color: context.colorScheme.onSurfaceVariant.opacity80,
+          ),
       leading: leading ?? this.leading,
-      horizontalTitleGap: horizontalTitleGap,
+      horizontalTitleGap: horizontalTitleGap ?? 12,
       title: title,
-      minVerticalPadding: 12,
+      minVerticalPadding: 10,
+      minTileHeight: 52,
       subtitle: subtitle,
       titleAlignment: tileTitleAlignment,
       onTap: onTap,
@@ -455,9 +466,13 @@ class ListItem<T> extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             ?trailing,
-            Switch(
-              value: switchDelegate.value,
-              onChanged: switchDelegate.onChanged,
+            Transform.scale(
+              scale: 0.86,
+              alignment: Alignment.centerRight,
+              child: Switch(
+                value: switchDelegate.value,
+                onChanged: switchDelegate.onChanged,
+              ),
             ),
           ],
         ),

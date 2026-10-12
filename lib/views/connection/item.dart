@@ -49,17 +49,17 @@ class TrackerInfoItem extends ConsumerWidget {
   });
 
   static double get subTitleHeight {
-    return globalState.measure.bodySmallHeight + 20;
+    return globalState.measure.bodySmallHeight + 12;
   }
 
   static double get height {
     final measure = globalState.measure;
     return measure.bodyMediumHeight +
-        8 +
+        4 +
         8 +
         measure.bodyLargeHeight +
         subTitleHeight +
-        16 * 2;
+        12 * 2;
   }
 
   String _getSourceText(TrackerInfo trackerInfo) {
@@ -98,7 +98,10 @@ class TrackerInfoItem extends ConsumerWidget {
                 trackerInfo.desc,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: context.textTheme.bodyLarge,
+                style: context.textTheme.bodyLarge?.copyWith(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
             Text(
@@ -109,13 +112,14 @@ class TrackerInfoItem extends ConsumerWidget {
             ),
           ],
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 4),
         Text(
           _getSourceText(trackerInfo),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: context.textTheme.bodyMedium?.copyWith(
-            color: context.colorScheme.onSurfaceVariant,
+            fontSize: 12.5,
+            color: context.colorScheme.onSurfaceVariant.opacity80,
           ),
         ),
       ],
@@ -135,19 +139,33 @@ class TrackerInfoItem extends ConsumerWidget {
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               physics: const ClampingScrollPhysics(),
-              child: Row(
-                spacing: 6,
-                children: [
-                  for (final chain in chains)
-                    CommonChip(
-                      label: chain,
-                      labelStyle: labelStyle,
-                      onPressed: () {
-                        if (onClickKeyword == null) return;
-                        onClickKeyword!(chain);
-                      },
+              child: Theme(
+                data: Theme.of(context).copyWith(
+                  visualDensity: VisualDensity.compact,
+                  canvasColor: context.colorScheme.onSurfaceVariant.withValues(
+                    alpha: 0.08,
+                  ),
+                  chipTheme: ChipTheme.of(context).copyWith(
+                    side: BorderSide.none,
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(8)),
                     ),
-                ],
+                  ),
+                ),
+                child: Row(
+                  spacing: 6,
+                  children: [
+                    for (final chain in chains)
+                      CommonChip(
+                        label: chain,
+                        labelStyle: labelStyle,
+                        onPressed: () {
+                          if (onClickKeyword == null) return;
+                          onClickKeyword!(chain);
+                        },
+                      ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -180,7 +198,7 @@ class TrackerInfoItem extends ConsumerWidget {
         );
       },
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -232,7 +250,9 @@ Future<Uint8List?> _getIcon(String key) {
         }
         return icon;
       })
-      .whenComplete(() => _iconPending.remove(key));
+      .whenComplete(() {
+        _iconPending.remove(key);
+      });
 }
 
 Future<Uint8List?> _getDefaultPackageIcon() {
@@ -282,7 +302,7 @@ class _ProcessIconState extends State<_ProcessIcon> {
   @override
   Widget build(BuildContext context) {
     final devicePixelRatio = MediaQuery.devicePixelRatioOf(context);
-    final cacheSize = (42 * devicePixelRatio).ceil();
+    final cacheSize = (38 * devicePixelRatio).ceil();
 
     return RepaintBoundary(
       child: GestureDetector(
@@ -291,9 +311,8 @@ class _ProcessIconState extends State<_ProcessIcon> {
           widget.onClick?.call(widget.process);
         },
         child: Container(
-          margin: const EdgeInsets.only(top: 4),
-          width: 42,
-          height: 42,
+          width: 38,
+          height: 38,
           alignment: Alignment.center,
           child: FutureBuilder<Uint8List?>(
             initialData: _iconCache[_cacheKey],
@@ -304,12 +323,12 @@ class _ProcessIconState extends State<_ProcessIcon> {
                 if (system.isDesktop &&
                     snapshot.connectionState == ConnectionState.done) {
                   return Icon(
-                    Icons.widgets_outlined,
-                    size: 28,
+                    Icons.terminal,
+                    size: 24,
                     color: context.colorScheme.onSurfaceVariant.opacity60,
                   );
                 }
-                return const SizedBox(width: 42, height: 42);
+                return const SizedBox(width: 38, height: 38);
               }
               return Image(
                 image: ResizeImage(
@@ -318,8 +337,8 @@ class _ProcessIconState extends State<_ProcessIcon> {
                   height: cacheSize,
                   allowUpscaling: false,
                 ),
-                width: 42,
-                height: 42,
+                width: 38,
+                height: 38,
                 gaplessPlayback: true,
               );
             },

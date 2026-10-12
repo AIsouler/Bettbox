@@ -204,10 +204,12 @@ class SyncedLoading extends ConsumerWidget {
     return Center(
       child: SizedBox.square(
         dimension: size,
-        child: DelayAnimation(
-          type: type,
-          size: size,
-          color: color ?? context.colorScheme.primary,
+        child: FittedBox(
+          child: DelayAnimation(
+            type: type,
+            size: size,
+            color: color ?? context.colorScheme.primary,
+          ),
         ),
       ),
     );

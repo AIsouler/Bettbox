@@ -558,35 +558,106 @@ class _DashboardStartSwitchState extends ConsumerState<_DashboardStartSwitch> {
         !isRestarting &&
         !isSmartStopped;
 
-    final theme = Theme.of(context);
+    final colorScheme = context.colorScheme;
+    final isLight = colorScheme.brightness == Brightness.light;
+    final isBusy = _isDisabled || isRestarting;
+    final isAvailable = state.isInit && state.hasProfile && !isSmartStopped;
+    final trackColor = displayStart
+        ? colorScheme.primary.withValues(alpha: 0.2)
+        : isLight
+        ? colorScheme.surfaceContainerHighest
+        : colorScheme.surfaceContainerHighest.lighten(6);
+    final iconColor = displayStart
+        ? colorScheme.primary
+        : colorScheme.onSurfaceVariant;
+    final labels = [
+      (appLocalizations.disabled, !displayStart, colorScheme.onSurfaceVariant),
+      (appLocalizations.enabled, displayStart, colorScheme.primary),
+    ];
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0),
-      child: Switch(
-        focusNode: _focusNode,
-        value: displayStart,
-        onChanged: canPress ? (_) => _handleStart() : null,
-        thumbColor: WidgetStateProperty.resolveWith<Color?>((states) {
-          if (states.contains(WidgetState.selected) &&
-              !states.contains(WidgetState.disabled)) {
-            return theme.colorScheme.primary;
-          }
-          return null;
-        }),
-        trackColor: WidgetStateProperty.resolveWith<Color?>((states) {
-          if (states.contains(WidgetState.selected) &&
-              !states.contains(WidgetState.disabled)) {
-            return theme.colorScheme.primary.withValues(alpha: 0.2);
-          }
-          return null;
-        }),
-        trackOutlineColor: WidgetStateProperty.resolveWith<Color?>((states) {
-          if (states.contains(WidgetState.selected) &&
-              !states.contains(WidgetState.disabled)) {
-            return Colors.transparent;
-          }
-          return null;
-        }),
+      child: AnimatedOpacity(
+        opacity: isAvailable ? 1 : 0.38,
+        duration: midDuration,
+        child: TextButton(
+          focusNode: _focusNode,
+          onPressed: canPress ? _handleStart : null,
+          style: ButtonStyle(
+            visualDensity: VisualDensity.standard,
+            padding: const WidgetStatePropertyAll(
+              EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            ),
+            minimumSize: const WidgetStatePropertyAll(Size.zero),
+            backgroundColor: WidgetStatePropertyAll(trackColor),
+            shape: WidgetStateProperty.resolveWith(
+              (states) => StadiumBorder(
+                side: states.contains(WidgetState.focused)
+                    ? BorderSide(color: colorScheme.primary, width: 2)
+                    : BorderSide.none,
+              ),
+            ),
+          ),
+          child: Stack(
+            children: [
+              AnimatedPadding(
+                duration: midDuration,
+                curve: Curves.easeOutCubic,
+                padding: EdgeInsetsDirectional.only(
+                  start: displayStart ? 4 : 26,
+                  end: displayStart ? 26 : 4,
+                ),
+                child: SizedBox(
+                  height: 24,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      for (final (label, isActive, color) in labels)
+                        AnimatedOpacity(
+                          opacity: isActive ? 1 : 0,
+                          duration: midDuration,
+                          child: Text(
+                            label,
+                            maxLines: 1,
+                            style: context.textTheme.labelMedium?.copyWith(
+                              color: color,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              Positioned.fill(
+                child: AnimatedAlign(
+                  duration: midDuration,
+                  curve: Curves.easeOutCubic,
+                  alignment: displayStart
+                      ? AlignmentDirectional.centerEnd
+                      : AlignmentDirectional.centerStart,
+                  child: SizedBox.square(
+                    dimension: 20,
+                    child: Center(
+                      child: isBusy
+                          ? SizedBox.square(
+                              dimension: 14,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: iconColor,
+                              ),
+                            )
+                          : Icon(
+                              Icons.power_settings_new,
+                              size: 18,
+                              color: iconColor,
+                            ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

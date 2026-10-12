@@ -76,7 +76,6 @@ class _LogMetrics {
   static const stripeWidth = 3.0;
   static const margin = 16.0;
   static const dividerHeight = 1.0;
-  static const verticalPadding = 8.0;
   static const metaGap = 4.0;
   static const actionsHeight = 40.0;
 
@@ -86,6 +85,7 @@ class _LogMetrics {
   final TextHeightBehavior? textHeightBehavior;
   final double width;
   final bool compact;
+  final bool relaxed;
   final double charWidth;
   final double lineHeight;
 
@@ -96,20 +96,23 @@ class _LogMetrics {
     required this.textHeightBehavior,
     required this.width,
     required this.compact,
+    required this.relaxed,
     required this.charWidth,
     required this.lineHeight,
   });
 
   double get padding => 16;
 
-  double get timeWidth => compact ? 0 : charWidth * 14;
+  double get verticalPadding => relaxed ? 12 : 8;
 
-  double get tagWidth => compact ? 0 : charWidth * 11;
+  double get timeWidth => compact ? 0 : charWidth * (relaxed ? 11 : 14);
+
+  double get tagWidth => compact ? 0 : charWidth * (relaxed ? 9 : 11);
 
   double get textWidth =>
       max(width - padding * 2 - timeWidth - tagWidth, charWidth * 8);
 
-  int get maxLines => compact ? 3 : 1;
+  int get maxLines => compact ? 3 : (relaxed ? 2 : 1);
 
   double get rowHeight => lineHeight + verticalPadding * 2;
 
@@ -506,18 +509,24 @@ class _LogsConsoleState extends ConsumerState<LogsConsole> {
     BuildContext context,
     double width,
     bool compact,
+    bool relaxed,
   ) {
-    final base = context.textTheme.bodySmall ?? const TextStyle(fontSize: 12);
-    final style = DefaultTextStyle.of(context).style.merge(
-      base.toJetBrainsMono.copyWith(
-        height: 1.5,
-        letterSpacing: 0,
-        fontFeatures: const [
-          FontFeature.disable('liga'),
-          FontFeature.disable('calt'),
-        ],
-      ),
-    );
+    final textTheme = context.textTheme;
+    final base = relaxed
+        ? (textTheme.bodyMedium ?? const TextStyle(fontSize: 14)).copyWith(
+            height: 1.5,
+            fontFeatures: const [FontFeature.tabularFigures()],
+          )
+        : (textTheme.bodySmall ?? const TextStyle(fontSize: 12)).toJetBrainsMono
+              .copyWith(
+                height: 1.5,
+                letterSpacing: 0,
+                fontFeatures: const [
+                  FontFeature.disable('liga'),
+                  FontFeature.disable('calt'),
+                ],
+              );
+    final style = DefaultTextStyle.of(context).style.merge(base);
     final textScaler = MediaQuery.textScalerOf(context);
     final locale = Localizations.maybeLocaleOf(context);
     final prev = _metrics;
@@ -549,6 +558,7 @@ class _LogsConsoleState extends ConsumerState<LogsConsole> {
       textHeightBehavior: DefaultTextHeightBehavior.maybeOf(context),
       width: width,
       compact: compact,
+      relaxed: relaxed,
       charWidth: charWidth,
       lineHeight: lineHeight,
     );
@@ -567,13 +577,13 @@ class _LogsConsoleState extends ConsumerState<LogsConsole> {
           ) +
           metrics.expandedExtra;
     }
-    if (!metrics.compact) return metrics.rowHeight;
+    if (!metrics.compact && !metrics.relaxed) return metrics.rowHeight;
     return _heights[log] ??=
         metrics.measure(
           _logSpan(log, metrics, colors),
           maxLines: metrics.maxLines,
         ) +
-        _LogMetrics.verticalPadding * 2;
+        metrics.verticalPadding * 2;
   }
 
   _LogColors _resolveColors(ColorScheme scheme, bool pureBlack) {
@@ -719,6 +729,7 @@ class _LogsConsoleState extends ConsumerState<LogsConsole> {
           context,
           constraints.maxWidth - _LogMetrics.margin * 2,
           compact,
+          level != LogLevel.debug,
         );
         final colors = _resolveColors(context.colorScheme, pureBlack);
         final extents = List<double?>.filled(logs.length, null);
@@ -1034,12 +1045,12 @@ class _LogsFilterBar extends ConsumerWidget {
     final filter = ref.watch(logsFilterProvider);
     final notifier = ref.read(logsFilterProvider.notifier);
     final colors = _LogColors.of(context.colorScheme, pureBlack: pureBlack);
-    final showDns = ref.watch(
+    final debug = ref.watch(
       patchClashConfigProvider.select(
         (state) => state.logLevel == LogLevel.debug,
       ),
     );
-    final dnsSelected = showDns && filter.module == _dnsModule;
+    final dnsSelected = debug && filter.module == _dnsModule;
     final module = dnsSelected ? null : filter.module;
     return SizedBox(
       height: 40,
@@ -1054,9 +1065,9 @@ class _LogsFilterBar extends ConsumerWidget {
                 child: Row(
                   spacing: 6,
                   children: [
-                    _SourceSegment(
+                    _SourceTabs(
                       source: filter.source,
-                      showDns: showDns,
+                      showDns: debug,
                       dnsSelected: dnsSelected,
                       onChanged: (source, module) => notifier.setScope(
                         source: source,
@@ -1113,13 +1124,16 @@ class _LogsFilterBar extends ConsumerWidget {
   }
 }
 
-class _SourceSegment extends StatelessWidget {
+class _SourceTabs extends StatelessWidget {
+  static const _height = 32.0;
+  static const _padding = 10.0;
+
   final LogSource? source;
   final bool showDns;
   final bool dnsSelected;
   final void Function(LogSource? source, String? module) onChanged;
 
-  const _SourceSegment({
+  const _SourceTabs({
     required this.source,
     required this.showDns,
     required this.dnsSelected,
@@ -1129,58 +1143,83 @@ class _SourceSegment extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = context.colorScheme;
+    final style = context.textTheme.labelLarge ?? const TextStyle(fontSize: 14);
+    final textScaler = MediaQuery.textScalerOf(context);
+    final tabs = [
+      (null, null, appLocalizations.categoryAll),
+      (LogSource.app, null, appLocalizations.app),
+      (LogSource.core, null, appLocalizations.core),
+      if (showDns) (null, _dnsModule, _dnsModule),
+    ];
+    final widths = <double>[];
+    for (final (_, _, label) in tabs) {
+      final painter = TextPainter(
+        text: TextSpan(text: label, style: style),
+        textDirection: Directionality.of(context),
+        textScaler: textScaler,
+        maxLines: 1,
+      )..layout();
+      widths.add(painter.width.ceilToDouble());
+      painter.dispose();
+    }
+    final selected = dnsSelected
+        ? tabs.length - 1
+        : tabs.indexWhere((tab) => tab.$2 == null && tab.$1 == source);
+    var start = _padding;
+    for (var i = 0; i < selected; i++) {
+      start += widths[i] + _padding * 2;
+    }
     return Container(
-      padding: const EdgeInsets.all(2),
+      height: _height + 2,
+      padding: const EdgeInsets.symmetric(horizontal: 4),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: scheme.outlineVariant),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          for (final (value, module, label) in [
-            (null, null, appLocalizations.categoryAll),
-            (LogSource.app, null, appLocalizations.app),
-            (LogSource.core, null, appLocalizations.core),
-            if (showDns) (null, _dnsModule, _dnsModule),
-          ])
-            _buildItem(
-              context,
-              label: label,
-              selected: module == null
-                  ? !dnsSelected && value == source
-                  : dnsSelected,
-              onTap: () => onChanged(value, module),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildItem(
-    BuildContext context, {
-    required String label,
-    required bool selected,
-    required VoidCallback onTap,
-  }) {
-    final scheme = context.colorScheme;
-    return Material(
-      color: selected ? scheme.secondaryContainer : Colors.transparent,
-      borderRadius: BorderRadius.circular(8),
       clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 4),
-          child: Text(
-            label,
-            style: context.textTheme.labelLarge?.copyWith(
-              color: selected
-                  ? scheme.onSecondaryContainer
-                  : scheme.onSurfaceVariant,
+      child: Stack(
+        children: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (final (index, (value, module, label)) in tabs.indexed)
+                InkWell(
+                  onTap: () => onChanged(value, module),
+                  borderRadius: BorderRadius.circular(8),
+                  child: SizedBox(
+                    width: widths[index] + _padding * 2,
+                    height: _height,
+                    child: Align(
+                      alignment: const Alignment(0, -0.35),
+                      child: AnimatedDefaultTextStyle(
+                        duration: kThemeAnimationDuration,
+                        style: style.copyWith(
+                          color: index == selected
+                              ? scheme.primary
+                              : scheme.onSurfaceVariant,
+                        ),
+                        child: Text(label, maxLines: 1, softWrap: false),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          AnimatedPositionedDirectional(
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeOutCubic,
+            start: start,
+            bottom: 2,
+            width: widths[selected],
+            height: 3,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: scheme.primary,
+                borderRadius: BorderRadius.circular(3),
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }

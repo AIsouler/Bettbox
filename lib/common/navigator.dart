@@ -4,6 +4,7 @@ import 'package:bett_box/state.dart';
 import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart' show MaterialPageRoute;
 import 'package:flutter/foundation.dart'
     show TargetPlatform, defaultTargetPlatform;
 
@@ -41,6 +42,19 @@ class _CleanCupertinoPageRoute<T> extends CupertinoPageRoute<T> {
 
   @override
   Color? get barrierColor => null;
+
+  static final DelegatedTransitionBuilder? _hostDelegatedTransition = () {
+    final route = MaterialPageRoute<void>(
+      builder: (_) => const SizedBox.shrink(),
+    );
+    final transition = route.delegatedTransition;
+    route.dispose();
+    return transition;
+  }();
+
+  @override
+  DelegatedTransitionBuilder? get delegatedTransition =>
+      _hostDelegatedTransition;
 
   @override
   Widget buildTransitions(
