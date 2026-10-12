@@ -9,7 +9,7 @@ import 'package:bett_box/plugins/clipboard_ext.dart';
 import 'package:bett_box/plugins/tile.dart';
 import 'package:bett_box/plugins/vpn.dart';
 import 'package:bett_box/state.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:synchronized/synchronized.dart';
@@ -93,7 +93,7 @@ Future<void> _runApp() async {
     clipboardExt.init();
   }
   HttpOverrides.global = BettboxHttpOverrides();
-  runApp(ProviderScope(child: const Application()));
+  runApp(ProviderScope(retry: (_, _) => null, child: const Application()));
 }
 
 @pragma('vm:entry-point')

@@ -12,7 +12,7 @@ import 'package:bett_box/widgets/input.dart';
 import 'package:bett_box/widgets/list.dart';
 import 'package:bett_box/widgets/text.dart';
 import 'package:bett_box/widgets/delay_animation_dialog.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:webdav_client/webdav_client.dart' as webdav;

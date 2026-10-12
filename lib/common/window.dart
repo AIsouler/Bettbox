@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:bett_box/common/common.dart';
 import 'package:bett_box/state.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:screen_retriever/screen_retriever.dart';
 import 'package:tray_manager/tray_manager.dart';
 import 'package:window_ext/window_ext.dart';

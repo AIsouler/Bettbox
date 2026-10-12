@@ -6,7 +6,7 @@ import 'package:bett_box/common/common.dart';
 import 'package:bett_box/enum/enum.dart';
 import 'package:bett_box/models/models.dart';
 import 'package:bett_box/state.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 const appName = AppIdentity.displayName;
 const appHelperService = WindowsHelperIdentity.serviceName;

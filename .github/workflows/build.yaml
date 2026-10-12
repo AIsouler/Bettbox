@@ -159,7 +159,7 @@ jobs:
           channel: ${{ contains(matrix.os, 'arm') && 'master' || 'stable' }}
           cache: true
           cache-key: flutter-${{ matrix.platform }}-${{ matrix.arch }}-${{ hashFiles('**/pubspec.lock') }}
-          flutter-version: ${{ contains(matrix.os, 'arm') && '' || '3.44.9' }}
+          flutter-version: ${{ contains(matrix.os, 'arm') && '' || '3.47.7' }}
 
       - name: Clear Pub Cache Credentials
         shell: bash
@@ -195,7 +195,7 @@ jobs:
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
         run: |
           flutter pub get
-          dart run build_runner build -d
+          dart run build_runner build
           dart setup.dart ${{ matrix.platform }} --arch ${{ matrix.arch }} ${{ env.IS_STABLE == 'true' && '--env stable' || '' }} ${{ matrix.compatible == true && '--compatible' || '' }}
 
       - name: Install SignPath (Windows)
@@ -239,7 +239,7 @@ jobs:
         shell: bash
         run: |
           flutter pub get
-          dart run build_runner build -d
+          dart run build_runner build
           dart setup.dart windows --arch ${{ matrix.arch }} --out core-only ${{ matrix.compatible == true && '--compatible' || '' }}
 
       - name: Upload Unsigned Core

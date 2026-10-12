@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:bett_box/state.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 bool dismissTvInputFocus() {
   if (!globalState.isAndroidTV) return false;

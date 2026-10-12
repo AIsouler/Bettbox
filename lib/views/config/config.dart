@@ -11,7 +11,7 @@ import 'package:bett_box/views/config/sniffer.dart';
 import 'package:bett_box/views/config/tunnel.dart';
 import 'package:bett_box/views/config/experimental.dart';
 import 'package:bett_box/widgets/widgets.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class ConfigView extends StatefulWidget {

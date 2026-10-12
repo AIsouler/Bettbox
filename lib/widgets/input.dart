@@ -6,7 +6,7 @@ import 'package:bett_box/state.dart';
 import 'package:bett_box/widgets/dialog.dart';
 import 'package:bett_box/widgets/null_status.dart';
 import 'package:bett_box/widgets/text.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'card.dart';
 import 'effect.dart';

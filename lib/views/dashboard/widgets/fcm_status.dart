@@ -5,7 +5,7 @@ import 'package:bett_box/common/common.dart';
 import 'package:bett_box/plugins/app.dart';
 import 'package:bett_box/state.dart';
 import 'package:bett_box/widgets/widgets.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class FcmStatusData {
   final int? minutes;

@@ -5,7 +5,7 @@ import 'package:bett_box/models/common.dart';
 import 'package:code_forge/code_forge.dart'
     show CodeForgeController, CodeForgeSuggestionDetails;
 import 'package:flutter/foundation.dart' show ValueListenable;
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:re_highlight/languages/yaml.dart';
 import 'package:re_highlight/re_highlight.dart' show HASH_COMMENT_MODE, Mode;
 

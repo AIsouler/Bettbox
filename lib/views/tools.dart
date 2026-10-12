@@ -23,7 +23,7 @@ import 'package:bett_box/views/connection/requests.dart';
 import 'package:bett_box/views/hotkey.dart';
 import 'package:bett_box/views/other_setting.dart';
 import 'package:bett_box/widgets/widgets.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:path/path.dart' show dirname, join;

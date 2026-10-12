@@ -2,7 +2,7 @@ import 'dart:math' as math;
 
 import 'package:bett_box/state.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 extension NumExt on num {
   String fixed({int decimals = 2}) {

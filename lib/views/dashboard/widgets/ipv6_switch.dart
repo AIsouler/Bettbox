@@ -2,7 +2,7 @@ import 'package:bett_box/common/common.dart';
 import 'package:bett_box/providers/config.dart';
 import 'package:bett_box/widgets/widgets.dart';
 import 'package:bett_box/views/config/general.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class Ipv6Switch extends StatelessWidget {

@@ -16,7 +16,7 @@ class Picker {
         !system.isAndroid &&
         allowedExtensions != null &&
         allowedExtensions.isNotEmpty;
-    final filePickerResult = await FilePicker.platform.pickFiles(
+    final filePickerResult = await FilePicker.pickFiles(
       withData: withData,
       allowMultiple: allowMultiple,
       allowedExtensions: useCustom ? allowedExtensions : null,
@@ -54,7 +54,7 @@ class Picker {
         !system.isAndroid &&
         allowedExtensions != null &&
         allowedExtensions.isNotEmpty;
-    final path = await FilePicker.platform.saveFile(
+    final path = await FilePicker.saveFile(
       fileName: name,
       initialDirectory: await appPath.downloadDirPath,
       bytes: system.isAndroid ? bytes : null,

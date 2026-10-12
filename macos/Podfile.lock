@@ -36,7 +36,7 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   code_forge: af53ecf524f9cd221e7070eca8087cac1f893f16
-  FlutterMacOS: d0db08ddef1a9af05a5ec4b724367152bb0500b1
+  FlutterMacOS: c232990155153907050900a2e175c7773903ba4e
   HotKey: e96d8a2ddbf4591131e2bb3f54e69554d90cdca6
   hotkey_manager_macos: a4317849af96d2430fa89944d3c58977ca089fbe
   tray_manager: a104b5c81b578d83f3c3d0f40a997c8b10810166

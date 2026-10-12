@@ -8,8 +8,9 @@ import 'package:bett_box/providers/config.dart';
 import 'package:bett_box/views/proxies/providers.dart';
 import 'package:bett_box/state.dart';
 import 'package:bett_box/widgets/widgets.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:path/path.dart' hide context;
 
 final geoUpdatingKeysProvider = StateProvider.autoDispose<Set<String>>(

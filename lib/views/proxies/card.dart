@@ -6,7 +6,7 @@ import 'package:bett_box/state.dart';
 import 'package:bett_box/views/proxies/common.dart';
 import 'package:bett_box/widgets/widgets.dart';
 import 'package:emoji_regex/emoji_regex.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final _proxyIconMatchersProvider = Provider.autoDispose<List<(RegExp, String)>>(

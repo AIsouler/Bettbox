@@ -315,7 +315,7 @@ class ClashCore {
       return [];
     }
     try {
-      return Isolate.run<List<ExternalProvider>>(() {
+      return await Isolate.run<List<ExternalProvider>>(() {
         final externalProviders =
             (json.decode(externalProvidersRawString) as List<dynamic>)
                 .map((item) => ExternalProvider.fromJson(item))
