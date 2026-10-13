@@ -63,3 +63,37 @@ class SettingTextCard extends StatelessWidget {
     );
   }
 }
+
+class TitleSettingButton extends StatelessWidget {
+  final String tooltip;
+  final VoidCallback onTap;
+
+  const TitleSettingButton({
+    super.key,
+    required this.tooltip,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: Colors.transparent,
+        child: InkResponse(
+          radius: 16,
+          highlightShape: BoxShape.circle,
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(7),
+            child: Icon(
+              Icons.settings_outlined,
+              size: 18,
+              color: context.colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

@@ -293,7 +293,7 @@ class _DelayAnimationPickerDialogState
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            height: 76,
+            height: 68,
             width: double.infinity,
             decoration: BoxDecoration(
               color: context.colorScheme.surfaceContainerHighest.withValues(
@@ -314,10 +314,10 @@ class _DelayAnimationPickerDialogState
               ),
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           Flexible(
             child: SizedBox(
-              height: 136,
+              height: 128,
               child: Stack(
                 children: [
                   Positioned.fill(

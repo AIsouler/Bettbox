@@ -73,7 +73,11 @@ class _ResourcesViewState extends ConsumerState<ResourcesView> {
           } catch (e) {
             errors.add('${geoItem.label}: $e');
           } finally {
-            updatingKeysNotifier.update((s) => Set.of(s)..remove(geoItem.key));
+            if (mounted) {
+              updatingKeysNotifier.update(
+                (s) => Set.of(s)..remove(geoItem.key),
+              );
+            }
           }
         }),
       );
@@ -85,7 +89,9 @@ class _ResourcesViewState extends ConsumerState<ResourcesView> {
         );
       }
     } finally {
-      updatingKeysNotifier.state = {};
+      if (mounted) {
+        updatingKeysNotifier.state = {};
+      }
     }
   }
 
@@ -116,6 +122,8 @@ class _ResourcesViewState extends ConsumerState<ResourcesView> {
             },
       child: Text(
         label,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
         style: isCurrent
             ? null
             : TextStyle(
@@ -131,9 +139,9 @@ class _ResourcesViewState extends ConsumerState<ResourcesView> {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _buildTitleItem(appLocalizations.providers, true),
+        Flexible(child: _buildTitleItem(appLocalizations.providers, true)),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 6),
           child: Text(
             '|',
             style: TextStyle(
@@ -143,7 +151,7 @@ class _ResourcesViewState extends ConsumerState<ResourcesView> {
             ),
           ),
         ),
-        _buildTitleItem(appLocalizations.resources, false),
+        Flexible(child: _buildTitleItem(appLocalizations.resources, false)),
       ],
     );
   }
@@ -175,27 +183,64 @@ class _ResourcesViewState extends ConsumerState<ResourcesView> {
     return CommonScaffold(
       title: hasProviders ? null : appLocalizations.resources,
       titleWidget: hasProviders ? _buildTitle() : null,
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.replay),
-          onPressed: _handleResetAll,
-          tooltip: appLocalizations.reset,
-        ),
-        IconButton(
-          icon: isUpdating
-              ? const SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: SyncedLoading(
-                    size: 24,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
-                )
-              : const Icon(Icons.sync),
-          onPressed: isUpdating ? null : _handleSyncAll,
-          tooltip: appLocalizations.syncAll,
-        ),
-      ],
+      actions: hasProviders
+          ? [
+              CommonPopupBox(
+                targetBuilder: (open) {
+                  return IconButton(
+                    onPressed: () {
+                      open(offset: const Offset(0, 20));
+                    },
+                    tooltip: appLocalizations.more,
+                    icon: isUpdating
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: SyncedLoading(
+                              size: 24,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          )
+                        : const Icon(Icons.more_vert),
+                  );
+                },
+                popup: CommonPopupMenu(
+                  items: [
+                    PopupMenuItemData(
+                      icon: Icons.sync,
+                      label: appLocalizations.syncAll,
+                      onPressed: isUpdating ? null : _handleSyncAll,
+                    ),
+                    PopupMenuItemData(
+                      icon: Icons.replay,
+                      label: appLocalizations.reset,
+                      onPressed: _handleResetAll,
+                    ),
+                  ],
+                ),
+              ),
+            ]
+          : [
+              IconButton(
+                icon: const Icon(Icons.replay),
+                onPressed: _handleResetAll,
+                tooltip: appLocalizations.reset,
+              ),
+              IconButton(
+                icon: isUpdating
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: SyncedLoading(
+                          size: 24,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      )
+                    : const Icon(Icons.sync),
+                onPressed: isUpdating ? null : _handleSyncAll,
+                tooltip: appLocalizations.syncAll,
+              ),
+            ],
       body: ScrollEdgeRise(
         builder: (context, rise) => ListView(
           padding: EdgeInsets.only(
@@ -205,6 +250,15 @@ class _ResourcesViewState extends ConsumerState<ResourcesView> {
             top: 8 + rise,
           ),
           children: [
+            ListHeader(
+              title: appLocalizations.geoBuiltInResources,
+              padding: const EdgeInsets.only(
+                left: 16,
+                right: 8,
+                top: 4,
+                bottom: 8,
+              ),
+            ),
             ...generateSection(
               items: geoItems.map(
                 (geoItem) => GeoDataListItem(geoItem: geoItem),
@@ -283,7 +337,9 @@ class _GeoDataListItemState extends ConsumerState<GeoDataListItem> {
           );
           if (message.isNotEmpty) throw message;
         } finally {
-          updatingKeysNotifier.update((s) => Set.of(s)..remove(geoItem.key));
+          if (mounted) {
+            updatingKeysNotifier.update((s) => Set.of(s)..remove(geoItem.key));
+          }
         }
       },
       silence: false,
