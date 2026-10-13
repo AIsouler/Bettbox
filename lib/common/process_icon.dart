@@ -53,9 +53,9 @@ class ProcessIcon {
   (Uint8List, int, int)? _readWindowsIcon(String path) {
     return using((arena) {
       final pathPtr = path.toNativeUtf16(allocator: arena);
-      final iconPtr = arena<IntPtr>();
+      final iconPtr = arena<Pointer>();
       final count = PrivateExtractIcons(
-        pathPtr,
+        PCWSTR(pathPtr),
         0,
         _size,
         _size,
@@ -64,33 +64,37 @@ class ProcessIcon {
         1,
         0,
       );
-      var hIcon = count > 0 && count != 0xFFFFFFFF ? iconPtr.value : 0;
-      if (hIcon == 0) {
+      var hIcon = count > 0 && count != 0xFFFFFFFF
+          ? HICON(iconPtr.value)
+          : HICON(nullptr);
+      if (!hIcon.isValid) {
         final info = arena<SHFILEINFO>();
         final res = SHGetFileInfo(
-          pathPtr,
-          0,
+          PCWSTR(pathPtr),
+          const FILE_FLAGS_AND_ATTRIBUTES(0),
           info,
           sizeOf<SHFILEINFO>(),
-          SHGFI_ICON | SHGFI_LARGEICON,
+          SHGFI_FLAGS(SHGFI_ICON | SHGFI_LARGEICON),
         );
         if (res != 0) {
           hIcon = info.ref.hIcon;
         }
       }
-      if (hIcon == 0) return null;
+      if (!hIcon.isValid) return null;
       final iconInfo = arena<ICONINFO>();
-      if (GetIconInfo(hIcon, iconInfo) == 0) {
-        DestroyIcon(hIcon);
+      if (!GetIconInfo(hIcon, iconInfo).value) {
+        hIcon.close();
         return null;
       }
       final hbmColor = iconInfo.ref.hbmColor;
       final hbmMask = iconInfo.ref.hbmMask;
-      final hdc = GetDC(NULL);
+      final hdc = GetDC(null);
       try {
-        if (hbmColor == 0) return null;
+        if (!hbmColor.isValid) return null;
         final bitmap = arena<BITMAP>();
-        if (GetObject(hbmColor, sizeOf<BITMAP>(), bitmap) == 0) return null;
+        if (GetObject(HGDIOBJ(hbmColor), sizeOf<BITMAP>(), bitmap) == 0) {
+          return null;
+        }
         final width = bitmap.ref.bmWidth;
         final height = bitmap.ref.bmHeight;
         if (width <= 0 || height <= 0) return null;
@@ -111,7 +115,7 @@ class ProcessIcon {
           height,
           bits,
           bmi,
-          DIB_RGB_COLORS,
+          const DIB_USAGE(DIB_RGB_COLORS),
         );
         if (lines == 0) return null;
         final pixels = Uint8List.fromList(bits.asTypedList(length));
@@ -135,10 +139,10 @@ class ProcessIcon {
         }
         return (pixels, width, height);
       } finally {
-        ReleaseDC(NULL, hdc);
-        if (hbmColor != 0) DeleteObject(hbmColor);
-        if (hbmMask != 0) DeleteObject(hbmMask);
-        DestroyIcon(hIcon);
+        ReleaseDC(null, hdc);
+        if (hbmColor.isValid) hbmColor.close();
+        if (hbmMask.isValid) hbmMask.close();
+        hIcon.close();
       }
     });
   }

@@ -252,8 +252,10 @@ class EditProfileViewState extends State<EditProfileView> {
     final platformFile = await globalState.appController.safeRun(
       picker.pickerFile,
     );
-    if (platformFile?.bytes == null) return;
-    fileData = platformFile?.bytes;
+    if (platformFile == null) return;
+    final bytes = await platformFile.readAsBytes();
+    if (bytes.isEmpty) return;
+    fileData = bytes;
     fileInfoNotifier.value = fileInfoNotifier.value?.copyWith(
       size: fileData?.length ?? 0,
       lastModified: DateTime.now(),

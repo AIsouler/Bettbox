@@ -509,8 +509,8 @@ class _ScriptsViewState extends ConsumerState<ScriptsView> {
     if (file == null) {
       return;
     }
-    final bytes = file.bytes;
-    if (bytes == null) {
+    final bytes = await file.readAsBytes();
+    if (bytes.isEmpty) {
       return;
     }
     final content = utf8.decode(bytes);

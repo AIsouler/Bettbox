@@ -31,14 +31,13 @@ class HelperAuthManager {
       try {
         final keyPath =
             'SYSTEM\\CurrentControlSet\\Services\\$appHelperService';
-        key = Registry.openPath(
-          RegistryHive.localMachine,
-          path: keyPath,
-          desiredAccessRights: AccessRights.readOnly,
+        key = LOCAL_MACHINE.open(
+          keyPath,
+          config: const RegistryOpenConfig(access: RegistryAccess.read),
         );
-        final list = key.getStringArrayValue('Environment');
-        if (list != null) {
-          for (final item in list) {
+        final list = key.getValue('Environment');
+        if (list case MultiStringValue(:final value)) {
+          for (final item in value) {
             if (item.startsWith('HELPER_AUTH_KEY=')) {
               final val = item.substring('HELPER_AUTH_KEY='.length);
               if (_isValidHexKey(val)) {
@@ -167,15 +166,14 @@ class HelperAuthManager {
 
       final result = CryptProtectData(
         dataIn,
-        nullptr,
-        nullptr,
-        nullptr,
-        nullptr,
+        null,
+        null,
+        null,
         _cryptProtectUiForbidden,
         dataOut,
       );
-      if (result == 0) {
-        throw WindowsException(HRESULT_FROM_WIN32(GetLastError()));
+      if (!result.value) {
+        throw WindowsException(result.error.toHRESULT());
       }
 
       return Uint8List.fromList(
@@ -183,7 +181,7 @@ class HelperAuthManager {
       );
     } finally {
       if (dataOut.ref.pbData != nullptr) {
-        LocalFree(dataOut.ref.pbData);
+        LocalFree(HLOCAL(dataOut.ref.pbData));
       }
       calloc.free(inputBuffer);
       calloc.free(dataIn);
@@ -203,15 +201,14 @@ class HelperAuthManager {
 
       final result = CryptUnprotectData(
         dataIn,
-        nullptr,
-        nullptr,
-        nullptr,
-        nullptr,
+        null,
+        null,
+        null,
         _cryptProtectUiForbidden,
         dataOut,
       );
-      if (result == 0) {
-        throw WindowsException(HRESULT_FROM_WIN32(GetLastError()));
+      if (!result.value) {
+        throw WindowsException(result.error.toHRESULT());
       }
 
       return Uint8List.fromList(
@@ -219,7 +216,7 @@ class HelperAuthManager {
       );
     } finally {
       if (dataOut.ref.pbData != nullptr) {
-        LocalFree(dataOut.ref.pbData);
+        LocalFree(HLOCAL(dataOut.ref.pbData));
       }
       calloc.free(inputBuffer);
       calloc.free(dataIn);

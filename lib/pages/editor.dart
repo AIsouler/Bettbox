@@ -470,8 +470,8 @@ class _EditorPageState extends ConsumerState<EditorPage> {
       if (file == null) {
         return;
       }
-      final bytes = file.bytes;
-      if (bytes == null) {
+      final bytes = await file.readAsBytes();
+      if (bytes.isEmpty) {
         return;
       }
       final res = utf8.decode(bytes);

@@ -1612,10 +1612,9 @@ class AppController {
     int successCount = 0;
     try {
       for (final platformFile in validFiles) {
-        final bytes = platformFile.bytes;
-        if (bytes == null || bytes.isEmpty) continue;
-
         try {
+          final bytes = await platformFile.readAsBytes();
+          if (bytes.isEmpty) continue;
           final profile = await Profile.normal(
             label: platformFile.name,
           ).saveFile(bytes);

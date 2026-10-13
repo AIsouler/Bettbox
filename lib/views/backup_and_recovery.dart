@@ -135,7 +135,7 @@ class _BackupAndRecoveryState extends ConsumerState<BackupAndRecovery> {
   }
 
   Future<void> _recoveryOnLocal(RecoveryOption recoveryOption) async {
-    final file = await picker.pickerFile(withData: false);
+    final file = await picker.pickerFile();
     final path = file?.path;
     final res = await globalState.appController.safeRun<bool>(
       () async {
@@ -144,9 +144,10 @@ class _BackupAndRecoveryState extends ConsumerState<BackupAndRecovery> {
             path,
             recoveryOption,
           );
-        } else if (file?.bytes != null) {
+        } else if (file != null) {
+          final bytes = await file.readAsBytes();
           await globalState.appController.recoveryData(
-            List<int>.from(file!.bytes!),
+            List<int>.from(bytes),
             recoveryOption,
           );
         } else {

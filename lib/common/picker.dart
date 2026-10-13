@@ -8,7 +8,6 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 
 class Picker {
   Future<List<PlatformFile>?> pickerFiles({
-    bool withData = true,
     bool allowMultiple = true,
     List<String>? allowedExtensions,
   }) async {
@@ -19,22 +18,25 @@ class Picker {
     if (system.isMacOS) {
       await FilePicker.skipEntitlementsChecks();
     }
-    final filePickerResult = await FilePicker.pickFiles(
-      withData: withData,
-      allowMultiple: allowMultiple,
-      allowedExtensions: useCustom ? allowedExtensions : null,
-      type: useCustom ? FileType.custom : FileType.any,
-      initialDirectory: await appPath.downloadDirPath,
-    );
-    return filePickerResult?.files;
+    if (allowMultiple) {
+      final files = await FilePicker.pickFiles(
+        allowedExtensions: useCustom ? allowedExtensions : null,
+        type: useCustom ? FileType.custom : FileType.any,
+        initialDirectory: await appPath.downloadDirPath,
+      );
+      return files.isEmpty ? null : files;
+    } else {
+      final file = await FilePicker.pickFile(
+        allowedExtensions: useCustom ? allowedExtensions : null,
+        type: useCustom ? FileType.custom : FileType.any,
+        initialDirectory: await appPath.downloadDirPath,
+      );
+      return file != null ? [file] : null;
+    }
   }
 
-  Future<PlatformFile?> pickerFile({
-    bool withData = true,
-    List<String>? allowedExtensions,
-  }) async {
+  Future<PlatformFile?> pickerFile({List<String>? allowedExtensions}) async {
     final files = await pickerFiles(
-      withData: withData,
       allowMultiple: false,
       allowedExtensions: allowedExtensions,
     );
@@ -53,34 +55,22 @@ class Picker {
         name = '$name.${allowedExtensions.first}';
       }
     }
-    final useCustom =
-        !system.isAndroid &&
-        allowedExtensions != null &&
-        allowedExtensions.isNotEmpty;
     if (system.isMacOS) {
       await FilePicker.skipEntitlementsChecks();
     }
-    final path = await FilePicker.saveFile(
+    final uri = await FilePicker.saveFile(
       fileName: name,
       initialDirectory: await appPath.downloadDirPath,
-      bytes: system.isAndroid ? bytes : null,
-      allowedExtensions: useCustom ? allowedExtensions : null,
-      type: useCustom ? FileType.custom : FileType.any,
+      bytes: bytes,
     );
-    if (path == null) return null;
+    if (uri == null) return null;
+    if (uri.scheme != 'file') return uri.path;
 
-    var savePath = path;
-    if (allowedExtensions != null && allowedExtensions.isNotEmpty) {
-      final hasExt = allowedExtensions.any((ext) => savePath.endsWith('.$ext'));
-      if (!hasExt) {
-        savePath = '$savePath.${allowedExtensions.first}';
-      }
-    }
-
-    if (!system.isAndroid) {
-      final file = await File(savePath).create(recursive: true);
-      await file.writeAsBytes(bytes);
-    }
+    final path = uri.toFilePath();
+    if (allowedExtensions == null || allowedExtensions.isEmpty) return path;
+    if (allowedExtensions.any((ext) => path.endsWith('.$ext'))) return path;
+    final savePath = '$path.${allowedExtensions.first}';
+    await File(path).rename(savePath);
     return savePath;
   }
 
