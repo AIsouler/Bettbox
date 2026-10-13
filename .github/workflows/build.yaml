@@ -53,10 +53,6 @@ jobs:
           - platform: macos
             os: macos-15
             arch: amd64
-          - platform: macos
-            os: macos-15
-            arch: amd64
-            compatible: true
           - platform: linux
             os: ubuntu-22.04
             arch: amd64
@@ -150,8 +146,12 @@ jobs:
       - name: Setup Golang
         uses: actions/setup-go@v6
         with:
-          go-version: ${{ matrix.compatible == true && '1.20.x' || '1.25.x' }}
+          go-version: ${{ matrix.compatible == true && '1.24.x' || '1.26.x' }}
           cache-dependency-path: core/go.sum
+
+      - name: Select Xcode (macOS)
+        if: matrix.platform == 'macos'
+        run: sudo xcode-select -s "$(ls -d /Applications/Xcode_26*.app | sort -V | tail -1)"
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
