@@ -48,6 +48,130 @@ class _SearchItem {
   });
 }
 
+class ToolsShortcut {
+  final Widget icon;
+  final String title;
+  final String? subtitle;
+  final WidgetBuilder? builder;
+  final VoidCallback? onTap;
+  final bool wrap;
+
+  const ToolsShortcut({
+    required this.icon,
+    required this.title,
+    this.subtitle,
+    this.builder,
+    this.onTap,
+    this.wrap = true,
+  });
+
+  void open(BuildContext context) {
+    final builder = this.builder;
+    if (builder == null) {
+      onTap?.call();
+      return;
+    }
+    showExtend(
+      context,
+      props: const ExtendProps(forceFull: true),
+      builder: (_, type) {
+        final child = builder(context);
+        return wrap
+            ? AdaptiveSheetScaffold(type: type, title: title, body: child)
+            : child;
+      },
+    );
+  }
+}
+
+List<ToolsShortcut> getToolsShortcuts(
+  List<NavigationItem> moreItems,
+  List<SidebarFlyoutEntry> entries,
+) {
+  ToolsShortcut? buildNavigationShortcut(PageLabel label) {
+    final item = moreItems.where((item) => item.label == label).firstOrNull;
+    if (item == null) {
+      return null;
+    }
+    return ToolsShortcut(
+      icon: item.icon,
+      title: Intl.message(item.label.name),
+      subtitle: switch (item.description) {
+        final description? => Intl.message(description),
+        null => null,
+      },
+      builder: item.builder,
+      wrap: false,
+    );
+  }
+
+  return [
+    for (final entry in SidebarFlyoutEntry.supportedValues)
+      if (entries.contains(entry))
+        ?switch (entry) {
+          SidebarFlyoutEntry.resources => buildNavigationShortcut(
+            PageLabel.resources,
+          ),
+          SidebarFlyoutEntry.script => buildNavigationShortcut(
+            PageLabel.script,
+          ),
+          SidebarFlyoutEntry.theme => ToolsShortcut(
+            icon: const Icon(Icons.style),
+            title: appLocalizations.theme,
+            subtitle: appLocalizations.themeDesc,
+            builder: (_) => const ThemeView(),
+          ),
+          SidebarFlyoutEntry.backupAndRecovery => ToolsShortcut(
+            icon: const Icon(Icons.cloud_sync),
+            title: appLocalizations.backupAndRecovery,
+            subtitle: appLocalizations.backupAndRecoveryDesc,
+            builder: (_) => const BackupAndRecovery(),
+          ),
+          SidebarFlyoutEntry.hotkeyManagement => ToolsShortcut(
+            icon: const Icon(Icons.keyboard),
+            title: appLocalizations.hotkeyManagement,
+            subtitle: appLocalizations.hotkeyManagementDesc,
+            builder: (_) => const HotKeyView(),
+          ),
+          SidebarFlyoutEntry.loopback => ToolsShortcut(
+            icon: const Icon(Icons.lock),
+            title: appLocalizations.loopback,
+            subtitle: appLocalizations.loopbackDesc,
+            onTap: () {
+              windows?.runas(
+                '"${join(dirname(Platform.resolvedExecutable), "WindowsLoopbackManager.exe")}"',
+                '',
+                showWindow: true,
+              );
+            },
+          ),
+          SidebarFlyoutEntry.basicConfig => ToolsShortcut(
+            icon: const Icon(Icons.developer_board_rounded),
+            title: appLocalizations.basicConfig,
+            subtitle: appLocalizations.basicConfigDesc,
+            builder: (_) => const ConfigView(),
+          ),
+          SidebarFlyoutEntry.otherSettings => ToolsShortcut(
+            icon: const Icon(Icons.settings_suggest_outlined),
+            title: appLocalizations.otherSettings,
+            subtitle: appLocalizations.otherSettingsDesc,
+            builder: (_) => const OtherSettingView(),
+          ),
+          SidebarFlyoutEntry.application => ToolsShortcut(
+            icon: const Icon(Icons.settings),
+            title: appLocalizations.application,
+            subtitle: appLocalizations.applicationDesc,
+            builder: (_) => const ApplicationSettingView(),
+          ),
+          SidebarFlyoutEntry.about => ToolsShortcut(
+            icon: const Icon(Icons.info),
+            title: appLocalizations.about,
+            builder: (_) => const AboutView(),
+          ),
+        },
+  ];
+}
+
 class _GeneralListView extends StatelessWidget {
   const _GeneralListView();
 
@@ -471,26 +595,49 @@ class _ToolViewState extends ConsumerState<ToolsView> {
           const ApplicationSettingView(),
         ),
       ),
-      _SearchItem(
-        title: appLocalizations.navBarHapticFeedback,
-        subtitle: appLocalizations.navBarHapticFeedbackDesc,
-        category: appCategory,
-        onTap: (context, _) => _pushPage(
-          context,
-          appLocalizations.application,
-          const ApplicationSettingView(),
+      if (system.isDesktop)
+        _SearchItem(
+          title: appLocalizations.sidebarFlyout,
+          subtitle: appLocalizations.sidebarFlyoutDesc,
+          category: appCategory,
+          onTap: (context, _) => _pushPage(
+            context,
+            appLocalizations.application,
+            const ApplicationSettingView(),
+          ),
         ),
-      ),
+      if (system.isAndroid)
+        _SearchItem(
+          title: appLocalizations.navBarHapticFeedback,
+          subtitle: appLocalizations.navBarHapticFeedbackDesc,
+          category: appCategory,
+          onTap: (context, _) => _pushPage(
+            context,
+            appLocalizations.application,
+            const ApplicationSettingView(),
+          ),
+        ),
       _SearchItem(
         title: appLocalizations.autoCloseConnections,
         subtitle: appLocalizations.autoCloseConnectionsDesc,
-        category: appCategory,
+        category: otherSettingsCategory,
         onTap: (context, _) => _pushPage(
           context,
-          appLocalizations.application,
-          const ApplicationSettingView(),
+          appLocalizations.otherSettings,
+          const OtherSettingView(),
         ),
       ),
+      if (system.isAndroid)
+        _SearchItem(
+          title: appLocalizations.flushDnsOnNetworkChange,
+          subtitle: appLocalizations.flushDnsOnNetworkChangeDesc,
+          category: otherSettingsCategory,
+          onTap: (context, _) => _pushPage(
+            context,
+            appLocalizations.otherSettings,
+            const OtherSettingView(),
+          ),
+        ),
       _SearchItem(
         title: appLocalizations.onlyStatisticsProxy,
         subtitle: appLocalizations.onlyStatisticsProxyDesc,

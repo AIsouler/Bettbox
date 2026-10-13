@@ -8,6 +8,7 @@ import 'package:bett_box/models/models.dart';
 import 'package:bett_box/plugins/app.dart';
 import 'package:bett_box/providers/providers.dart';
 import 'package:bett_box/state.dart';
+import 'package:bett_box/views/tools.dart';
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
@@ -707,6 +708,11 @@ class AppSidebarContainer extends ConsumerWidget {
     final isCollapsed = ref.watch(
       appSettingProvider.select((s) => s.sidebarCollapsed),
     );
+    final (sidebarFlyout, sidebarFlyoutOutsideTools) = ref.watch(
+      appSettingProvider.select(
+        (s) => (s.sidebarFlyout, s.sidebarFlyoutOutsideTools),
+      ),
+    );
     void onToggle() => ref
         .read(appSettingProvider.notifier)
         .updateState(
@@ -804,11 +810,18 @@ class AppSidebarContainer extends ConsumerWidget {
                                             final item = navigationItems[index];
                                             final isSelected =
                                                 currentIndex == index;
-                                            return _SidebarItem(
+                                            final hasFlyout =
+                                                sidebarFlyout &&
+                                                item.label == PageLabel.tools &&
+                                                !(sidebarFlyoutOutsideTools &&
+                                                    isSelected);
+                                            final sidebarItem = _SidebarItem(
                                               icon: item.icon,
                                               label: item.label.localizedName,
                                               isSelected: isSelected,
                                               isCollapsed: isCollapsed,
+                                              hasTooltip:
+                                                  !hasFlyout && !isSelected,
                                               expandedWidth: expandedWidth,
                                               onTap: () {
                                                 if (currentIndex == index) {
@@ -827,6 +840,13 @@ class AppSidebarContainer extends ConsumerWidget {
                                                 globalState.appController
                                                     .toPage(item.label);
                                               },
+                                            );
+                                            if (!hasFlyout) {
+                                              return sidebarItem;
+                                            }
+                                            return _SidebarFlyout(
+                                              title: item.label.localizedName,
+                                              child: sidebarItem,
                                             );
                                           },
                                         ),
@@ -895,6 +915,7 @@ class _SidebarItem extends StatefulWidget {
   final String label;
   final bool isSelected;
   final bool isCollapsed;
+  final bool hasTooltip;
   final double expandedWidth;
   final VoidCallback onTap;
 
@@ -903,6 +924,7 @@ class _SidebarItem extends StatefulWidget {
     required this.label,
     required this.isSelected,
     this.isCollapsed = false,
+    this.hasTooltip = true,
     required this.expandedWidth,
     required this.onTap,
   });
@@ -1001,10 +1023,10 @@ class _SidebarItemState extends State<_SidebarItem> {
       ),
     );
 
-    if (isCollapsed) {
+    if (isCollapsed && widget.hasTooltip) {
       return Tooltip(
         message: widget.label,
-        waitDuration: const Duration(milliseconds: 350),
+        waitDuration: const Duration(milliseconds: 150),
         positionDelegate: (context) {
           final x = context.target.dx + context.targetSize.width / 2 + 12;
           final y = (context.target.dy - context.tooltipSize.height / 2).clamp(
@@ -1018,6 +1040,238 @@ class _SidebarItemState extends State<_SidebarItem> {
     }
 
     return itemWidget;
+  }
+}
+
+class _SidebarFlyout extends ConsumerStatefulWidget {
+  final String title;
+  final Widget child;
+
+  const _SidebarFlyout({required this.title, required this.child});
+
+  @override
+  ConsumerState<_SidebarFlyout> createState() => _SidebarFlyoutState();
+}
+
+class _SidebarFlyoutState extends ConsumerState<_SidebarFlyout>
+    with SingleTickerProviderStateMixin {
+  final _portalController = OverlayPortalController();
+  late final _animationController = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 150),
+    reverseDuration: const Duration(milliseconds: 100),
+  );
+  late final _animation = CurvedAnimation(
+    parent: _animationController,
+    curve: Curves.easeOutCubic,
+  );
+  Timer? _timer;
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _animation.dispose();
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  void _handleEnter() {
+    _timer?.cancel();
+    if (_portalController.isShowing) {
+      _animationController.forward();
+      return;
+    }
+    final delay = ref.read(appSettingProvider).sidebarFlyoutDelay.duration;
+    _timer = Timer(delay, () {
+      _portalController.show();
+      _animationController.forward();
+    });
+  }
+
+  void _handleExit() {
+    _timer?.cancel();
+    _timer = Timer(const Duration(milliseconds: 100), _hide);
+  }
+
+  void _hide() {
+    _timer?.cancel();
+    _animationController.reverse().whenCompleteOrCancel(() {
+      if (mounted && _animationController.isDismissed) {
+        _portalController.hide();
+      }
+    });
+  }
+
+  void _handleOpen(ToolsShortcut shortcut) {
+    _timer?.cancel();
+    _animationController.value = 0;
+    _portalController.hide();
+    if (shortcut.builder != null) {
+      globalState.appController.toPage(PageLabel.tools);
+    }
+    final navigatorContext = globalState.navigatorKey.currentContext;
+    if (navigatorContext == null) {
+      return;
+    }
+    shortcut.open(navigatorContext);
+  }
+
+  Widget _buildItem(BuildContext context, ToolsShortcut shortcut) {
+    final colorScheme = context.colorScheme;
+    final subtitle = shortcut.subtitle;
+    return InkWell(
+      borderRadius: BorderRadius.circular(_sidebarItemRadius),
+      onTap: () => _handleOpen(shortcut),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+        child: Row(
+          children: [
+            IconTheme(
+              data: IconThemeData(
+                color: colorScheme.onSurfaceVariant,
+                size: _sidebarIconSize,
+              ),
+              child: shortcut.icon,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    shortcut.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: context.textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
+                  if (subtitle != null)
+                    Text(
+                      subtitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: context.textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPanel(
+    BuildContext context,
+    List<ToolsShortcut> shortcuts,
+    bool pureBlack,
+  ) {
+    final itemBox = this.context.findRenderObject();
+    final overlayBox = Overlay.of(this.context).context.findRenderObject();
+    if (itemBox is! RenderBox || overlayBox is! RenderBox) {
+      return const SizedBox.shrink();
+    }
+    final left = itemBox
+        .localToGlobal(Offset(itemBox.size.width, 0), ancestor: overlayBox)
+        .dx;
+    final colorScheme = context.colorScheme;
+    final isLight = colorScheme.brightness == Brightness.light;
+    final viewPadding = system.isDesktop
+        ? EdgeInsets.zero
+        : MediaQuery.paddingOf(context);
+    return Positioned(
+      left: left,
+      top: viewPadding.top + _sidebarHeaderHeight,
+      bottom: 0,
+      child: MouseRegion(
+        onEnter: (_) => _handleEnter(),
+        onExit: (_) => _handleExit(),
+        child: Padding(
+          padding: EdgeInsets.only(left: 13, bottom: viewPadding.bottom + 8),
+          child: FadeTransition(
+            opacity: _animation,
+            child: SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(-0.04, 0),
+                end: Offset.zero,
+              ).animate(_animation),
+              child: Material(
+                color: isLight || pureBlack
+                    ? colorScheme.surfaceContainerLow
+                    : colorScheme.surfaceContainerHighest,
+                elevation: 6,
+                shadowColor: Colors.black.withValues(
+                  alpha: isLight ? 0.35 : 0.6,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  side: BorderSide(
+                    color: colorScheme.outlineVariant.withValues(
+                      alpha: isLight ? 0.6 : 0.5,
+                    ),
+                  ),
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    minWidth: 168,
+                    maxWidth: 280,
+                  ),
+                  child: IntrinsicWidth(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(10, 10, 14, 10),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(10, 10, 10, 12),
+                            child: Text(
+                              widget.title,
+                              style: context.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          for (final shortcut in shortcuts)
+                            _buildItem(context, shortcut),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final moreItems = ref.watch(
+      moreToolsSelectorStateProvider.select((state) => state.navigationItems),
+    );
+    final entries = ref.watch(
+      appSettingProvider.select((state) => state.sidebarFlyoutEntries),
+    );
+    final shortcuts = getToolsShortcuts(moreItems, entries);
+    final pureBlack = ref.watch(
+      themeSettingProvider.select((state) => state.pureBlack),
+    );
+    return OverlayPortal(
+      controller: _portalController,
+      overlayChildBuilder: (context) =>
+          _buildPanel(context, shortcuts, pureBlack),
+      child: MouseRegion(
+        onEnter: (_) => _handleEnter(),
+        onExit: (_) => _handleExit(),
+        child: Listener(onPointerDown: (_) => _hide(), child: widget.child),
+      ),
+    );
   }
 }
 
