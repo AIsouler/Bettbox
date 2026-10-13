@@ -21,6 +21,7 @@ class _MediaUnlockState extends ConsumerState<MediaUnlock> {
   MediaUnlockState? _lastState;
   List<MediaPlatform>? _lastDisplayedPlatforms;
   bool? _lastColorfulIcons;
+  ThemeData? _lastTheme;
   Widget? _cachedCard;
 
   bool _shouldRebuildCard({
@@ -283,14 +284,18 @@ class _MediaUnlockState extends ConsumerState<MediaUnlock> {
       child: ValueListenableBuilder<MediaUnlockState>(
         valueListenable: mediaUnlockState.state,
         builder: (context, state, _) {
-          final shouldRebuild = _shouldRebuildCard(
-            newState: state,
-            displayedPlatforms: displayedPlatforms,
-            colorfulIcons: colorfulIcons,
-          );
+          final theme = Theme.of(context);
+          final shouldRebuild =
+              !identical(_lastTheme, theme) ||
+              _shouldRebuildCard(
+                newState: state,
+                displayedPlatforms: displayedPlatforms,
+                colorfulIcons: colorfulIcons,
+              );
           if (!shouldRebuild) {
             return _cachedCard!;
           }
+          _lastTheme = theme;
           _lastState = state;
           _lastDisplayedPlatforms = displayedPlatforms;
           _lastColorfulIcons = colorfulIcons;
