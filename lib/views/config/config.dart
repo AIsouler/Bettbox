@@ -57,10 +57,8 @@ class _ConfigViewState extends State<ConfigView> {
                     ref
                         .read(vpnSettingProvider.notifier)
                         .updateState(
-                          (state) => defaultVpnProps.copyWith(
-                            accessControl: state.accessControl,
-                            enable: state.enable,
-                            systemProxy: state.systemProxy,
+                          (state) => state.copyWith(
+                            allowBypass: defaultVpnProps.allowBypass,
                           ),
                         );
                     ref

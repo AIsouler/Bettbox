@@ -124,6 +124,11 @@ class AppController {
     _updateGroupsRetryCount = 0;
   }
 
+  Future<void> flushDns() async {
+    await clashCore.flushFakeIP();
+    await clashCore.flushDnsCache();
+  }
+
   Future<void> restartCore() {
     return _coreLifecycleLock.synchronized(() async {
       _ref.read(isRestartingCoreProvider.notifier).state = true;
@@ -438,8 +443,8 @@ class AppController {
       return;
     }
 
-    _ref.read(totalTrafficProvider.notifier).value = await clashCore
-        .getTotalTraffic();
+    final totalTraffic = await clashCore.getTotalTraffic();
+    _ref.read(totalTrafficProvider.notifier).value = totalTraffic;
 
     final traffic = await clashCore.getTraffic();
 

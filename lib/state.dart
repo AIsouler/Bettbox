@@ -51,9 +51,7 @@ class GlobalState {
             ? const ClashConfig(findProcessMode: FindProcessMode.always)
             : defaultClashConfig,
         networkProps: defaultNetworkProps,
-        appSetting: defaultAppSettingProps.copyWith(
-          showStartSwitch: _isAndroidTV ?? false,
-        ),
+        appSetting: defaultAppSettingProps,
       );
 
   set config(Config value) => _config = value;
@@ -236,9 +234,7 @@ class GlobalState {
               ? const ClashConfig(findProcessMode: FindProcessMode.always)
               : defaultClashConfig,
           networkProps: defaultNetworkProps,
-          appSetting: defaultAppSettingProps.copyWith(
-            showStartSwitch: _isAndroidTV ?? false,
-          ),
+          appSetting: defaultAppSettingProps,
         );
     final scriptProps = await config.scriptProps.externalize();
     if (scriptProps != config.scriptProps) {

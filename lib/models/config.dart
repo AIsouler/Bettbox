@@ -113,6 +113,29 @@ List<DashboardWidget> desktopDashboardWidgetsSafeFromJson(
   }
 }
 
+const List<SidebarFlyoutEntry> defaultSidebarFlyoutEntries = [
+  SidebarFlyoutEntry.resources,
+  SidebarFlyoutEntry.script,
+  SidebarFlyoutEntry.theme,
+  SidebarFlyoutEntry.basicConfig,
+  SidebarFlyoutEntry.otherSettings,
+  SidebarFlyoutEntry.application,
+  SidebarFlyoutEntry.about,
+];
+
+List<SidebarFlyoutEntry> sidebarFlyoutEntriesSafeFromJson(
+  List<dynamic>? sidebarFlyoutEntries,
+) {
+  try {
+    return sidebarFlyoutEntries
+            ?.map((e) => $enumDecode(_$SidebarFlyoutEntryEnumMap, e))
+            .toList() ??
+        defaultSidebarFlyoutEntries;
+  } catch (_) {
+    return defaultSidebarFlyoutEntries;
+  }
+}
+
 const List<MediaPlatform> defaultPinnedMediaPlatforms = [
   MediaPlatform.reddit,
   MediaPlatform.gemini,
@@ -180,8 +203,12 @@ abstract class AppSettingProps with _$AppSettingProps {
     @Default(false) bool autoRun,
     @Default(true) bool openLogs,
     @Default(true) bool closeConnections,
+    @Default(false) bool flushDnsOnNetworkChange,
     @Default(defaultTestUrl) String testUrl,
-    @Default(false) bool showStartSwitch,
+    @Default(true) bool showStartSwitch,
+    @Default(StartSwitchStyle.outlined) StartSwitchStyle startSwitchStyle,
+    String? startSwitchOnLabel,
+    String? startSwitchOffLabel,
     @Default(true) bool enableNavBarHapticFeedback,
     @Default(true) bool autoCheckUpdate,
     @Default(false) bool showLabel,
@@ -193,6 +220,12 @@ abstract class AppSettingProps with _$AppSettingProps {
     @Default(RecoveryStrategy.compatible) RecoveryStrategy recoveryStrategy,
     @Default(false) bool enableHighPriority,
     @Default(false) bool sidebarCollapsed,
+    @Default(true) bool sidebarFlyout,
+    @Default(false) bool sidebarFlyoutOutsideTools,
+    @Default(SidebarFlyoutDelay.standard) SidebarFlyoutDelay sidebarFlyoutDelay,
+    @Default(defaultSidebarFlyoutEntries)
+    @JsonKey(fromJson: sidebarFlyoutEntriesSafeFromJson)
+    List<SidebarFlyoutEntry> sidebarFlyoutEntries,
     String? dashboardTitle,
   }) = _AppSettingProps;
 

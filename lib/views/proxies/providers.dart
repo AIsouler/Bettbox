@@ -27,19 +27,18 @@ Future<void> updateExternalProviders(
 
   if (providers.isEmpty) return;
 
-  final providersNotifier = ref.read(providersProvider.notifier);
+  final appController = globalState.appController;
   final messages = [];
   final updateProviders = providers.map<Future>((provider) async {
-    providersNotifier.setProvider(provider.copyWith(isUpdating: true));
+    appController.setProvider(provider.copyWith(isUpdating: true));
     final message = await clashCore.updateExternalProvider(
       providerName: provider.name,
     );
     if (message.isNotEmpty) {
       messages.add('${provider.name}: $message \n');
     }
-    providersNotifier.setProvider(
-      await clashCore.getExternalProvider(provider.name),
-    );
+    final updated = await clashCore.getExternalProvider(provider.name);
+    appController.setProvider(updated);
   });
   final titleMedium = context.textTheme.titleMedium;
   await Future.wait(updateProviders);

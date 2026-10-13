@@ -88,6 +88,28 @@ class CommonDesktopRoute<T> extends PageRoute<T> {
   @override
   final bool maintainState;
 
+  static final _enterTween = CurveTween(curve: const Interval(0.2, 1));
+  static final _exitTween = Tween<double>(
+    begin: 1,
+    end: 0,
+  ).chain(CurveTween(curve: const Interval(0, 0.4)));
+
+  static Widget? _buildExitTransition(
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    bool allowSnapshotting,
+    Widget? child,
+  ) {
+    return FadeTransition(
+      opacity: _exitTween.animate(secondaryAnimation),
+      child: child,
+    );
+  }
+
+  @override
+  DelegatedTransitionBuilder? get delegatedTransition => _buildExitTransition;
+
   @override
   Color? get barrierColor => null;
 
@@ -104,7 +126,23 @@ class CommonDesktopRoute<T> extends PageRoute<T> {
     return Semantics(
       scopesRoute: true,
       explicitChildNodes: true,
-      child: FadeTransition(opacity: animation, child: result),
+      child: FadeTransition(
+        opacity: _enterTween.animate(animation),
+        child: result,
+      ),
+    );
+  }
+
+  @override
+  Widget buildTransitions(
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
+    return FadeTransition(
+      opacity: _exitTween.animate(secondaryAnimation),
+      child: child,
     );
   }
 

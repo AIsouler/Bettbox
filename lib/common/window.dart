@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:bett_box/common/common.dart';
 import 'package:bett_box/state.dart';
@@ -25,9 +26,10 @@ class Window {
         commonPrint.warn('Apply dock icon visibility failed: $e');
       }
     }
+    const minimumSize = Size(372, 492);
     WindowOptions windowOptions = WindowOptions(
-      size: Size(props.width, props.height),
-      minimumSize: const Size(380, 400),
+      size: Size(props.width, math.max(props.height, minimumSize.height)),
+      minimumSize: minimumSize,
     );
     await windowManager.setTitleBarStyle(TitleBarStyle.hidden);
     await windowManager.setAlwaysOnTop(props.isPinned);

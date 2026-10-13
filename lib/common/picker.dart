@@ -16,6 +16,9 @@ class Picker {
         !system.isAndroid &&
         allowedExtensions != null &&
         allowedExtensions.isNotEmpty;
+    if (system.isMacOS) {
+      await FilePicker.skipEntitlementsChecks();
+    }
     final filePickerResult = await FilePicker.pickFiles(
       withData: withData,
       allowMultiple: allowMultiple,
@@ -54,6 +57,9 @@ class Picker {
         !system.isAndroid &&
         allowedExtensions != null &&
         allowedExtensions.isNotEmpty;
+    if (system.isMacOS) {
+      await FilePicker.skipEntitlementsChecks();
+    }
     final path = await FilePicker.saveFile(
       fileName: name,
       initialDirectory: await appPath.downloadDirPath,

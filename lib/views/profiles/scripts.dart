@@ -159,18 +159,18 @@ class _ScriptsViewState extends ConsumerState<ScriptsView> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
       decoration: BoxDecoration(
-        color: context.colorScheme.surfaceContainerHighest,
+        color: context.colorScheme.primary.opacity12,
         borderRadius: BorderRadius.circular(6),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 12, color: context.colorScheme.onSurfaceVariant),
+          Icon(icon, size: 12, color: context.colorScheme.primary),
           const SizedBox(width: 3),
           Text(
             label,
             style: context.textTheme.labelSmall?.copyWith(
-              color: context.colorScheme.onSurfaceVariant,
+              color: context.colorScheme.primary,
               height: 1.1,
             ),
           ),

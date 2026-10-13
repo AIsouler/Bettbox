@@ -325,8 +325,21 @@ class ApplicationState extends ConsumerState<Application>
                   hoverElevation: 5,
                 ),
                 dialogTheme: DialogThemeData(
+                  backgroundColor: _getAppColorScheme(
+                    brightness: Brightness.light,
+                    primaryColor: themeProps.primaryColor,
+                  ).surfaceContainerLowest,
+                  surfaceTintColor: Colors.transparent,
+                  elevation: 10,
+                  shadowColor: Colors.black.withValues(alpha: 0.3),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
+                    borderRadius: BorderRadius.circular(20),
+                    side: BorderSide(
+                      color: _getAppColorScheme(
+                        brightness: Brightness.light,
+                        primaryColor: themeProps.primaryColor,
+                      ).outlineVariant.withValues(alpha: 0.6),
+                    ),
                   ),
                 ),
                 bottomSheetTheme: const BottomSheetThemeData(
@@ -381,12 +394,16 @@ class ApplicationState extends ConsumerState<Application>
                     ).inverseSurface,
                     borderRadius: const BorderRadius.all(Radius.circular(10)),
                   ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 7,
+                  ),
                   textStyle: TextStyle(
                     color: _getAppColorScheme(
                       brightness: Brightness.light,
                       primaryColor: themeProps.primaryColor,
                     ).onInverseSurface,
-                    fontSize: 12,
+                    fontSize: 13,
                   ),
                 ),
               ),
@@ -423,8 +440,25 @@ class ApplicationState extends ConsumerState<Application>
                   hoverElevation: 5,
                 ),
                 dialogTheme: DialogThemeData(
+                  backgroundColor: _getAppColorScheme(
+                    brightness: Brightness.dark,
+                    primaryColor: themeProps.primaryColor,
+                  ).toPureBlack(themeProps.pureBlack).surfaceContainerHigh,
+                  surfaceTintColor: Colors.transparent,
+                  elevation: 10,
+                  shadowColor: Colors.black.withValues(alpha: 0.6),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
+                    borderRadius: BorderRadius.circular(20),
+                    side: BorderSide(
+                      color:
+                          _getAppColorScheme(
+                                brightness: Brightness.dark,
+                                primaryColor: themeProps.primaryColor,
+                              )
+                              .toPureBlack(themeProps.pureBlack)
+                              .outlineVariant
+                              .withValues(alpha: 0.5),
+                    ),
                   ),
                 ),
                 bottomSheetTheme: const BottomSheetThemeData(
@@ -487,12 +521,16 @@ class ApplicationState extends ConsumerState<Application>
                     ).toPureBlack(themeProps.pureBlack).inverseSurface,
                     borderRadius: const BorderRadius.all(Radius.circular(10)),
                   ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 7,
+                  ),
                   textStyle: TextStyle(
                     color: _getAppColorScheme(
                       brightness: Brightness.dark,
                       primaryColor: themeProps.primaryColor,
                     ).toPureBlack(themeProps.pureBlack).onInverseSurface,
-                    fontSize: 12,
+                    fontSize: 13,
                   ),
                 ),
               ),

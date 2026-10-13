@@ -701,7 +701,8 @@ class _LogsConsoleState extends ConsumerState<LogsConsole> {
             ),
             if (hasFacet)
               TextButton(
-                onPressed: ref.read(logsFilterProvider.notifier).clearFacets,
+                onPressed: () =>
+                    ref.read(logsFilterProvider.notifier).clearFacets(),
                 child: Text(appLocalizations.clearFilter),
               )
             else if (level == LogLevel.debug)
