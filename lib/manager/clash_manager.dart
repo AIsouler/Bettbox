@@ -115,9 +115,9 @@ class _ClashContainerState extends ConsumerState<ClashManager>
 
   @override
   Future<void> onLoaded(String providerName) async {
-    ref
-        .read(providersProvider.notifier)
-        .setProvider(await clashCore.getExternalProvider(providerName));
+    final provider = await clashCore.getExternalProvider(providerName);
+    if (!mounted) return;
+    ref.read(providersProvider.notifier).setProvider(provider);
     globalState.appController.updateGroupsDebounce();
     super.onLoaded(providerName);
   }

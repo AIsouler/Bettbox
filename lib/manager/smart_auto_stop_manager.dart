@@ -54,6 +54,7 @@ class _SmartAutoStopManagerState extends ConsumerState<SmartAutoStopManager> {
     _nativeEventCallback = (String method, dynamic arguments) async {
       if (method == 'networkChanged') {
         _onNativeNetworkChanged();
+        _flushDnsOnNetworkChanged();
       } else if (method == 'quickResponse') {
         final vpnProps = ref.read(vpnSettingProvider);
         if (vpnProps.quickResponse) {
@@ -68,6 +69,16 @@ class _SmartAutoStopManagerState extends ConsumerState<SmartAutoStopManager> {
       }
     };
     service?.addNativeEventCallback(_nativeEventCallback);
+  }
+
+  void _flushDnsOnNetworkChanged() {
+    if (!ref.read(appSettingProvider).flushDnsOnNetworkChange) return;
+    final startTime = globalState.startTime;
+    if (startTime == null ||
+        DateTime.now().difference(startTime) < const Duration(seconds: 3)) {
+      return;
+    }
+    globalState.appController.flushDns();
   }
 
   void _onNativeNetworkChanged() async {

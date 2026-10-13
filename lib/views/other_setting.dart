@@ -144,8 +144,142 @@ class StoreFixItem extends ConsumerWidget {
   }
 }
 
+class CloseConnectionsItem extends ConsumerWidget {
+  const CloseConnectionsItem({super.key});
+
+  @override
+  Widget build(BuildContext context, ref) {
+    final closeConnections = ref.watch(
+      appSettingProvider.select((state) => state.closeConnections),
+    );
+    return ListItem.switchItem(
+      title: Text(appLocalizations.autoCloseConnections),
+      subtitle: Text(appLocalizations.autoCloseConnectionsDesc),
+      delegate: SwitchDelegate(
+        value: closeConnections,
+        onChanged: (value) async {
+          ref
+              .read(appSettingProvider.notifier)
+              .updateState((state) => state.copyWith(closeConnections: value));
+        },
+      ),
+    );
+  }
+}
+
+class _RelatedSettingDialog extends StatefulWidget {
+  final bool closeConnections;
+  final bool flushDns;
+
+  const _RelatedSettingDialog({
+    required this.closeConnections,
+    required this.flushDns,
+  });
+
+  @override
+  State<_RelatedSettingDialog> createState() => _RelatedSettingDialogState();
+}
+
+class _RelatedSettingDialogState extends State<_RelatedSettingDialog> {
+  late bool _closeConnections = widget.closeConnections;
+  late bool _flushDns = widget.flushDns;
+
+  Widget _buildItem({
+    required String title,
+    required String subtitle,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: context.textTheme.bodyLarge?.copyWith(
+                  color: context.colorScheme.onSurface,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                subtitle,
+                style: context.textTheme.bodySmall?.copyWith(
+                  color: context.colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 16),
+        Switch(value: value, onChanged: onChanged),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CommonDialog(
+      title: appLocalizations.relatedSettings,
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(appLocalizations.cancel),
+        ),
+        FilledButton(
+          onPressed: () {
+            Navigator.of(
+              context,
+            ).pop((closeConnections: _closeConnections, flushDns: _flushDns));
+          },
+          child: Text(appLocalizations.confirm),
+        ),
+      ],
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildItem(
+            title: appLocalizations.autoCloseConnections,
+            subtitle: appLocalizations.autoCloseConnectionsDesc,
+            value: _closeConnections,
+            onChanged: (value) => setState(() => _closeConnections = value),
+          ),
+          const SizedBox(height: 16),
+          _buildItem(
+            title: appLocalizations.flushDnsOnNetworkChange,
+            subtitle: appLocalizations.flushDnsOnNetworkChangeDesc,
+            value: _flushDns,
+            onChanged: (value) => setState(() => _flushDns = value),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class QuickResponseItem extends ConsumerWidget {
   const QuickResponseItem({super.key});
+
+  Future<void> _showRelatedSettingDialog(WidgetRef ref) async {
+    final appSetting = ref.read(appSettingProvider);
+    final result = await globalState
+        .showCommonDialog<({bool closeConnections, bool flushDns})>(
+          child: _RelatedSettingDialog(
+            closeConnections: appSetting.closeConnections,
+            flushDns: appSetting.flushDnsOnNetworkChange,
+          ),
+        );
+    if (result == null) return;
+    ref
+        .read(appSettingProvider.notifier)
+        .updateState(
+          (state) => state.copyWith(
+            closeConnections: result.closeConnections,
+            flushDnsOnNetworkChange: result.flushDns,
+          ),
+        );
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -154,7 +288,16 @@ class QuickResponseItem extends ConsumerWidget {
     );
 
     return ListItem.switchItem(
-      title: Text(appLocalizations.quickResponse),
+      title: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(appLocalizations.quickResponse),
+          TitleSettingButton(
+            tooltip: appLocalizations.relatedSettings,
+            onTap: () => _showRelatedSettingDialog(ref),
+          ),
+        ],
+      ),
       subtitle: Text(appLocalizations.quickResponseDesc),
       delegate: SwitchDelegate(
         value: quickResponse,
@@ -545,28 +688,13 @@ class TraySection extends ConsumerWidget {
             children: [
               Text(appLocalizations.trayEnhancement),
               if (showClickBehaviorSetting) ...[
-                Tooltip(
-                  message: appLocalizations.trayClickBehavior,
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkResponse(
-                      radius: 16,
-                      highlightShape: BoxShape.circle,
-                      onTap: () => _showTrayClickBehaviorDialog(
-                        context,
-                        ref,
-                        leftBehavior: leftBehavior,
-                        rightBehavior: rightBehavior,
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(7),
-                        child: Icon(
-                          Icons.settings_outlined,
-                          size: 18,
-                          color: context.colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ),
+                TitleSettingButton(
+                  tooltip: appLocalizations.trayClickBehavior,
+                  onTap: () => _showTrayClickBehaviorDialog(
+                    context,
+                    ref,
+                    leftBehavior: leftBehavior,
+                    rightBehavior: rightBehavior,
                   ),
                 ),
               ],
@@ -788,6 +916,7 @@ class _OtherSettingViewState extends State<OtherSettingView>
       if (!system.isAndroid) const TraySection(),
       if (system.isWindows) const HighPriorityItem(),
       if (system.isWindows) const NetworkFixItem(),
+      if (system.isDesktop) const CloseConnectionsItem(),
       if (_showBatteryOptimization)
         BatteryOptimizationItem(onRequest: _requestBatteryOptimization),
     ];
