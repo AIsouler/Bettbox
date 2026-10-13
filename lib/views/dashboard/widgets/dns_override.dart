@@ -1,7 +1,6 @@
 import 'package:bett_box/common/common.dart';
 import 'package:bett_box/providers/config.dart';
 import 'package:bett_box/widgets/widgets.dart';
-import 'package:bett_box/clash/core.dart';
 import 'package:bett_box/state.dart';
 import 'package:bett_box/views/config/dns.dart';
 import 'package:material_ui/material_ui.dart';
@@ -35,8 +34,7 @@ class DnsOverride extends StatelessWidget {
 
     // Clear cache after user confirms
     if (result == true) {
-      await clashCore.flushFakeIP();
-      await clashCore.flushDnsCache();
+      await globalState.appController.flushDns();
       globalState.showNotifier(appLocalizations.success);
     }
   }

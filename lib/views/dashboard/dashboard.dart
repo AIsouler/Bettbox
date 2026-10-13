@@ -6,6 +6,7 @@ import 'package:bett_box/state.dart';
 import 'package:defer_pointer/defer_pointer.dart';
 import 'package:bett_box/common/common.dart';
 import 'package:bett_box/enum/enum.dart';
+import 'package:bett_box/models/models.dart';
 import 'package:bett_box/providers/providers.dart';
 import 'package:bett_box/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
@@ -64,6 +65,7 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
     final showStartSwitch = ref.watch(
       appSettingProvider.select((state) => state.showStartSwitch),
     );
+    final isDark = ref.watch(currentBrightnessProvider) == Brightness.dark;
     return [
       _buildIsEdit((isEdit) {
         return isEdit
@@ -84,25 +86,58 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
               )
             : SizedBox();
       }),
-      Material(
-        type: MaterialType.transparency,
-        shape: const CircleBorder(),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: _handleUpdateIsEdit,
-          onLongPress: () {
-            if (!_isEditNotifier.value) {
-              _showEditTitleDialog();
-            }
+      _buildIsEdit((isEdit) {
+        if (isEdit) {
+          return IconButton(
+            onPressed: _handleUpdateIsEdit,
+            tooltip: appLocalizations.save,
+            icon: const Icon(Icons.save),
+          );
+        }
+        return CommonPopupBox(
+          targetBuilder: (open) {
+            return IconButton(
+              onPressed: () {
+                open(offset: const Offset(0, 20));
+              },
+              tooltip: appLocalizations.more,
+              icon: const Icon(Icons.dashboard_outlined),
+            );
           },
-          child: Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: _buildIsEdit((isEdit) {
-              return isEdit ? const Icon(Icons.save) : const Icon(Icons.edit);
-            }),
+          popup: CommonPopupMenu(
+            items: [
+              PopupMenuItemData(
+                icon: Icons.edit,
+                label: appLocalizations.edit,
+                onPressed: _handleUpdateIsEdit,
+              ),
+              PopupMenuItemData(
+                icon: isDark ? Icons.light_mode : Icons.dark_mode,
+                label: isDark ? appLocalizations.light : appLocalizations.dark,
+                onPressed: () {
+                  ref
+                      .read(themeSettingProvider.notifier)
+                      .updateState(
+                        (state) => state.copyWith(
+                          themeMode: isDark ? ThemeMode.light : ThemeMode.dark,
+                        ),
+                      );
+                },
+              ),
+              PopupMenuItemData(
+                icon: Icons.title,
+                label: appLocalizations.customDashboardTitle,
+                onPressed: _showEditTitleDialog,
+              ),
+              PopupMenuItemData(
+                icon: Icons.restart_alt,
+                label: appLocalizations.restartCoreTitle,
+                onPressed: _handleRestartCore,
+              ),
+            ],
           ),
-        ),
-      ),
+        );
+      }),
       if (showStartSwitch) _DashboardStartSwitch(key: _startSwitchKey),
     ];
   }
@@ -128,6 +163,16 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
       },
       context: context,
     );
+  }
+
+  Future<void> _handleRestartCore() async {
+    final result = await globalState.showMessage(
+      title: appLocalizations.restartCoreTitle,
+      message: TextSpan(text: appLocalizations.restartCoreDesc),
+    );
+    if (result != true) return;
+    await globalState.appController.restartCore();
+    globalState.showNotifier(appLocalizations.success);
   }
 
   void _showEditTitleDialog() async {
@@ -309,6 +354,32 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
   }
 }
 
+List<GridItem> packGridItems(List<GridItem> items, int totalColumns) {
+  if (items.isEmpty) return const [];
+  final pool = List<GridItem>.from(items);
+  final packed = <GridItem>[];
+  var remainingColumns = totalColumns;
+
+  while (pool.isNotEmpty) {
+    final index = pool.indexWhere(
+      (item) =>
+          math.min(item.crossAxisCellCount, totalColumns) <= remainingColumns,
+    );
+    if (index != -1) {
+      final item = pool.removeAt(index);
+      packed.add(item);
+      remainingColumns -= math.min(item.crossAxisCellCount, totalColumns);
+      if (remainingColumns <= 0) {
+        remainingColumns = totalColumns;
+      }
+    } else {
+      remainingColumns = totalColumns;
+    }
+  }
+
+  return packed;
+}
+
 class _AddDashboardWidgetModal extends StatelessWidget {
   final List<GridItem> items;
   final Function(GridItem item) onAdd;
@@ -318,18 +389,20 @@ class _AddDashboardWidgetModal extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final spacing = 12.mAp;
+    const columns = 8;
+    final packedItems = packGridItems(items, columns);
     return DashboardWidgetMetrics(
       unitHeight: 84.0.ap,
       spacing: spacing,
-      columns: 8,
+      columns: columns,
       child: DeferredPointerHandler(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Grid(
-            crossAxisCount: 8,
+            crossAxisCount: columns,
             crossAxisSpacing: spacing,
             mainAxisSpacing: spacing,
-            children: items
+            children: packedItems
                 .map(
                   (item) => item.wrap(
                     builder: (child) {
@@ -562,17 +635,46 @@ class _DashboardStartSwitchState extends ConsumerState<_DashboardStartSwitch> {
     final isLight = colorScheme.brightness == Brightness.light;
     final isBusy = _isDisabled || isRestarting;
     final isAvailable = state.isInit && state.hasProfile && !isSmartStopped;
-    final trackColor = displayStart
-        ? colorScheme.primary.withValues(alpha: 0.2)
-        : isLight
-        ? colorScheme.surfaceContainerHighest
-        : colorScheme.surfaceContainerHighest.lighten(6);
+    final (style, onLabel, offLabel) = ref.watch(
+      appSettingProvider.select(
+        (state) => (
+          state.startSwitchStyle,
+          state.startSwitchOnLabel,
+          state.startSwitchOffLabel,
+        ),
+      ),
+    );
+    final isOutlined = style == StartSwitchStyle.outlined;
+    final trackColor = isOutlined
+        ? isLight
+              ? Color.lerp(
+                  colorScheme.surface,
+                  colorScheme.surfaceContainerLowest,
+                  0.5,
+                )
+              : colorScheme.surfaceContainerHigh
+        : displayStart
+        ? colorScheme.primary.withValues(alpha: isLight ? 0.12 : 0.2)
+        : colorScheme.onSurface.withValues(alpha: 0.06);
+    final borderSide = isOutlined
+        ? BorderSide(
+            color: displayStart
+                ? colorScheme.primary.withValues(alpha: 0.45)
+                : colorScheme.outlineVariant.withValues(
+                    alpha: isLight ? 0.45 : 0.25,
+                  ),
+          )
+        : BorderSide.none;
     final iconColor = displayStart
         ? colorScheme.primary
         : colorScheme.onSurfaceVariant;
     final labels = [
-      (appLocalizations.disabled, !displayStart, colorScheme.onSurfaceVariant),
-      (appLocalizations.enabled, displayStart, colorScheme.primary),
+      (
+        offLabel ?? appLocalizations.disabled,
+        !displayStart,
+        colorScheme.onSurfaceVariant,
+      ),
+      (onLabel ?? appLocalizations.enabled, displayStart, colorScheme.primary),
     ];
 
     return Padding(
@@ -594,7 +696,7 @@ class _DashboardStartSwitchState extends ConsumerState<_DashboardStartSwitch> {
               (states) => StadiumBorder(
                 side: states.contains(WidgetState.focused)
                     ? BorderSide(color: colorScheme.primary, width: 2)
-                    : BorderSide.none,
+                    : borderSide,
               ),
             ),
           ),
