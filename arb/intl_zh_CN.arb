@@ -191,6 +191,7 @@
   "proxyPortDesc": "设置 Clash 监听端口",
   "port": "端口",
   "logLevel": "日志等级",
+  "logAiSearch": "AI 搜索",
   "show": "显示",
   "exit": "退出",
   "systemProxy": "系统代理",

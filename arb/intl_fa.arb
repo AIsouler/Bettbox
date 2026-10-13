@@ -191,6 +191,7 @@
   "proxyPortDesc": "تنظیم پورت گوش به زنگ Clash",
   "port": "پورت",
   "logLevel": "سطح گزارش",
+  "logAiSearch": "جستجوی هوش مصنوعی",
   "show": "نمایش",
   "exit": "خروج",
   "systemProxy": "پروکسی سیستم",

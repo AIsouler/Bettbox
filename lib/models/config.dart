@@ -203,6 +203,7 @@ abstract class AppSettingProps with _$AppSettingProps {
     @Default(false) bool autoRun,
     @Default(true) bool openLogs,
     @Default(true) bool closeConnections,
+    @Default(true) bool logAiSearch,
     @Default(false) bool flushDnsOnNetworkChange,
     @Default(defaultTestUrl) String testUrl,
     @Default(true) bool showStartSwitch,

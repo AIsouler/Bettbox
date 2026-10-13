@@ -350,6 +350,9 @@ class _LogsViewState extends ConsumerState<LogsView>
     final level = ref.watch(
       patchClashConfigProvider.select((state) => state.logLevel),
     );
+    final aiSearch = ref.watch(
+      appSettingProvider.select((state) => state.logAiSearch),
+    );
     return CommonScaffold(
       actions: [
         IconButton(
@@ -380,6 +383,19 @@ class _LogsViewState extends ConsumerState<LogsView>
                 icon: Icons.tune,
                 label: '${appLocalizations.logLevel} · ${level.label}',
                 onPressed: _handleLogLevelSettings,
+              ),
+              PopupMenuItemData(
+                icon: aiSearch
+                    ? Icons.check_circle_rounded
+                    : Icons.circle_outlined,
+                label: appLocalizations.logAiSearch,
+                onPressed: () {
+                  ref
+                      .read(appSettingProvider.notifier)
+                      .updateState(
+                        (state) => state.copyWith(logAiSearch: !aiSearch),
+                      );
+                },
               ),
               PopupMenuItemData(
                 icon: Icons.file_copy_outlined,
@@ -431,6 +447,7 @@ class _LogsConsoleState extends ConsumerState<LogsConsole> {
   bool? _pureBlack;
   var _filter = const LogsFilterState();
   Log? _expanded;
+  var _aiSearch = true;
   _LogMetrics? _metrics;
   _LogColors? _colors;
 
@@ -615,7 +632,7 @@ class _LogsConsoleState extends ConsumerState<LogsConsole> {
       expanded: expanded,
       onTap: () => _toggle(log),
       onCopy: () => _copy(log),
-      onSearch: () => _search(log),
+      onSearch: _aiSearch ? () => _search(log) : null,
       onFilter: () => _filterBy(log),
     );
   }
@@ -829,6 +846,9 @@ class _LogsConsoleState extends ConsumerState<LogsConsole> {
     final level = ref.watch(
       patchClashConfigProvider.select((state) => state.logLevel),
     );
+    _aiSearch = ref.watch(
+      appSettingProvider.select((state) => state.logAiSearch),
+    );
     final compact = ref.watch(isMobileViewProvider);
     final pureBlack = ref.watch(
       themeSettingProvider.select((state) => state.pureBlack),
@@ -866,7 +886,7 @@ class _LogRow extends StatelessWidget {
   final bool expanded;
   final VoidCallback onTap;
   final VoidCallback onCopy;
-  final VoidCallback onSearch;
+  final VoidCallback? onSearch;
   final VoidCallback onFilter;
 
   const _LogRow({
@@ -957,12 +977,13 @@ class _LogRow extends StatelessWidget {
                     icon: const Icon(Icons.copy_rounded, size: 16),
                     label: Text(appLocalizations.copy),
                   ),
-                  TextButton.icon(
-                    onPressed: onSearch,
-                    style: buttonStyle,
-                    icon: const Icon(Icons.search_rounded, size: 16),
-                    label: Text(appLocalizations.search),
-                  ),
+                  if (onSearch != null)
+                    TextButton.icon(
+                      onPressed: onSearch,
+                      style: buttonStyle,
+                      icon: const Icon(Icons.search_rounded, size: 16),
+                      label: Text(appLocalizations.search),
+                    ),
                   Expanded(
                     child: Align(
                       alignment: Alignment.centerLeft,

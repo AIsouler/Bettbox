@@ -1645,6 +1645,11 @@ class AppLocalizations {
     return Intl.message('Log Level', name: 'logLevel', desc: '', args: []);
   }
 
+  /// `AI Search`
+  String get logAiSearch {
+    return Intl.message('AI Search', name: 'logAiSearch', desc: '', args: []);
+  }
+
   /// `Show`
   String get show {
     return Intl.message('Show', name: 'show', desc: '', args: []);

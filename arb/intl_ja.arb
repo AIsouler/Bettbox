@@ -191,6 +191,7 @@
   "proxyPortDesc": "Clashのリスニングポート設定",
   "port": "ポート",
   "logLevel": "ログレベル",
+  "logAiSearch": "AI 検索",
   "show": "表示",
   "exit": "終了",
   "systemProxy": "システムプロキシ",

@@ -709,6 +709,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "locate": MessageLookupByLibrary.simpleMessage("Locate"),
     "log": MessageLookupByLibrary.simpleMessage("Log"),
+    "logAiSearch": MessageLookupByLibrary.simpleMessage("AI Search"),
     "logLevel": MessageLookupByLibrary.simpleMessage("Log Level"),
     "logLevelDebugHint": m8,
     "logcat": MessageLookupByLibrary.simpleMessage("Log Capture"),

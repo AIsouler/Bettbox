@@ -191,6 +191,7 @@
   "proxyPortDesc": "設定 Clash 監聽埠",
   "port": "連接埠",
   "logLevel": "日誌等級",
+  "logAiSearch": "AI 搜尋",
   "show": "顯示",
   "exit": "退出",
   "systemProxy": "系統代理",

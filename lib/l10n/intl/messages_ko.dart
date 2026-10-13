@@ -577,6 +577,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "localRecoveryDesc": MessageLookupByLibrary.simpleMessage("파일에서 데이터 복구"),
     "locate": MessageLookupByLibrary.simpleMessage("위치"),
     "log": MessageLookupByLibrary.simpleMessage("로그"),
+    "logAiSearch": MessageLookupByLibrary.simpleMessage("AI 검색"),
     "logLevel": MessageLookupByLibrary.simpleMessage("로그 수준"),
     "logLevelDebugHint": m8,
     "logcat": MessageLookupByLibrary.simpleMessage("로그 캡처"),

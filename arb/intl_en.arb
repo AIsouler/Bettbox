@@ -191,6 +191,7 @@
   "proxyPortDesc": "Set the Clash listening port",
   "port": "Port",
   "logLevel": "Log Level",
+  "logAiSearch": "AI Search",
   "show": "Show",
   "exit": "Exit",
   "systemProxy": "System Proxy",

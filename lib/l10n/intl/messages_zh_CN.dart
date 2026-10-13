@@ -511,6 +511,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "localRecoveryDesc": MessageLookupByLibrary.simpleMessage("通过文件恢复数据"),
     "locate": MessageLookupByLibrary.simpleMessage("定位"),
     "log": MessageLookupByLibrary.simpleMessage("日志"),
+    "logAiSearch": MessageLookupByLibrary.simpleMessage("AI 搜索"),
     "logLevel": MessageLookupByLibrary.simpleMessage("日志等级"),
     "logLevelDebugHint": m8,
     "logcat": MessageLookupByLibrary.simpleMessage("日志捕获"),

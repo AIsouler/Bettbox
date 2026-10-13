@@ -191,6 +191,7 @@
   "proxyPortDesc": "Установить порт прослушивания Clash",
   "port": "Порт",
   "logLevel": "Уровень логов",
+  "logAiSearch": "Поиск с ИИ",
   "show": "Показать",
   "exit": "Выход",
   "systemProxy": "Системный прокси",

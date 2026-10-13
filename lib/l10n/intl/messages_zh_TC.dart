@@ -519,6 +519,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "localRecoveryDesc": MessageLookupByLibrary.simpleMessage("透過檔案還原資料"),
     "locate": MessageLookupByLibrary.simpleMessage("定位"),
     "log": MessageLookupByLibrary.simpleMessage("日誌"),
+    "logAiSearch": MessageLookupByLibrary.simpleMessage("AI 搜尋"),
     "logLevel": MessageLookupByLibrary.simpleMessage("日誌等級"),
     "logLevelDebugHint": m8,
     "logcat": MessageLookupByLibrary.simpleMessage("日誌捕獲"),
