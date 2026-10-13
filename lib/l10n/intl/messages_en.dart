@@ -344,7 +344,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "cubeGrid": MessageLookupByLibrary.simpleMessage("Cube Grid"),
     "custom": MessageLookupByLibrary.simpleMessage("Custom"),
     "customDashboardTitle": MessageLookupByLibrary.simpleMessage(
-      "Custom Dashboard Title",
+      "Custom Title",
     ),
     "customScriptOptions": MessageLookupByLibrary.simpleMessage(
       "Custom Rule Switch",
@@ -379,7 +379,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "deleteTip": m3,
     "deleteTunnel": MessageLookupByLibrary.simpleMessage("Delete Forwarding"),
     "desc": MessageLookupByLibrary.simpleMessage(
-      "Bettbox is based on the powerful and flexible Mihomo (Clash.Meta) proxy kernel, dedicated to a superior user experience. Our vision: Connecting Open Source and AI, Accelerating Innovation",
+      "Bettbox is deeply crafted on the powerful and flexible Mihomo kernel, dedicated to a superior client experience. Our vision: Connecting Open Source and AI, Accelerating Innovation",
     ),
     "destination": MessageLookupByLibrary.simpleMessage("Destination"),
     "destinationGeoIP": MessageLookupByLibrary.simpleMessage(
@@ -526,6 +526,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Usually offshore DNS",
     ),
     "fallbackFilter": MessageLookupByLibrary.simpleMessage("Fallback Filter"),
+    "fast": MessageLookupByLibrary.simpleMessage("Fast"),
     "fcmOptimization": MessageLookupByLibrary.simpleMessage("FCM Optimization"),
     "fcmOptimizationDesc": MessageLookupByLibrary.simpleMessage(
       "Enhance FCM connection stability",
@@ -547,6 +548,12 @@ class MessageLookup extends MessageLookupByLibrary {
       "Enable process matching",
     ),
     "flagged": MessageLookupByLibrary.simpleMessage("Flagged"),
+    "flushDnsOnNetworkChange": MessageLookupByLibrary.simpleMessage(
+      "Clear DNS Cache",
+    ),
+    "flushDnsOnNetworkChangeDesc": MessageLookupByLibrary.simpleMessage(
+      "Clear the DNS cache when the network changes",
+    ),
     "foldingCube": MessageLookupByLibrary.simpleMessage("Folding Cube"),
     "fontFamily": MessageLookupByLibrary.simpleMessage("Font"),
     "forceDnsMapping": MessageLookupByLibrary.simpleMessage(
@@ -575,6 +582,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "Generate from private key",
     ),
     "generateSecret": MessageLookupByLibrary.simpleMessage("Generate"),
+    "geoBuiltInResources": MessageLookupByLibrary.simpleMessage(
+      "GEO Built-in Resources",
+    ),
     "geoData": MessageLookupByLibrary.simpleMessage("GeoData"),
     "geodataLoader": MessageLookupByLibrary.simpleMessage("GEO Low Memory"),
     "geodataLoaderDesc": MessageLookupByLibrary.simpleMessage(
@@ -1103,6 +1113,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Refresh the app list?",
     ),
     "regExp": MessageLookupByLibrary.simpleMessage("RegExp"),
+    "relatedSettings": MessageLookupByLibrary.simpleMessage("Related Settings"),
     "remote": MessageLookupByLibrary.simpleMessage("Remote"),
     "remoteBackupDesc": MessageLookupByLibrary.simpleMessage(
       "Backup data to WebDAV",
@@ -1202,6 +1213,15 @@ class MessageLookup extends MessageLookupByLibrary {
       "Display independent switch button on the homepage",
     ),
     "shrink": MessageLookupByLibrary.simpleMessage("Compact"),
+    "sidebarFlyout": MessageLookupByLibrary.simpleMessage("Hover Panel"),
+    "sidebarFlyoutDelay": MessageLookupByLibrary.simpleMessage("Trigger Delay"),
+    "sidebarFlyoutDesc": MessageLookupByLibrary.simpleMessage(
+      "Show the sidebar settings hover card",
+    ),
+    "sidebarFlyoutEntries": MessageLookupByLibrary.simpleMessage("Entries"),
+    "sidebarFlyoutOutsideTools": MessageLookupByLibrary.simpleMessage(
+      "Only show outside the “Tools” page",
+    ),
     "silentLaunch": MessageLookupByLibrary.simpleMessage("Silent Launch"),
     "silentLaunchDesc": MessageLookupByLibrary.simpleMessage(
       "Start in the background",
@@ -1218,6 +1238,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Allow local machine to access proxy without credentials",
     ),
     "skipSrcAddress": MessageLookupByLibrary.simpleMessage("Skip Source IP"),
+    "slow": MessageLookupByLibrary.simpleMessage("Slow"),
     "smartAutoStop": MessageLookupByLibrary.simpleMessage("Smart Auto-Stop"),
     "smartAutoStopDesc": MessageLookupByLibrary.simpleMessage(
       "Stop VPN on specific networks",
@@ -1259,6 +1280,16 @@ class MessageLookup extends MessageLookupByLibrary {
     "stackMode": MessageLookupByLibrary.simpleMessage("Stack Mode"),
     "standard": MessageLookupByLibrary.simpleMessage("Standard"),
     "start": MessageLookupByLibrary.simpleMessage("Start"),
+    "startSwitchOffLabel": MessageLookupByLibrary.simpleMessage(
+      "Text when off",
+    ),
+    "startSwitchOnLabel": MessageLookupByLibrary.simpleMessage("Text when on"),
+    "startSwitchOutlined": MessageLookupByLibrary.simpleMessage("Outlined"),
+    "startSwitchPersonalized": MessageLookupByLibrary.simpleMessage(
+      "Personalized Display",
+    ),
+    "startSwitchStyle": MessageLookupByLibrary.simpleMessage("Style"),
+    "startSwitchTonal": MessageLookupByLibrary.simpleMessage("Tonal"),
     "startTest": MessageLookupByLibrary.simpleMessage("Delay Test"),
     "startVpn": MessageLookupByLibrary.simpleMessage("Starting..."),
     "status": MessageLookupByLibrary.simpleMessage("Status"),
@@ -1306,7 +1337,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "theme": MessageLookupByLibrary.simpleMessage("Theme"),
     "themeColor": MessageLookupByLibrary.simpleMessage("Theme Color"),
     "themeDesc": MessageLookupByLibrary.simpleMessage(
-      "Set theme color and icon",
+      "Set theme color options",
     ),
     "themeMode": MessageLookupByLibrary.simpleMessage("Theme Mode"),
     "threeBounce": MessageLookupByLibrary.simpleMessage("Three Bounce"),

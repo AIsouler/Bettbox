@@ -457,6 +457,47 @@ enum RuleTarget { DIRECT, REJECT }
 
 enum RecoveryStrategy { compatible, override }
 
+enum StartSwitchStyle { tonal, outlined }
+
+enum SidebarFlyoutEntry {
+  resources,
+  script,
+  theme,
+  backupAndRecovery,
+  hotkeyManagement,
+  loopback,
+  basicConfig,
+  otherSettings,
+  application,
+  about;
+
+  static List<SidebarFlyoutEntry> get supportedValues =>
+      values.where((entry) => entry != loopback || system.isWindows).toList();
+
+  String get localizedName => switch (this) {
+    SidebarFlyoutEntry.resources => appLocalizations.resources,
+    SidebarFlyoutEntry.script => appLocalizations.script,
+    SidebarFlyoutEntry.theme => appLocalizations.theme,
+    SidebarFlyoutEntry.backupAndRecovery => appLocalizations.backupAndRecovery,
+    SidebarFlyoutEntry.hotkeyManagement => appLocalizations.hotkeyManagement,
+    SidebarFlyoutEntry.loopback => appLocalizations.loopback,
+    SidebarFlyoutEntry.basicConfig => appLocalizations.basicConfig,
+    SidebarFlyoutEntry.otherSettings => appLocalizations.otherSettings,
+    SidebarFlyoutEntry.application => appLocalizations.application,
+    SidebarFlyoutEntry.about => appLocalizations.about,
+  };
+}
+
+enum SidebarFlyoutDelay {
+  fast(Duration(milliseconds: 50)),
+  standard(Duration(milliseconds: 150)),
+  slow(Duration(milliseconds: 400));
+
+  final Duration duration;
+
+  const SidebarFlyoutDelay(this.duration);
+}
+
 enum CacheTag { logs, rules, requests, proxiesList }
 
 enum Language { yaml, javaScript }

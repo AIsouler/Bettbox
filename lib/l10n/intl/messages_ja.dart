@@ -301,7 +301,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "deleteTip": m3,
     "deleteTunnel": MessageLookupByLibrary.simpleMessage("転送削除"),
     "desc": MessageLookupByLibrary.simpleMessage(
-      "Bettboxは柔軟で強力なMihomo(Clash.Meta)カーネルを搭載した、快適性を追求したプロキシクライアントです。私たちのビジョン：Connecting Open Source and AI, Accelerating Innovation",
+      "Bettboxは強力で柔軟なMihomoカーネルをベースに深く作り込まれ、より優れたクライアント体験を追求しています。私たちのビジョン：Connecting Open Source and AI, Accelerating Innovation",
     ),
     "destination": MessageLookupByLibrary.simpleMessage("宛先アドレス"),
     "destinationGeoIP": MessageLookupByLibrary.simpleMessage("宛先GeoIP"),
@@ -422,6 +422,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "fallbackDesc": MessageLookupByLibrary.simpleMessage("主に海外ドメインの解決に使用"),
     "fallbackFilter": MessageLookupByLibrary.simpleMessage("フォールバックフィルター"),
+    "fast": MessageLookupByLibrary.simpleMessage("速い"),
     "fcmOptimization": MessageLookupByLibrary.simpleMessage("FCM最適化"),
     "fcmOptimizationDesc": MessageLookupByLibrary.simpleMessage(
       "FCM直連時の通信安定性を向上",
@@ -441,6 +442,12 @@ class MessageLookup extends MessageLookupByLibrary {
       "プロセス名をマッチングして検索",
     ),
     "flagged": MessageLookupByLibrary.simpleMessage("フラグ付き"),
+    "flushDnsOnNetworkChange": MessageLookupByLibrary.simpleMessage(
+      "DNS キャッシュをクリア",
+    ),
+    "flushDnsOnNetworkChangeDesc": MessageLookupByLibrary.simpleMessage(
+      "ネットワーク変更時に DNS キャッシュをクリア",
+    ),
     "foldingCube": MessageLookupByLibrary.simpleMessage("フォールディングキューブ"),
     "fontFamily": MessageLookupByLibrary.simpleMessage("フォント"),
     "forceDnsMapping": MessageLookupByLibrary.simpleMessage("強制DNSマッピング"),
@@ -459,6 +466,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "generalDesc": MessageLookupByLibrary.simpleMessage("全般設定を変更"),
     "generateFromPrivateKey": MessageLookupByLibrary.simpleMessage("秘密鍵から生成"),
     "generateSecret": MessageLookupByLibrary.simpleMessage("生成"),
+    "geoBuiltInResources": MessageLookupByLibrary.simpleMessage("GEO 組み込みリソース"),
     "geoData": MessageLookupByLibrary.simpleMessage("Geoデータ"),
     "geodataLoader": MessageLookupByLibrary.simpleMessage("GEO省メモリ"),
     "geodataLoaderDesc": MessageLookupByLibrary.simpleMessage(
@@ -883,6 +891,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "アプリ一覧を更新しますか？",
     ),
     "regExp": MessageLookupByLibrary.simpleMessage("正規表現"),
+    "relatedSettings": MessageLookupByLibrary.simpleMessage("関連設定"),
     "remote": MessageLookupByLibrary.simpleMessage("リモート"),
     "remoteBackupDesc": MessageLookupByLibrary.simpleMessage(
       "WebDAVへデータをバックアップ",
@@ -960,6 +969,15 @@ class MessageLookup extends MessageLookupByLibrary {
       "ホーム画面に独立したON/OFFボタンを表示",
     ),
     "shrink": MessageLookupByLibrary.simpleMessage("コンパクト"),
+    "sidebarFlyout": MessageLookupByLibrary.simpleMessage("ホバーパネル"),
+    "sidebarFlyoutDelay": MessageLookupByLibrary.simpleMessage("表示までの遅延"),
+    "sidebarFlyoutDesc": MessageLookupByLibrary.simpleMessage(
+      "サイドバーの設定ホバーカードを表示",
+    ),
+    "sidebarFlyoutEntries": MessageLookupByLibrary.simpleMessage("表示項目"),
+    "sidebarFlyoutOutsideTools": MessageLookupByLibrary.simpleMessage(
+      "「ツール」ページ以外でのみ表示",
+    ),
     "silentLaunch": MessageLookupByLibrary.simpleMessage("サイレント起動"),
     "silentLaunchDesc": MessageLookupByLibrary.simpleMessage(
       "画面を表示せずバックグラウンドで起動",
@@ -972,6 +990,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "ローカル端末からの認証なしアクセスを許可",
     ),
     "skipSrcAddress": MessageLookupByLibrary.simpleMessage("除外送信元IP"),
+    "slow": MessageLookupByLibrary.simpleMessage("遅い"),
     "smartAutoStop": MessageLookupByLibrary.simpleMessage("スマート自動停止"),
     "smartAutoStopDesc": MessageLookupByLibrary.simpleMessage(
       "指定ネットワーク接続時にプロキシを停止",
@@ -1007,6 +1026,14 @@ class MessageLookup extends MessageLookupByLibrary {
     "stackMode": MessageLookupByLibrary.simpleMessage("スタックモード"),
     "standard": MessageLookupByLibrary.simpleMessage("標準"),
     "start": MessageLookupByLibrary.simpleMessage("開始"),
+    "startSwitchOffLabel": MessageLookupByLibrary.simpleMessage("オフ時のテキスト"),
+    "startSwitchOnLabel": MessageLookupByLibrary.simpleMessage("オン時のテキスト"),
+    "startSwitchOutlined": MessageLookupByLibrary.simpleMessage("アウトライン"),
+    "startSwitchPersonalized": MessageLookupByLibrary.simpleMessage(
+      "表示のカスタマイズ",
+    ),
+    "startSwitchStyle": MessageLookupByLibrary.simpleMessage("スタイル"),
+    "startSwitchTonal": MessageLookupByLibrary.simpleMessage("淡色"),
     "startTest": MessageLookupByLibrary.simpleMessage("レイテンシテスト"),
     "startVpn": MessageLookupByLibrary.simpleMessage("起動中..."),
     "status": MessageLookupByLibrary.simpleMessage("ステータス"),
@@ -1047,7 +1074,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "textScale": MessageLookupByLibrary.simpleMessage("テキスト倍率"),
     "theme": MessageLookupByLibrary.simpleMessage("テーマ"),
     "themeColor": MessageLookupByLibrary.simpleMessage("テーマカラー"),
-    "themeDesc": MessageLookupByLibrary.simpleMessage("テーマカラーとアイコンの設定"),
+    "themeDesc": MessageLookupByLibrary.simpleMessage("テーマカラー関連の設定"),
     "themeMode": MessageLookupByLibrary.simpleMessage("テーマモード"),
     "threeBounce": MessageLookupByLibrary.simpleMessage("トリプルバウンス"),
     "threeColumns": MessageLookupByLibrary.simpleMessage("3列"),

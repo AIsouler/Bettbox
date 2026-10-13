@@ -388,7 +388,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Удалить перенаправление",
     ),
     "desc": MessageLookupByLibrary.simpleMessage(
-      "Bettbox основан на мощном и гибком прокси-ядре Mihomo (Clash.Meta) и стремится к созданию лучшего пользовательского опыта. Наше видение: Connecting Open Source and AI, Accelerating Innovation",
+      "Bettbox глубоко проработан на базе мощного и гибкого ядра Mihomo и ориентирован на лучший клиентский опыт. Наше видение: Connecting Open Source and AI, Accelerating Innovation",
     ),
     "destination": MessageLookupByLibrary.simpleMessage("Адрес назначения"),
     "destinationGeoIP": MessageLookupByLibrary.simpleMessage(
@@ -541,6 +541,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "fallbackFilter": MessageLookupByLibrary.simpleMessage(
       "Фильтр резервного DNS",
     ),
+    "fast": MessageLookupByLibrary.simpleMessage("Быстро"),
     "fcmOptimization": MessageLookupByLibrary.simpleMessage("Оптимизация FCM"),
     "fcmOptimizationDesc": MessageLookupByLibrary.simpleMessage(
       "Повышает стабильность FCM при прямом подключении",
@@ -566,6 +567,12 @@ class MessageLookup extends MessageLookupByLibrary {
       "Включить определение процессов",
     ),
     "flagged": MessageLookupByLibrary.simpleMessage("Помечен"),
+    "flushDnsOnNetworkChange": MessageLookupByLibrary.simpleMessage(
+      "Очистка кэша DNS",
+    ),
+    "flushDnsOnNetworkChangeDesc": MessageLookupByLibrary.simpleMessage(
+      "Очищать кэш DNS при смене сети",
+    ),
     "foldingCube": MessageLookupByLibrary.simpleMessage("Складывающийся куб"),
     "fontFamily": MessageLookupByLibrary.simpleMessage("Шрифт"),
     "forceDnsMapping": MessageLookupByLibrary.simpleMessage(
@@ -592,6 +599,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "Создать из приватного ключа",
     ),
     "generateSecret": MessageLookupByLibrary.simpleMessage("Сгенерировать"),
+    "geoBuiltInResources": MessageLookupByLibrary.simpleMessage(
+      "Встроенные ресурсы GEO",
+    ),
     "geoData": MessageLookupByLibrary.simpleMessage("Геоданные"),
     "geodataLoader": MessageLookupByLibrary.simpleMessage(
       "Экономия памяти GEO",
@@ -1142,6 +1152,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "Обновить список приложений?",
     ),
     "regExp": MessageLookupByLibrary.simpleMessage("Регулярное выражение"),
+    "relatedSettings": MessageLookupByLibrary.simpleMessage(
+      "Связанные настройки",
+    ),
     "remote": MessageLookupByLibrary.simpleMessage("Удалённый сервер"),
     "remoteBackupDesc": MessageLookupByLibrary.simpleMessage(
       "Резервное копирование на WebDAV",
@@ -1241,6 +1254,19 @@ class MessageLookup extends MessageLookupByLibrary {
       "Отображать отдельную кнопку переключения на главной странице",
     ),
     "shrink": MessageLookupByLibrary.simpleMessage("Стандарт"),
+    "sidebarFlyout": MessageLookupByLibrary.simpleMessage("Всплывающая панель"),
+    "sidebarFlyoutDelay": MessageLookupByLibrary.simpleMessage(
+      "Задержка появления",
+    ),
+    "sidebarFlyoutDesc": MessageLookupByLibrary.simpleMessage(
+      "Показывать карточку настроек при наведении на боковую панель",
+    ),
+    "sidebarFlyoutEntries": MessageLookupByLibrary.simpleMessage(
+      "Пункты панели",
+    ),
+    "sidebarFlyoutOutsideTools": MessageLookupByLibrary.simpleMessage(
+      "Показывать только вне страницы «Инструменты»",
+    ),
     "silentLaunch": MessageLookupByLibrary.simpleMessage("Тихий запуск"),
     "silentLaunchDesc": MessageLookupByLibrary.simpleMessage(
       "Запуск в фоне без открытия окна",
@@ -1259,6 +1285,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "skipSrcAddress": MessageLookupByLibrary.simpleMessage(
       "Пропустить IP источника",
     ),
+    "slow": MessageLookupByLibrary.simpleMessage("Медленно"),
     "smartAutoStop": MessageLookupByLibrary.simpleMessage("Умная остановка"),
     "smartAutoStopDesc": MessageLookupByLibrary.simpleMessage(
       "Останавливать прокси при подключении к заданной сети",
@@ -1300,6 +1327,18 @@ class MessageLookup extends MessageLookupByLibrary {
     "stackMode": MessageLookupByLibrary.simpleMessage("Режим стека"),
     "standard": MessageLookupByLibrary.simpleMessage("Стандарт"),
     "start": MessageLookupByLibrary.simpleMessage("Запуск"),
+    "startSwitchOffLabel": MessageLookupByLibrary.simpleMessage(
+      "Текст при выключении",
+    ),
+    "startSwitchOnLabel": MessageLookupByLibrary.simpleMessage(
+      "Текст при включении",
+    ),
+    "startSwitchOutlined": MessageLookupByLibrary.simpleMessage("С контуром"),
+    "startSwitchPersonalized": MessageLookupByLibrary.simpleMessage(
+      "Персонализация",
+    ),
+    "startSwitchStyle": MessageLookupByLibrary.simpleMessage("Стиль"),
+    "startSwitchTonal": MessageLookupByLibrary.simpleMessage("Тональный"),
     "startTest": MessageLookupByLibrary.simpleMessage("Тест задержки"),
     "startVpn": MessageLookupByLibrary.simpleMessage("Запуск VPN"),
     "status": MessageLookupByLibrary.simpleMessage("Статус"),
@@ -1353,7 +1392,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "theme": MessageLookupByLibrary.simpleMessage("Тема"),
     "themeColor": MessageLookupByLibrary.simpleMessage("Цвет темы"),
     "themeDesc": MessageLookupByLibrary.simpleMessage(
-      "Настройка темы и иконок",
+      "Настройка темы и цветов",
     ),
     "themeMode": MessageLookupByLibrary.simpleMessage("Режим темы"),
     "threeBounce": MessageLookupByLibrary.simpleMessage("Прыгающие точки"),

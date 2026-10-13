@@ -311,7 +311,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "deleteTip": m3,
     "deleteTunnel": MessageLookupByLibrary.simpleMessage("포워딩 삭제"),
     "desc": MessageLookupByLibrary.simpleMessage(
-      "Bettbox는 강력하고 유연한 Mihomo(Clash.Meta) 코어를 기반으로 개발된 사용자 친화적 프록시 클라이언트입니다. 우리의 비전: Connecting Open Source and AI, Accelerating Innovation",
+      "Bettbox는 강력하고 유연한 Mihomo 코어를 기반으로 깊이 있게 제작되어, 더 나은 클라이언트 경험을 제공하는 데 전념합니다. 우리의 비전: Connecting Open Source and AI, Accelerating Innovation",
     ),
     "destination": MessageLookupByLibrary.simpleMessage("목적지 주소"),
     "destinationGeoIP": MessageLookupByLibrary.simpleMessage("목적지 GeoIP"),
@@ -432,6 +432,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "fallbackDesc": MessageLookupByLibrary.simpleMessage("주로 해외 도메인 해석에 사용"),
     "fallbackFilter": MessageLookupByLibrary.simpleMessage("폴백 필터"),
+    "fast": MessageLookupByLibrary.simpleMessage("빠름"),
     "fcmOptimization": MessageLookupByLibrary.simpleMessage("FCM 최적화"),
     "fcmOptimizationDesc": MessageLookupByLibrary.simpleMessage(
       "FCM 직접 연결 시 네트워크 안정성 향상",
@@ -451,6 +452,12 @@ class MessageLookup extends MessageLookupByLibrary {
       "활성화 시 프로세스 매칭 검색 가능",
     ),
     "flagged": MessageLookupByLibrary.simpleMessage("표시됨"),
+    "flushDnsOnNetworkChange": MessageLookupByLibrary.simpleMessage(
+      "DNS 캐시 지우기",
+    ),
+    "flushDnsOnNetworkChangeDesc": MessageLookupByLibrary.simpleMessage(
+      "네트워크 변경 시 DNS 캐시 지우기",
+    ),
     "foldingCube": MessageLookupByLibrary.simpleMessage("폴딩 큐브"),
     "fontFamily": MessageLookupByLibrary.simpleMessage("글꼴"),
     "forceDnsMapping": MessageLookupByLibrary.simpleMessage("강제 DNS 매핑"),
@@ -469,6 +476,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "generalDesc": MessageLookupByLibrary.simpleMessage("글로벌 일반 설정 변경"),
     "generateFromPrivateKey": MessageLookupByLibrary.simpleMessage("개인키에서 생성"),
     "generateSecret": MessageLookupByLibrary.simpleMessage("생성"),
+    "geoBuiltInResources": MessageLookupByLibrary.simpleMessage("GEO 내장 리소스"),
     "geoData": MessageLookupByLibrary.simpleMessage("Geo 데이터"),
     "geodataLoader": MessageLookupByLibrary.simpleMessage("GEO 절전 메모리"),
     "geodataLoaderDesc": MessageLookupByLibrary.simpleMessage(
@@ -891,6 +899,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "앱 목록을 새로고치시겠습니까?",
     ),
     "regExp": MessageLookupByLibrary.simpleMessage("정규식"),
+    "relatedSettings": MessageLookupByLibrary.simpleMessage("관련 설정"),
     "remote": MessageLookupByLibrary.simpleMessage("원격"),
     "remoteBackupDesc": MessageLookupByLibrary.simpleMessage("WebDAV로 데이터 백업"),
     "remoteDestination": MessageLookupByLibrary.simpleMessage("원격 목적지"),
@@ -964,6 +973,15 @@ class MessageLookup extends MessageLookupByLibrary {
       "홈 화면에 독립된 시작/정지 스위치 표시",
     ),
     "shrink": MessageLookupByLibrary.simpleMessage("축소"),
+    "sidebarFlyout": MessageLookupByLibrary.simpleMessage("호버 패널"),
+    "sidebarFlyoutDelay": MessageLookupByLibrary.simpleMessage("표시 지연"),
+    "sidebarFlyoutDesc": MessageLookupByLibrary.simpleMessage(
+      "사이드바 설정 호버 카드 표시",
+    ),
+    "sidebarFlyoutEntries": MessageLookupByLibrary.simpleMessage("표시 항목"),
+    "sidebarFlyoutOutsideTools": MessageLookupByLibrary.simpleMessage(
+      "“도구” 페이지 외에서만 표시",
+    ),
     "silentLaunch": MessageLookupByLibrary.simpleMessage("백그라운드 시작"),
     "silentLaunchDesc": MessageLookupByLibrary.simpleMessage(
       "화면을 열지 않고 백그라운드에서 실행",
@@ -976,6 +994,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "로컬 기기에서 인증 없이 프록시 접근 허용",
     ),
     "skipSrcAddress": MessageLookupByLibrary.simpleMessage("제외 출발지 IP"),
+    "slow": MessageLookupByLibrary.simpleMessage("느림"),
     "smartAutoStop": MessageLookupByLibrary.simpleMessage("스마트 자동 정지"),
     "smartAutoStopDesc": MessageLookupByLibrary.simpleMessage(
       "지정된 네트워크 연결 시 프록시 서비스 정지",
@@ -1009,6 +1028,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "stackMode": MessageLookupByLibrary.simpleMessage("스택 모드"),
     "standard": MessageLookupByLibrary.simpleMessage("표준"),
     "start": MessageLookupByLibrary.simpleMessage("시작"),
+    "startSwitchOffLabel": MessageLookupByLibrary.simpleMessage("꺼짐 텍스트"),
+    "startSwitchOnLabel": MessageLookupByLibrary.simpleMessage("켜짐 텍스트"),
+    "startSwitchOutlined": MessageLookupByLibrary.simpleMessage("외곽선"),
+    "startSwitchPersonalized": MessageLookupByLibrary.simpleMessage("맞춤 표시"),
+    "startSwitchStyle": MessageLookupByLibrary.simpleMessage("스타일"),
+    "startSwitchTonal": MessageLookupByLibrary.simpleMessage("틴트"),
     "startTest": MessageLookupByLibrary.simpleMessage("지연 시간 테스트"),
     "startVpn": MessageLookupByLibrary.simpleMessage("시작 중..."),
     "status": MessageLookupByLibrary.simpleMessage("상태"),
@@ -1051,7 +1076,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "textScale": MessageLookupByLibrary.simpleMessage("텍스트 배율"),
     "theme": MessageLookupByLibrary.simpleMessage("테마"),
     "themeColor": MessageLookupByLibrary.simpleMessage("테마 색상"),
-    "themeDesc": MessageLookupByLibrary.simpleMessage("테마 색상 및 아이콘 설정"),
+    "themeDesc": MessageLookupByLibrary.simpleMessage("테마 색상 관련 설정"),
     "themeMode": MessageLookupByLibrary.simpleMessage("테마 모드"),
     "threeBounce": MessageLookupByLibrary.simpleMessage("트리플 바운스"),
     "threeColumns": MessageLookupByLibrary.simpleMessage("3열"),

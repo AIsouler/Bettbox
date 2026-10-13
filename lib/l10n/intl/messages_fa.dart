@@ -379,7 +379,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "deleteTip": m3,
     "deleteTunnel": MessageLookupByLibrary.simpleMessage("حذف هدایت"),
     "desc": MessageLookupByLibrary.simpleMessage(
-      "Bettbox یک کلاینت پروکسی بر پایه هسته قدرتمند و انعطاف‌پذیر Mihomo (Clash.Meta) با هدف تجربه کاربری برتر است. چشم‌انداز ما: Connecting Open Source and AI, Accelerating Innovation",
+      "Bettbox به‌صورت عمیق بر پایه هسته قدرتمند و انعطاف‌پذیر Mihomo ساخته شده و بر ارائه تجربه کلاینت بهتر متمرکز است. چشم‌انداز ما: Connecting Open Source and AI, Accelerating Innovation",
     ),
     "destination": MessageLookupByLibrary.simpleMessage("آدرس مقصد"),
     "destinationGeoIP": MessageLookupByLibrary.simpleMessage(
@@ -520,6 +520,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "استفاده برای دامنه‌های خارجی",
     ),
     "fallbackFilter": MessageLookupByLibrary.simpleMessage("فیلتر فالبک"),
+    "fast": MessageLookupByLibrary.simpleMessage("سریع"),
     "fcmOptimization": MessageLookupByLibrary.simpleMessage("بهینه‌سازی FCM"),
     "fcmOptimizationDesc": MessageLookupByLibrary.simpleMessage(
       "افزایش پایداری اتصال مستقیم FCM",
@@ -543,6 +544,12 @@ class MessageLookup extends MessageLookupByLibrary {
       "امکان جستجو و تطبیق پردازش‌ها",
     ),
     "flagged": MessageLookupByLibrary.simpleMessage("نشانه‌گذاری‌شده"),
+    "flushDnsOnNetworkChange": MessageLookupByLibrary.simpleMessage(
+      "پاک‌سازی کش DNS",
+    ),
+    "flushDnsOnNetworkChangeDesc": MessageLookupByLibrary.simpleMessage(
+      "پاک‌سازی کش DNS هنگام تغییر شبکه",
+    ),
     "foldingCube": MessageLookupByLibrary.simpleMessage("مکعب تاشو"),
     "fontFamily": MessageLookupByLibrary.simpleMessage("فونت"),
     "forceDnsMapping": MessageLookupByLibrary.simpleMessage("نگاشت اجباری DNS"),
@@ -567,6 +574,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "تولید از کلید خصوصی",
     ),
     "generateSecret": MessageLookupByLibrary.simpleMessage("تولید"),
+    "geoBuiltInResources": MessageLookupByLibrary.simpleMessage(
+      "منابع داخلی GEO",
+    ),
     "geoData": MessageLookupByLibrary.simpleMessage("داده‌های جغرافیایی"),
     "geodataLoader": MessageLookupByLibrary.simpleMessage(
       "کاهش مصرف حافظه GEO",
@@ -1127,6 +1137,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "آیا لیست برنامه‌ها بروزرسانی شود؟",
     ),
     "regExp": MessageLookupByLibrary.simpleMessage("عبارت باقاعده (RegEx)"),
+    "relatedSettings": MessageLookupByLibrary.simpleMessage("تنظیمات مرتبط"),
     "remote": MessageLookupByLibrary.simpleMessage("از راه دور"),
     "remoteBackupDesc": MessageLookupByLibrary.simpleMessage(
       "پشتیبان‌گیری داده‌ها روی WebDAV",
@@ -1234,6 +1245,15 @@ class MessageLookup extends MessageLookupByLibrary {
       "نمایش دکمه مستقل روشن/خاموش در صفحه اصلی",
     ),
     "shrink": MessageLookupByLibrary.simpleMessage("فشرده"),
+    "sidebarFlyout": MessageLookupByLibrary.simpleMessage("پنل شناور"),
+    "sidebarFlyoutDelay": MessageLookupByLibrary.simpleMessage("تأخیر نمایش"),
+    "sidebarFlyoutDesc": MessageLookupByLibrary.simpleMessage(
+      "نمایش کارت شناور تنظیمات نوار کناری",
+    ),
+    "sidebarFlyoutEntries": MessageLookupByLibrary.simpleMessage("موارد نمایش"),
+    "sidebarFlyoutOutsideTools": MessageLookupByLibrary.simpleMessage(
+      "نمایش فقط خارج از صفحه «ابزارها»",
+    ),
     "silentLaunch": MessageLookupByLibrary.simpleMessage("اجرای بی‌صدا"),
     "silentLaunchDesc": MessageLookupByLibrary.simpleMessage(
       "اجرا در پس‌زمینه بدون باز کردن پنجره",
@@ -1248,6 +1268,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "اجازه دسترسی به پروکسی بدون اطلاعات کاربری از سیستم محلی",
     ),
     "skipSrcAddress": MessageLookupByLibrary.simpleMessage("IP مبدا مستثنی"),
+    "slow": MessageLookupByLibrary.simpleMessage("کند"),
     "smartAutoStop": MessageLookupByLibrary.simpleMessage("توقف هوشمند"),
     "smartAutoStopDesc": MessageLookupByLibrary.simpleMessage(
       "توقف سرویس پروکسی هنگام اتصال به شبکه مشخص",
@@ -1289,6 +1310,16 @@ class MessageLookup extends MessageLookupByLibrary {
     "stackMode": MessageLookupByLibrary.simpleMessage("حالت پشته"),
     "standard": MessageLookupByLibrary.simpleMessage("استاندارد"),
     "start": MessageLookupByLibrary.simpleMessage("شروع"),
+    "startSwitchOffLabel": MessageLookupByLibrary.simpleMessage(
+      "متن حالت خاموش",
+    ),
+    "startSwitchOnLabel": MessageLookupByLibrary.simpleMessage("متن حالت روشن"),
+    "startSwitchOutlined": MessageLookupByLibrary.simpleMessage("حاشیه‌دار"),
+    "startSwitchPersonalized": MessageLookupByLibrary.simpleMessage(
+      "نمایش شخصی‌سازی‌شده",
+    ),
+    "startSwitchStyle": MessageLookupByLibrary.simpleMessage("سبک"),
+    "startSwitchTonal": MessageLookupByLibrary.simpleMessage("رنگی ملایم"),
     "startTest": MessageLookupByLibrary.simpleMessage("تست تاخیر"),
     "startVpn": MessageLookupByLibrary.simpleMessage("در حال شروع..."),
     "status": MessageLookupByLibrary.simpleMessage("وضعیت"),
@@ -1338,7 +1369,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "theme": MessageLookupByLibrary.simpleMessage("پوسته"),
     "themeColor": MessageLookupByLibrary.simpleMessage("رنگ پوسته"),
     "themeDesc": MessageLookupByLibrary.simpleMessage(
-      "تنظیمات رنگ و آیکون پوسته",
+      "تنظیمات مربوط به رنگ و پوسته",
     ),
     "themeMode": MessageLookupByLibrary.simpleMessage("حالت پوسته"),
     "threeBounce": MessageLookupByLibrary.simpleMessage("جهش سه گانه"),

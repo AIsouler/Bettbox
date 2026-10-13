@@ -75,10 +75,10 @@ class AppLocalizations {
     return Intl.message('Home', name: 'dashboard', desc: '', args: []);
   }
 
-  /// `Custom Dashboard Title`
+  /// `Custom Title`
   String get customDashboardTitle {
     return Intl.message(
-      'Custom Dashboard Title',
+      'Custom Title',
       name: 'customDashboardTitle',
       desc: '',
       args: [],
@@ -795,10 +795,10 @@ class AppLocalizations {
     return Intl.message('Theme', name: 'theme', desc: '', args: []);
   }
 
-  /// `Set theme color and icon`
+  /// `Set theme color options`
   String get themeDesc {
     return Intl.message(
-      'Set theme color and icon',
+      'Set theme color options',
       name: 'themeDesc',
       desc: '',
       args: [],
@@ -1695,10 +1695,120 @@ class AppLocalizations {
     );
   }
 
-  /// `Bettbox is based on the powerful and flexible Mihomo (Clash.Meta) proxy kernel, dedicated to a superior user experience. Our vision: Connecting Open Source and AI, Accelerating Innovation`
+  /// `Style`
+  String get startSwitchStyle {
+    return Intl.message('Style', name: 'startSwitchStyle', desc: '', args: []);
+  }
+
+  /// `Tonal`
+  String get startSwitchTonal {
+    return Intl.message('Tonal', name: 'startSwitchTonal', desc: '', args: []);
+  }
+
+  /// `Outlined`
+  String get startSwitchOutlined {
+    return Intl.message(
+      'Outlined',
+      name: 'startSwitchOutlined',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Personalized Display`
+  String get startSwitchPersonalized {
+    return Intl.message(
+      'Personalized Display',
+      name: 'startSwitchPersonalized',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Text when on`
+  String get startSwitchOnLabel {
+    return Intl.message(
+      'Text when on',
+      name: 'startSwitchOnLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Text when off`
+  String get startSwitchOffLabel {
+    return Intl.message(
+      'Text when off',
+      name: 'startSwitchOffLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Hover Panel`
+  String get sidebarFlyout {
+    return Intl.message(
+      'Hover Panel',
+      name: 'sidebarFlyout',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Show the sidebar settings hover card`
+  String get sidebarFlyoutDesc {
+    return Intl.message(
+      'Show the sidebar settings hover card',
+      name: 'sidebarFlyoutDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Only show outside the “Tools” page`
+  String get sidebarFlyoutOutsideTools {
+    return Intl.message(
+      'Only show outside the “Tools” page',
+      name: 'sidebarFlyoutOutsideTools',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Trigger Delay`
+  String get sidebarFlyoutDelay {
+    return Intl.message(
+      'Trigger Delay',
+      name: 'sidebarFlyoutDelay',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Entries`
+  String get sidebarFlyoutEntries {
+    return Intl.message(
+      'Entries',
+      name: 'sidebarFlyoutEntries',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Fast`
+  String get fast {
+    return Intl.message('Fast', name: 'fast', desc: '', args: []);
+  }
+
+  /// `Slow`
+  String get slow {
+    return Intl.message('Slow', name: 'slow', desc: '', args: []);
+  }
+
+  /// `Bettbox is deeply crafted on the powerful and flexible Mihomo kernel, dedicated to a superior client experience. Our vision: Connecting Open Source and AI, Accelerating Innovation`
   String get desc {
     return Intl.message(
-      'Bettbox is based on the powerful and flexible Mihomo (Clash.Meta) proxy kernel, dedicated to a superior user experience. Our vision: Connecting Open Source and AI, Accelerating Innovation',
+      'Bettbox is deeply crafted on the powerful and flexible Mihomo kernel, dedicated to a superior client experience. Our vision: Connecting Open Source and AI, Accelerating Innovation',
       name: 'desc',
       desc: '',
       args: [],
@@ -2715,6 +2825,36 @@ class AppLocalizations {
     return Intl.message(
       'Close connections when switching nodes',
       name: 'autoCloseConnectionsDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Related Settings`
+  String get relatedSettings {
+    return Intl.message(
+      'Related Settings',
+      name: 'relatedSettings',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Clear DNS Cache`
+  String get flushDnsOnNetworkChange {
+    return Intl.message(
+      'Clear DNS Cache',
+      name: 'flushDnsOnNetworkChange',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Clear the DNS cache when the network changes`
+  String get flushDnsOnNetworkChangeDesc {
+    return Intl.message(
+      'Clear the DNS cache when the network changes',
+      name: 'flushDnsOnNetworkChangeDesc',
       desc: '',
       args: [],
     );
@@ -6562,6 +6702,16 @@ class AppLocalizations {
       name: 'analyzeLogPrompt',
       desc: '',
       args: [log],
+    );
+  }
+
+  /// `GEO Built-in Resources`
+  String get geoBuiltInResources {
+    return Intl.message(
+      'GEO Built-in Resources',
+      name: 'geoBuiltInResources',
+      desc: '',
+      args: [],
     );
   }
 }
